@@ -16,3 +16,25 @@ model comments {
   text     String
 }
 
+model contents {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  title                  String
+  description            String
+  type                   ContentType
+  fileUrl                String
+  gameUrl                String
+  branch                 String
+  ageGroup               String
+  publishDateForStudent  DateTime
+  publishDateForTeacher  DateTime
+  isArchived             Boolean  @default(false)
+
+  @@map("contents")
+  @@index([branch])
+}
+
+enum ContentType {
+  VIDEO
+  DOCUMENT
+  GAME
+}
