@@ -35,6 +35,7 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   Feedback  Feedback[]
+  Progress  Progress[]
 }
 
 enum UserRole {
@@ -48,7 +49,6 @@ model Group {
   title              String
   description        String?
   students           User[]
-  // contents           Content[]
   groupBranches      GroupBranch[]
   contentAccessRules ContentAccessRule[]
 
@@ -85,10 +85,6 @@ model Content {
   status      ContentStatus @default(SCHEDULED)
 
   // tarihler öğretmen ve öğrenci için farklılık gösterecek.
-  // publishAt_student DateTime?
-  // publishAt_teacher DateTime?
-  // endAt_student     DateTime?
-  // endAt_teacher     DateTime?
   contentAccessRules ContentAccessRule[]
 
   // Arşivleme kontrolü
@@ -100,11 +96,6 @@ model Content {
 
   branchId String @db.ObjectId
   branch   Branch @relation(fields: [branchId], references: [id])
-
-  // !! İçerik birden fazla gruba atanabileceği için bu kısım yorum satırına alındı. 
-  // !! İçerik accessleri ContentAccessRule üzerinden kontrol edilir.
-  // groupId  String @db.ObjectId
-  // group    Group  @relation(fields: [groupId], references: [id])
 }
 
 model ContentAccessRule {
@@ -159,4 +150,41 @@ enum ContentType {
   DOCUMENT
   INTERACTIVE
   GAME
+}
+
+// which student has completed what content
+model Progress {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId       String   @db.ObjectId
+  student         User     @relation(fields: [studentId], references: [id])
+  contentId       String   @db.ObjectId
+  content         Content  @relation(fields: [contentId], references: [id])
+  status          ProgressStatus @default(NOT_STARTED)
+  completionDate  DateTime?
+  interactionDetails Json?
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// it tracks system-wide statistics for admin
+model Statistics {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  date                DateTime
+  totalStudents       Int
+  completedTasks      Int
+  activeStudents      Int
+  mostCompletedContentId String? @db.ObjectId
+  leastCompletedContentId String? @db.ObjectId
+  activeHours         Json
+}
+
+// different content for different age groups
+enum AgeGroup {
+  AGE_3_4
+  AGE_4_5
+  AGE_5_6
 }
