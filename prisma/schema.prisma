@@ -49,6 +49,7 @@ model Group {
   title              String
   description        String?
   students           User[]
+  // contents           Content[]
   groupBranches      GroupBranch[]
   contentAccessRules ContentAccessRule[]
 
@@ -84,8 +85,12 @@ model Content {
   url         String?
   status      ContentStatus @default(SCHEDULED)
 
-  // tarihler öğretmen ve öğrenci için farklılık gösterecek.
-  contentAccessRules ContentAccessRule[]
+   // tarihler öğretmen ve öğrenci için farklılık gösterecek.
+   // publishAt_student DateTime?
+   // publishAt_teacher DateTime?
+   // endAt_student     DateTime?
+   // endAt_teacher     DateTime?
+   contentAccessRules ContentAccessRule[]
 
   // Arşivleme kontrolü
   isArchived Boolean   @default(false)
@@ -96,6 +101,11 @@ model Content {
 
   branchId String @db.ObjectId
   branch   Branch @relation(fields: [branchId], references: [id])
+  
+   // !! İçerik birden fazla gruba atanabileceği için bu kısım yorum satırına alındı. 
+   // !! İçerik accessleri ContentAccessRule üzerinden kontrol edilir.
+   // groupId  String @db.ObjectId
+   // group    Group  @relation(fields: [groupId], references: [id])
 }
 
 model ContentAccessRule {
