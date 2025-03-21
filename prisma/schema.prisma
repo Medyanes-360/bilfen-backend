@@ -16,3 +16,147 @@ model comments {
   text     String
 }
 
+model User {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String?  @unique
+  password String
+  role     UserRole @default(STUDENT)
+
+  // öğrenciye özel alanlar
+  tcNo    String? @unique
+  groupId String? @db.ObjectId
+  group   Group?  @relation(fields: [groupId], references: [id])
+
+  // öğretmene özel alanlar
+  branchId String? @db.ObjectId
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Feedback  Feedback[]
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model Group {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String?
+  students           User[]
+  // contents           Content[]
+  groupBranches      GroupBranch[]
+  contentAccessRules ContentAccessRule[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Branch {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  teachers      User[]
+  contents      Content[]
+  groupBranches GroupBranch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Group ve Branch arasında many-to-many ilişki kuruldu. Bu sayede dersler birden fazla gruba atanabilir.
+model GroupBranch {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  group    Group  @relation(fields: [groupId], references: [id])
+  groupId  String @db.ObjectId
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String @db.ObjectId
+}
+
+model Content {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  type        ContentType
+  url         String?
+  status      ContentStatus @default(SCHEDULED)
+
+  // tarihler öğretmen ve öğrenci için farklılık gösterecek.
+  // publishAt_student DateTime?
+  // publishAt_teacher DateTime?
+  // endAt_student     DateTime?
+  // endAt_teacher     DateTime?
+  contentAccessRules ContentAccessRule[]
+
+  // Arşivleme kontrolü
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branchId String @db.ObjectId
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  // !! İçerik birden fazla gruba atanabileceği için bu kısım yorum satırına alındı. 
+  // !! İçerik accessleri ContentAccessRule üzerinden kontrol edilir.
+  // groupId  String @db.ObjectId
+  // group    Group  @relation(fields: [groupId], references: [id])
+}
+
+model ContentAccessRule {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  contentId String  @db.ObjectId
+  content   Content @relation(fields: [contentId], references: [id])
+
+  role    UserRole // STUDENT, TEACHER
+  groupId String?  @db.ObjectId
+  group   Group?   @relation(fields: [groupId], references: [id])
+
+  publishAt DateTime
+  endAt     DateTime
+}
+
+model Feedback {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String            @db.ObjectId
+  user      User              @relation(fields: [userId], references: [id])
+  title     String
+  messages  FeedbackMessage[]
+  status    FeedbackStatus    @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model FeedbackMessage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  feedbackId String   @db.ObjectId
+  feedback   Feedback @relation(fields: [feedbackId], references: [id])
+  message    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum FeedbackStatus {
+  PENDING
+  APPROVED
+  CANCELED
+  CLOSED
+}
+
+enum ContentStatus {
+  DRAFT       // İçerik oluşturuldu ama daha bitmedi
+  SCHEDULED   // Yayınlanma tarihi beklendiği için aktif değil
+  ACTIVE      // Yayında
+  ARCHIVED    // Yayından kaldırıldı
+}
+
+enum ContentType {
+  VIDEO
+  DOCUMENT
+  INTERACTIVE
+  GAME
+}
