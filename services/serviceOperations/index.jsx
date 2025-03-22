@@ -97,19 +97,3 @@ export async function deleteDataAll(tableName) {
   }
 }
 
-export default {
-  getAllData,
-
-  createNewData,
-  createNewDataMany,
-
-  getDataByUnique,
-
-  updateDataByAny,
-
-  deleteDataByAny,
-
-  deleteDataByMany,
-
-  deleteDataAll,
-};

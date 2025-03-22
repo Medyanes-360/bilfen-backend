@@ -1,6 +1,11 @@
+"use client"
 import React from "react";
+import { LuLayoutDashboard } from "lucide-react";
+import { BiBarChartAlt2 } from 'react-icons/bi';
+import { Link } from 'next/link';
+import { PiSignOutFill } from 'react-icons/pi';
 
-function index() {
+function SideBar() {
   return (
     <aside className="fixed flex flex-col top-0 px-5 left-0 bg-white text-gray-900 h-screen border-r border-gray-200 w-[290px]">
       <div className="py-8 flex justify-start">
@@ -41,4 +46,4 @@ function index() {
   );
 }
 
-export default index;
+export default SideBar;
