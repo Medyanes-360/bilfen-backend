@@ -8,7 +8,7 @@ import { BiBarChartAlt2 } from "react-icons/bi";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { FiSettings } from "react-icons/fi";
 
-const AppSidebar = () => {
+const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -97,4 +97,4 @@ const AppSidebar = () => {
   );
 };
 
-export default AppSidebar;
+export default Sidebar;
