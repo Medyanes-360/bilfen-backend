@@ -1,9 +1,9 @@
 "use client"
 import React from "react";
-import { LuLayoutDashboard } from "lucide-react";
 import { BiBarChartAlt2 } from 'react-icons/bi';
-import { Link } from 'next/link';
+import Link from "next/link";
 import { PiSignOutFill } from 'react-icons/pi';
+import { LuLayoutDashboard } from 'lucide-react';
 
 function SideBar() {
   return (
@@ -21,7 +21,6 @@ function SideBar() {
               href="/"
               className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-black"
             >
-              <LuLayoutDashboard size={20} />
               <span>Dashboard</span>
             </Link>
           </li>
