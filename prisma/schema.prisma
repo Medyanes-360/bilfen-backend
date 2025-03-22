@@ -118,7 +118,7 @@ model ContentAccessRule {
   group   Group?   @relation(fields: [groupId], references: [id])
 
   publishAt DateTime
-  endAt     
+  endAt     DateTime?
   isArchiveActive Boolean @default(false) // the archive is active or not for this content
 }
 
@@ -205,11 +205,4 @@ model Statistics {
   mostCompletedContentId String? @db.ObjectId
   leastCompletedContentId String? @db.ObjectId
   activeHours         Json
-}
-
-// different content for different age groups
-enum AgeGroup {
-  AGE_3_4
-  AGE_4_5
-  AGE_5_6
 }
