@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getAllData } from "@/services/serviceOperations";
+import { createNewData, createNewDataMany } from "@/services/serviceOperations";
 
 
 export async function GET() {
     try {
-        const contents = await prisma.content.findMany();
-   
+        const contents = await getAllData("content")
+
         return NextResponse.json(
             { message: "Veriler başarıyla getirildi", data: contents },
             { status: 200 }
-            
+
         );
     } catch (error) {
         return NextResponse.json(
@@ -81,14 +82,14 @@ export async function POST(req) {
             formattedContents = contents.map(content => {
                 let studentDate = content.publishDateForStudent ? new Date(content.publishDateForStudent) : null;
                 let teacherDate = studentDate ? new Date(studentDate) : null;
-                
+
                 if (teacherDate) teacherDate.setDate(teacherDate.getDate() - 7);
-        
+
                 return {
                     ...content,
-                    
-                    publishDateForStudent: studentDate || null,  
-                    publishDateForTeacher: teacherDate || null, 
+
+                    publishDateForStudent: studentDate || null,
+                    publishDateForTeacher: teacherDate || null,
                     isArchived: false
                 };
             });
@@ -98,15 +99,15 @@ export async function POST(req) {
                 { status: 400 }
             );
         }
-        
+
 
         let newContents;
         try {
-           
+
             if (formattedContents.length === 1) {
-                newContents = await prisma.content.create({ data: formattedContents[0] });
+                newContents = await createNewData("content", formattedContents[0]);
             } else {
-                newContents = await prisma.content.createMany({ data: formattedContents });
+                newContents = await createNewDataMany("content", formattedContents);
             }
 
         } catch (error) {
@@ -116,7 +117,7 @@ export async function POST(req) {
             );
         }
 
-     
+
         if (!newContents || newContents.error) {
             return NextResponse.json(
                 { status: "error", error: newContents.error || "İçerikler eklenirken bir hata oluştu." },
@@ -124,7 +125,7 @@ export async function POST(req) {
             );
         }
 
-   
+
         return NextResponse.json(
             {
                 status: "success",
@@ -134,7 +135,7 @@ export async function POST(req) {
             { status: 201 }
         );
     } catch (error) {
-   
+
         return NextResponse.json(
             { status: "error", error: error.message || "Beklenmedik bir hata oluştu." },
             { status: 500 }
