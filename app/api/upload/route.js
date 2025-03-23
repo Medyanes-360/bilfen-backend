@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { r2 } from '@/lib/r2';
-
+import slugify from 'slugify';
 
 export async function POST(req) {
   const formData = await req.formData();
@@ -14,8 +14,12 @@ export async function POST(req) {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const fileExt = file.name.split('.').pop();
-  const key = `uploads/${uuidv4()}.${fileExt}`;
+
+  const originalName = file.name.split('.').slice(0, -1).join('.');
+  const extension = file.name.split('.').pop();
+  const safeName = slugify(originalName, { lower: true, strict: true });
+  const fileName = `${safeName}-${uuidv4()}.${extension}`;
+  const key = `uploads/${fileName}`;
 
   const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME,
