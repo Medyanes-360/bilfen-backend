@@ -23,7 +23,7 @@ export async function POST(req) {
     Bucket: process.env.R2_BUCKET_NAME,
     Key: key,
     Body: buffer,
-    ContentType: file.type,
+    ContentType: ContentType: file.type || 'application/octet-stream',
   });
 
   try {
