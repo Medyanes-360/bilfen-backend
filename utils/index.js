@@ -6,3 +6,8 @@ export const useSidebarStore = create((set) => ({
   toggle: () => set((state) => ({ isOpen: !state.isOpen })),
   close: () => set({ isOpen: false }),
 }));
+export const useNotificationStore = create((set) => ({
+  isOpen: false,
+  toggle: () => set((state) => ({ isOpen: !state.isOpen })),
+  close: () => set({ isOpen: false }),
+}));
