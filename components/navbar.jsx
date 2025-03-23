@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-md hover:bg-gray-100 transition"
+          className="md:hidden p-2 rounded-md hover:bg-gray-100 transition cursor-pointer"
         >
           <RxHamburgerMenu size={24} />
         </button>
