@@ -1,94 +1,212 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNotificationStore } from "@/utils";
 import { useRouter } from "next/navigation";
-
+import { IoMdClose } from "react-icons/io";
 
 export default function FeedbackDropdown() {
   const close = useNotificationStore((state) => state.close);
   const router = useRouter();
 
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const dummyData = [
+      {
+        id: 1,
+        senderId: "u123",
+        sender: "Ayşe Yılmaz",
+        message: "Uygulamanın giriş ekranında butonlar hizalanmamış.",
+        replyText: "Geri bildiriminiz için teşekkürler, düzelttik.",
+        isReplied: true,
+        timestamp: "2025-03-22T14:25:00Z",
+        project: "Mobil Eğitim Uygulaması",
+        showReply: false,
+      },
+      {
+        id: 2,
+        senderId: "u456",
+        sender: "Mehmet Can",
+        message: "Sesli anlatımlar çalışmıyor.",
+        replyText: "",
+        isReplied: false,
+        timestamp: "2025-03-22T15:12:00Z",
+        project: "Mobil Eğitim Uygulaması",
+        showReply: false,
+      },
+      {
+        id: 3,
+        senderId: "u789",
+        sender: "Zeynep Demir",
+        message: "Renkler erişilebilirlik kurallarına uygun değil.",
+        replyText: "",
+        isReplied: false,
+        timestamp: "2025-03-21T10:45:00Z",
+        project: "Admin Panel Tasarımı",
+        showReply: false,
+      },
+      {
+        id: 4,
+        senderId: "u234",
+        sender: "Ali Kaya",
+        message: "Kayıt formu sonrası hata alıyorum.",
+        replyText: "",
+        isReplied: false,
+        timestamp: "2025-03-20T08:15:00Z",
+        project: "Kullanıcı Kayıt Modülü",
+        showReply: false,
+      },
+      {
+        id: 5,
+        senderId: "u567",
+        sender: "Elif Koç",
+        message: "Profil resmi yükleme çalışmıyor.",
+        replyText: "",
+        isReplied: false,
+        timestamp: "2025-03-19T19:30:00Z",
+        project: "Profil Yönetimi",
+        showReply: false,
+      },
+    ];
+
+    setNotifications(dummyData);
+  }, []);
+
+  const visibleNotifications = notifications
+    .filter((n) => !n.isReplied)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
   return (
     <div
-      className={`
-        absolute z-50 mt-[17px]
-        right-2 sm:right-4 md:right-6 lg:right-0
-        w-[350px] max-w-[90vw]
-        flex flex-col
-        h-[480px]
-        rounded-2xl border border-gray-200 bg-white p-4 shadow-lg
-      `}
+      className={`absolute z-50 mt-[17px] right-2 sm:right-4 md:right-6 lg:right-0 w-[350px] max-w-[90vw] flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-lg transition-all 
+      ${visibleNotifications.length === 0 ? "min-h-[200px]" : "h-[480px]"}`}
     >
       <div className="flex items-center justify-between pb-2 mb-3 border-b border-gray-200">
         <h5 className="text-base font-semibold text-gray-800">Bildirimler</h5>
         <button
           onClick={close}
-          className="text-gray-500 hover:text-gray-700 transition"
+          className="text-gray-500 hover:text-gray-700 transition text-xl cursor-pointer"
         >
-          <svg
-            className="fill-current"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L12 10.9393L16.7186 6.22078C17.0115 5.92789 17.4863 5.92788 17.7792 6.22078C18.0721 6.51367 18.0721 6.98855 17.7792 7.28144L13.0607 12L17.7792 16.7186C18.0721 17.0115 18.0721 17.4863 17.7792 17.7792C17.4863 18.0721 17.0115 18.0721 16.7186 17.7792L12 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9393 12L6.21967 7.28131Z"
-              fill="currentColor"
-            />
-          </svg>
+          <IoMdClose />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1">
-        <ul className="flex flex-col gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <li
-              key={i}
-              className="flex gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50"
-            >
-              <span className="relative w-8 h-8">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/globe.svg"
-                  alt="Notification"
-                  className="rounded-full w-full h-full object-cover"
-                />
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-white bg-green-500"></span>
-              </span>
+        {visibleNotifications.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center mt-12">
+            Gösterilecek bildirim yok.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {visibleNotifications.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-col gap-2 rounded-lg border border-gray-100 p-3 hover:bg-gray-50"
+              >
+                <div className="flex flex-col text-sm text-gray-700">
+                  <span className="font-semibold">{item.sender}</span>
+                  <p className="font-normal leading-snug break-words">
+                    {item.message}
+                  </p>
+                  <span className="text-xs text-gray-500 mt-1">
+                    {new Date(item.timestamp).toLocaleString("tr-TR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
 
-              <div className="flex flex-col text-sm text-gray-700">
-                <p>
-                  <span className="font-medium">User {i + 1}</span> requests permission to change{" "}
-                  <span className="font-medium">Project - Nganter App</span>
-                </p>
-                <span className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                  <span>Project</span>
-                  <span className="w-1 h-1 bg-gray-400 rounded-full" />
-                  <span>{(i + 1) * 3} min ago</span>
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="pl-1 mt-1">
+                  {!item.showReply ? (
+                    <button
+                      onClick={() => {
+                        const updated = notifications.map((n) =>
+                          n.id === item.id ? { ...n, showReply: true } : n
+                        );
+                        setNotifications(updated);
+                      }}
+                      className="text-xs border border-blue-600 text-blue-600 bg-white px-4 py-1.5 rounded-full hover:bg-blue-50 transition cursor-pointer"
+                    >
+                      Cevapla
+                    </button>
+                  ) : (
+                    <div className="flex flex-col gap-2 mt-2">
+                      <textarea
+                        rows={2}
+                        value={item.replyText}
+                        onChange={(e) => {
+                          const updated = notifications.map((n) =>
+                            n.id === item.id
+                              ? { ...n, replyText: e.target.value }
+                              : n
+                          );
+                          setNotifications(updated);
+                        }}
+                        placeholder="Yanıtınızı yazın..."
+                        className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            if (!item.replyText.trim()) return;
+                            const updated = notifications.map((n) =>
+                              n.id === item.id
+                                ? {
+                                    ...n,
+                                    isReplied: true,
+                                    showReply: false,
+                                  }
+                                : n
+                            );
+                            setNotifications(updated);
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-1.5 rounded-full cursor-pointer transition"
+                        >
+                          Gönder
+                        </button>
+                        <button
+                          onClick={() => {
+                            const updated = notifications.map((n) =>
+                              n.id === item.id
+                                ? {
+                                    ...n,
+                                    showReply: false,
+                                    replyText: "",
+                                  }
+                                : n
+                            );
+                            setNotifications(updated);
+                          }}
+                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-4 py-1.5 rounded-full transition cursor-pointer"
+                        >
+                          Vazgeç
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      <div className="pt-3 border-t border-gray-200">
-        <button
-          onClick={() => {
-            close(); 
-            router.push("/allNotifications"); 
-          }}
-          className="block w-full text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-100 transition"
-        >
-          Tüm Bildirimleri Gör
-        </button>
-      </div>
+      {visibleNotifications.length > 0 && (
+        <div className="pt-3 border-t border-gray-200">
+          <button
+            onClick={() => {
+              close();
+              router.push("/allNotifications");
+            }}
+            className="block w-full text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-4 py-2 cursor-pointer hover:bg-gray-100 transition"
+          >
+            Tüm Bildirimleri Gör
+          </button>
+        </div>
+      )}
     </div>
   );
 }

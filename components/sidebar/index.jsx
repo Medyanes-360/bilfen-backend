@@ -21,7 +21,7 @@ export default function Sidebar() {
           <img src="/globe.svg" alt="Logo" className="w-6 h-6" />
           <span className="text-xl font-bold">LOGO</span>
         </div>
-        <button onClick={close} className="md:hidden">
+        <button onClick={close} className="md:hidden cursor-pointer">
           <HiX size={24} />
         </button>
       </div>
