@@ -1,6 +1,4 @@
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Sidebar from "@/components/sidebar";
 
 export const metadata = {
   title: "Create Next App",
@@ -10,16 +8,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="relative flex">
-        <Sidebar />
-        <div className="flex flex-col flex-1 md:ml-64">
-          <div className="fixed top-0 left-0 w-full md:left-64 z-30">
-            <Navbar />
-          </div>
-          <main className="pt-16 p-4">
+      <body>
             {children}
-          </main>
-        </div>
       </body>
     </html>
   );
