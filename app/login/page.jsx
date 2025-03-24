@@ -45,7 +45,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              E-posta
+              E-posta (admin@bilfen.com)
             </label>
             <input
               type="email"
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
           <div className="mb-6">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Şifre
+              Şifre (bilfen123)
             </label>
             <input
               type="password"
