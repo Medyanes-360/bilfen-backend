@@ -252,7 +252,7 @@ const Header = ({ toggleSidebar }) => {
                 </a>
                 <button
                   onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100">
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-pointer">
                   Çıkış Yap
                 </button>
               </div>
