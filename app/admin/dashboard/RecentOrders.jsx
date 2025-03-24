@@ -25,7 +25,7 @@ const RecentOrders = () => {
     branch: 'Okul Öncesi',
     publishDate: new Date().toISOString().split('T')[0],
     duration: '00:10:00',
-    description: ''
+
   });
 
   // İçeriklerin durumu
@@ -228,7 +228,7 @@ const RecentOrders = () => {
               Etkileşimli
             </button>
             <button
-              className="px-3 py-1.5 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 flex items-center"
+              className="px-3 py-1.5 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 flex items-center cursor-pointer"
               onClick={() => openContentForm()}
             >
               <Plus size={16} className="mr-1" />

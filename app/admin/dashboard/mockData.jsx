@@ -371,32 +371,81 @@ export const userRoles = {
         duration: "00:15:30"
       }
     ],
-    "2025-03-24": [
-      { 
-        id: 125, 
-        title: "Ritmik Hareketler", 
-        type: "Video", 
-        ageGroup: "3-4 yaş", 
-        branch: "Müzik", 
-        duration: "00:09:15"
-      },
-      { 
-        id: 126, 
-        title: "Sayı Sayma Oyunu", 
-        type: "Oyun", 
-        ageGroup: "4-5 yaş", 
-        branch: "Okul Öncesi", 
-        duration: "00:11:40"
-      },
-      { 
-        id: 127, 
-        title: "Görsel Uyaran Çalışması", 
-        type: "Doküman", 
-        ageGroup: "5-6 yaş", 
-        branch: "Okul Öncesi", 
-        duration: "00:13:20"
-      }
-    ]
+  "2025-03-24": [
+  { 
+    id: 125, 
+    title: "Ritmik Hareketler", 
+    type: "Video", 
+    ageGroup: "3-4 yaş", 
+    branch: "Müzik", 
+    duration: "00:09:15"
+  },
+  { 
+    id: 126, 
+    title: "Sayı Sayma Oyunu", 
+    type: "Oyun", 
+    ageGroup: "4-5 yaş", 
+    branch: "Okul Öncesi", 
+    duration: "00:11:40"
+  },
+  { 
+    id: 127, 
+    title: "Görsel Uyaran Çalışması", 
+    type: "Doküman", 
+    ageGroup: "5-6 yaş", 
+    branch: "Okul Öncesi", 
+    duration: "00:13:20"
+  },
+  { 
+    id: 128, 
+    title: "Renkleri Öğreniyorum", 
+    type: "Video", 
+    ageGroup: "2-3 yaş", 
+    branch: "Görsel Sanatlar", 
+    duration: "00:08:10"
+  },
+  { 
+    id: 129, 
+    title: "Şekil Eşleştirme Oyunu", 
+    type: "Oyun", 
+    ageGroup: "3-4 yaş", 
+    branch: "Zeka Gelişimi", 
+    duration: "00:10:25"
+  },
+  { 
+    id: 130, 
+    title: "Hikaye Zamanı: Küçük Ayı", 
+    type: "Video", 
+    ageGroup: "4-5 yaş", 
+    branch: "Dil Gelişimi", 
+    duration: "00:12:00"
+  },
+  { 
+    id: 131, 
+    title: "Nesne Tanıma Kartları", 
+    type: "Doküman", 
+    ageGroup: "2-3 yaş", 
+    branch: "Okul Öncesi", 
+    duration: "00:07:45"
+  },
+  { 
+    id: 132, 
+    title: "Hayvan Sesleriyle Tanışma", 
+    type: "Video", 
+    ageGroup: "3-4 yaş", 
+    branch: "Fen Bilgisi", 
+    duration: "00:09:50"
+  },
+  { 
+    id: 133, 
+    title: "Duygu Eşleştirme Oyunu", 
+    type: "Oyun", 
+    ageGroup: "5-6 yaş", 
+    branch: "Psikolojik Gelişim", 
+    duration: "00:14:30"
+  }
+]
+
   };
   
   // Mock öğretmen geri bildirimleri

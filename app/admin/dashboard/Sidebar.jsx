@@ -18,15 +18,15 @@ import {
 
 const Sidebar = ({ mobile = false, closeSidebar = null }) => {
   const menuItems = [
-    { name: 'Anasayfa', icon: <Home size={20} />, path: '/dashboard' },
-    { name: 'İçerik Yönetimi', icon: <FileText size={20} />, path: '/contentManagement' },
-    { name: 'Zaman Akışı', icon: <Calendar size={20} />, path: '/timeline' },
-    { name: 'Öğrenciler', icon: <Users size={20} />, path: '/students' },
-    { name: 'Öğretmenler', icon: <BookOpen size={20} />, path: '/teachers' },
-    { name: 'Öğretmen Talepleri', icon: <MessageCircle size={20} />, path: '/teacher-requests' },
-    { name: 'Arşiv', icon: <Archive size={20} />, path: '/archive' },
-    { name: 'İstatistikler', icon: <BarChart2 size={20} />, path: '/statistics' },
-    { name: 'Ayarlar', icon: <Settings size={20} />, path: '/settings' }
+    { name: 'Anasayfa', icon: <Home size={20} />, path: '/' },
+    { name: 'İçerik Yönetimi', icon: <FileText size={20} />, path: '/admin/dashboard/contentManagement'  },
+    // { name: 'Zaman Akışı', icon: <Calendar size={20} />, path: '/timeline' },
+    // { name: 'Öğrenciler', icon: <Users size={20} />, path: '/students' },
+    // { name: 'Öğretmenler', icon: <BookOpen size={20} />, path: '/teachers' },
+    // { name: 'Öğretmen Talepleri', icon: <MessageCircle size={20} />, path: '/teacher-requests' },
+    // { name: 'Arşiv', icon: <Archive size={20} />, path: '/archive' },
+    // { name: 'İstatistikler', icon: <BarChart2 size={20} />, path: '/statistics' },
+    { name: 'Ayarlar', icon: <Settings size={20} />, path: '/admin/dashboard/settings' }
   ];
 
   return (

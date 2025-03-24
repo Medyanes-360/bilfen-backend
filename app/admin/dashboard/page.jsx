@@ -18,13 +18,13 @@ const Dashboard = () => {
       <div className="container mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Anaokulu Yönetim Paneli</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          {/* <p className="mt-1 text-sm text-gray-500">
             Öğrenci, öğretmen, içerik ve istatistik yönetimi
-          </p>
+          </p> */}
         </div>
 
         {/* İstatistik Kartları */}
-        <DashboardStats />
+        {/* <DashboardStats /> */}
 
         {/* Zaman Çizelgesi */}
         <TimelineComponent />
@@ -36,7 +36,7 @@ const Dashboard = () => {
         <RecentOrders />
 
         {/* Üst İçerikler ve Öğrenciler */}
-        <TopProducts />
+        {/* <TopProducts /> */}
 
         {/* İstatistikler */}
         <CustomerOverview />
@@ -44,14 +44,15 @@ const Dashboard = () => {
         {/* Alt Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Aktivite Akışı */}
-          <ActivityFeed />
+          {/* <ActivityFeed /> */}
 
           {/* Görevler */}
-          <TaskList />
+         
         </div>
+        <TaskList />
 
         {/* Öğretmen Geri Bildirimleri */}
-        <TeacherFeedback />
+        {/* <TeacherFeedback /> */}
       </div>
     </Layout>
   );
