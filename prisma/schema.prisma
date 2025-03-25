@@ -52,27 +52,29 @@ model Content {
   type               String // İçerik Türü (Video, PDF, Sunum, Etkileşimli, Test)
   category           String // Kategori
   ageGroup           String // Yaş Grubu (3-6 Yaş, 7-10 Yaş, 11-14 Yaş, 15-18 Yaş)
-  publishDateStudent DateTime // Öğrenciler için yayın tarihi
-  publishDateTeacher DateTime // Öğretmenler için yayın tarihi
+  publishDateStudent DateTime? // Opsiyonel olarak işaretlendi
+  publishDateTeacher DateTime? // Opsiyonel olarak işaretlendi
+  endDateStudent     DateTime? // Opsiyonel olarak işaretlendi
+  endDateTeacher     DateTime? // Opsiyonel olarak işaretlendi
   isActive           Boolean    @default(true) // Katılım Durumu
   fileUrl            String? // İçerik Dosyası (URL olarak saklanır)
   description        String? // İçerik Açıklaması
   tags               String[] // Etiketler (virgülle ayrılmış etiketler dizisi olarak saklanır)
-  updatedAt          DateTime   @updatedAt
-  createdAt          DateTime   @default(now())
+  updatedAt          DateTime? // Opsiyonel olarak değiştirildi
+  createdAt          DateTime?  @default(now()) // Opsiyonel olarak değiştirildi
   Feedback           Feedback[]
 }
 
 // Adminin Todo listi
 model Task {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     String
   priority    String
   status      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime? @default(now()) // Opsiyonel olarak değiştirildi
+  updatedAt   DateTime? // Opsiyonel olarak değiştirildi
 }
 
 model Feedback {
@@ -89,8 +91,8 @@ model Feedback {
 }
 
 model AccessSettings {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentDays  Int
-  teacherDays  Int
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentDays Int
+  teacherDays Int
+  updatedAt   DateTime @updatedAt
 }

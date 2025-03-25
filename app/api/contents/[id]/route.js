@@ -1,7 +1,6 @@
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
-// Belirli bir içeriği getir
 export async function GET(request, { params }) {
   try {
     const { id } = params;
@@ -20,7 +19,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// İçeriği güncelle
 export async function PUT(request, { params }) {
   try {
     const { id } = params;
@@ -31,7 +29,11 @@ export async function PUT(request, { params }) {
     const publishDateTeacher = new Date(data.publishDateTeacher);
 
     // Etiketleri diziye dönüştür
-    const tags = data.tags ? data.tags.split(",").map((tag) => tag.trim()) : [];
+    let tags = [];
+    if (data.tags) {
+      // Eğer tags bir string ise split et, array ise olduğu gibi kullan
+      tags = Array.isArray(data.tags) ? data.tags : data.tags.split(",").map((tag) => tag.trim());
+    }
 
     await prisma.content.update({
       where: { id },
@@ -49,7 +51,6 @@ export async function PUT(request, { params }) {
       },
     });
 
-    // 204 No Content yanıtı döndür
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("İçerik güncellenirken hata oluştu:", error);
@@ -57,7 +58,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// İçeriği sil
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
@@ -66,7 +66,6 @@ export async function DELETE(request, { params }) {
       where: { id },
     });
 
-    // 204 No Content yanıtı döndür
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("İçerik silinirken hata oluştu:", error);
