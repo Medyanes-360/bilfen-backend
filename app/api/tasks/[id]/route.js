@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
@@ -6,6 +7,8 @@ const VALID_PRIORITIES = ["Düşük", "Orta", "Yüksek"];
 const VALID_STATUSES = ["Beklemede", "Devam Ediyor", "Tamamlandı"];
 
 export async function GET(request, { params }) {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const { id } = params;
 
@@ -25,6 +28,8 @@ export async function GET(request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const { id } = params;
     const data = await request.json();

@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
@@ -6,6 +7,8 @@ const VALID_PRIORITIES = ["Düşük", "Orta", "Yüksek"];
 const VALID_STATUSES = ["Beklemede", "Devam Ediyor", "Tamamlandı"];
 
 export async function GET() {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const tasks = await prisma.task.findMany({
       orderBy: {
@@ -21,6 +24,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const session = await requireAdmin()
+  if (session instanceof Response) return session;
   try {
     const data = await request.json();
 

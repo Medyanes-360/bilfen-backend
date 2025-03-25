@@ -1,8 +1,11 @@
+import { requireAdmin } from "@/lib/auth";
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
 // Belirli bir içeriği getir
 export async function GET(request, { params }) {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const { id } = params;
 
@@ -22,6 +25,8 @@ export async function GET(request, { params }) {
 
 // İçeriği güncelle
 export async function PUT(request, { params }) {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const { id } = params;
     const data = await request.json();
@@ -59,6 +64,8 @@ export async function PUT(request, { params }) {
 
 // İçeriği sil
 export async function DELETE(request, { params }) {
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
   try {
     const { id } = params;
 
