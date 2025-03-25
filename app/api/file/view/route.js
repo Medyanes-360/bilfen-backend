@@ -1,14 +1,15 @@
-// app/api/download/route.js
 import { NextResponse } from "next/server";
 import { r2 } from "@/lib/r2";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getServerSession } from "next-auth";
+
 
 export async function GET(req) {
     try {
         const { searchParams } = new URL(req.url);
         const fileUrl = searchParams.get("fileUrl");
         const asAttachment = searchParams.get("download") === "true";
-        
+
         // Gerekliyse eklenecek
         // const session = await getServerSession();
         // if (!session) {
@@ -17,7 +18,7 @@ export async function GET(req) {
 
         const command = new GetObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
-            Key: fileUrl,
+            Key: `uploads/${fileUrl}`,
         });
 
         const response = await r2.send(command);
@@ -30,12 +31,8 @@ export async function GET(req) {
         const dispositionType = asAttachment ? "attachment" : "inline";
         headers.set("Content-Disposition", `${dispositionType}; filename="${fileUrl}"`);
 
-        return new NextResponse(stream, {
-            status: 200,
-            headers
-        });
+        return new NextResponse(stream, { status: 200, headers });
     } catch (err) {
-        console.error("R2 error:", err.Code, "-", err.message);
-        return NextResponse.json({ error: "Dosya bulunamadı", code: err.Code }, { status: 404 });
+        return NextResponse.json({ error: "Dosya bulunamadı", detail: err.message }, { status: 404 });
     }
 }
