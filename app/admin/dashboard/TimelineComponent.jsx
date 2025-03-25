@@ -21,29 +21,31 @@ import {
 
 const TimelineComponent = () => {
   // 11 günlük bir zaman aralığı oluştur (5 gün önce, bugün, 5 gün sonra)
-  const createTimelineData = () => {
-    const today = new Date();
+  const createTimelineData = (centerDate) => {
     const result = [];
-    
-    // 5 gün öncesinden başla
+    const baseDate = new Date(centerDate);
+  
     for (let i = -5; i <= 5; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD formatında
-      
+      const date = new Date(baseDate);
+      date.setDate(baseDate.getDate() + i);
+  
+      const dateString = date.toISOString().split('T')[0];
+  
       result.push({
         date: dateString,
-        isActive: i === 0, // Bugün
-        isPast: i < 0 // Geçmiş
+        isPast: date < new Date(), // karşılaştırmayı direkt tarih nesneleriyle yap
       });
     }
-    
+  
     return result;
   };
+  
+  
 
-  const [days, setDays] = useState(createTimelineData());
-  const [selectedDate, setSelectedDate] = useState(days.find(day => day.isActive)?.date);
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
+  const [days, setDays] = useState(createTimelineData(today));
+  
   const [dailyContent, setDailyContent] = useState([]);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [showAddContentModal, setShowAddContentModal] = useState(false);
@@ -55,6 +57,7 @@ const TimelineComponent = () => {
     duration: '00:15:00',
     description: ''
   });
+  
   
   const scrollContainerRef = useRef(null);
   
@@ -135,15 +138,11 @@ const TimelineComponent = () => {
   };
 
   // Gün seçimi
-  const selectDay = (selectedDate) => {
-    setSelectedDate(selectedDate);
-    setDays(
-      days.map((day) => ({
-        ...day,
-        isActive: day.date === selectedDate,
-      }))
-    );
+  const selectDay = (newDate) => {
+    setSelectedDate(newDate);
+    setDays(createTimelineData(newDate)); // yeni timeline'ı oluştur
   };
+  
 
   // Gün stili
   const getDayStyle = (day) => {
@@ -321,12 +320,14 @@ const TimelineComponent = () => {
               const date = formatDate(day.date);
               return (
                 <div
-                  key={day.date}
-                  onClick={() => selectDay(day.date)}
-                  className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer transition duration-200 snap-center ${
-                    getDayStyle(day)
-                  } ${day.date === selectedDate ? 'ring-2 ring-offset-2 ring-orange-300' : ''}`}
-                >
+                key={day.date}
+                onClick={() => selectDay(day.date)}
+                className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer snap-center ${
+                  getDayStyle(day)
+                } ${day.date === selectedDate ? 'ring-2 ring-offset-2 ring-orange-300 date-selected' : ''}
+`} // <-- BURAYA 'date-selected' classı
+              >
+              
                   <div className="text-xs font-medium uppercase">{date.weekday}</div>
                   <div className="my-1 text-xl sm:text-2xl font-bold">{date.day}</div>
                   <div className="text-xs">{date.month}</div>
