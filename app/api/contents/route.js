@@ -1,8 +1,11 @@
+import { requireAdmin } from "@/lib/auth";
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
 // İçerikleri listele
 export async function GET() {
+  const session = await requireAdmin()
+  if (session instanceof Response) return session;
   try {
     const contents = await prisma.content.findMany({
       orderBy: {
