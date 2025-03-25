@@ -1,9 +1,0 @@
-{
-    "cron": [
-      {
-        "path": "/api/cron/deactivate-expired",
-        "schedule": "0 3 * * *"
-      }
-    ]
-  }
-  
