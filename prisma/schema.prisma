@@ -87,3 +87,10 @@ model Feedback {
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
 }
+
+model AccessSettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentDays  Int
+  teacherDays  Int
+  updatedAt    DateTime @updatedAt
+}
