@@ -63,21 +63,17 @@ model Content {
   Feedback           Feedback[]
 }
 
-// model Content {
-//   id           String       @id @default(auto()) @map("_id") @db.ObjectId
-//   title        String
-//   description  String?
-//   ageGroup     String
-//   subject      String
-//   contentUrl   String
-//   activeFrom   DateTime
-//   activeUntil  DateTime
-//   visibility   Visibility
-//   createdBy    String
-//   feedbacks    Feedback[]
-//   createdAt    DateTime     @default(now())
-//   updatedAt    DateTime     @updatedAt
-// }
+// Adminin Todo listi
+model Task {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  dueDate     String
+  priority    String
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
 model Feedback {
   id         String         @id @default(auto()) @map("_id") @db.ObjectId
