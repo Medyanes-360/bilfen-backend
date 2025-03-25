@@ -4,20 +4,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { r2 } from '@/lib/r2';
 import slugify from 'slugify';
 import { getServerSession } from "next-auth";
+import { requireAdmin } from '@/lib/auth';
 
 
 export async function POST(req) {
   const formData = await req.formData();
   const file = formData.get('file');
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
 
   if (!file) {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
   }
 
-  const session = await getServerSession();
-  if (!session) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
-  }
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);

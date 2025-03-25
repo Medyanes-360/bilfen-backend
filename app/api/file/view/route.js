@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth";
 
 
 export async function GET(req) {
+     const session = await requireAdmin()
+      if (session instanceof Response) return session;
     try {
         const { searchParams } = new URL(req.url);
         const fileUrl = searchParams.get("fileUrl");
