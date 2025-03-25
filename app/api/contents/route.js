@@ -1,11 +1,7 @@
-import { requireAdmin } from "@/lib/auth";
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
-// İçerikleri listele
 export async function GET() {
-     //const session = await requireAdmin()
-      //if (session instanceof Response) return session;
   try {
     const contents = await prisma.content.findMany({
       orderBy: {
@@ -16,17 +12,13 @@ export async function GET() {
     return NextResponse.json(contents);
   } catch (error) {
     console.error("İçerikler alınırken hata oluştu:", error);
-    return NextResponse.json(
-      { error: "İçerikler alınırken bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
   }
 }
 
-// Yeni içerik ekle
 export async function POST(request) {
-     //const session = await requireAdmin()
-      //if (session instanceof Response) return session;
+  //const session = await requireAdmin()
+  //if (session instanceof Response) return session;
   try {
     const data = await request.json();
 
@@ -37,7 +29,7 @@ export async function POST(request) {
     const publishDateStudent = new Date(data.publishDateStudent);
     const publishDateTeacher = new Date(data.publishDateTeacher);
 
-    // Varsayılan bitiş tarihlerini ata
+    // Bitiş tarihlerini oluştur
     const endDateStudent = data.endDateStudent
       ? new Date(data.endDateStudent)
       : new Date(publishDateStudent.getTime() + oneWeek);
@@ -46,8 +38,14 @@ export async function POST(request) {
       ? new Date(data.endDateTeacher)
       : new Date(publishDateTeacher.getTime() + oneWeek);
 
-    // Etiketleri diziye dönüştür
-    const tags = data.tags ? data.tags.split(",").map((tag) => tag.trim()) : [];
+    let tags = [];
+    if (data.tags) {
+      if (Array.isArray(data.tags)) {
+        tags = data.tags;
+      } else if (typeof data.tags === "string") {
+        tags = data.tags.split(",").map((tag) => tag.trim());
+      }
+    }
 
     const content = await prisma.content.create({
       data: {
@@ -72,9 +70,6 @@ export async function POST(request) {
     return NextResponse.json(content, { status: 201 });
   } catch (error) {
     console.error("İçerik eklenirken hata oluştu:", error);
-    return NextResponse.json(
-      { error: "İçerik eklenirken bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "İçerik eklenirken bir hata oluştu" }, { status: 500 });
   }
 }
