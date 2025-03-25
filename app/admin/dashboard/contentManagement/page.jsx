@@ -885,7 +885,10 @@ const ContentManagement = () => {
                     Öğretmen Yayın Tarihi
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ek
+                    Ek Materyal
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Eksik Yerler
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     İşlem
@@ -924,13 +927,13 @@ const ContentManagement = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">{content.category}</div>
+                      <div className="text-xs text-gray-900">{content.category || '-'}</div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">{content.branch}</div>
+                      <div className="text-xs text-gray-900">{content.branch || '-'}</div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">{content.ageGroup}</div>
+                      <div className="text-xs text-gray-900">{content.ageGroup || '-'}</div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
@@ -945,12 +948,24 @@ const ContentManagement = () => {
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
                         {content.isWeeklyContent ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {new Date(content.weeklyContentStartDate).toLocaleDateString('tr-TR')} - {new Date(content.weeklyContentEndDate).toLocaleDateString('tr-TR')}
-                          </span>
+                          <CheckSquare className="w-4 h-4 text-green-500" />
                         ) : (
                           '-'
                         )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="text-xs text-gray-900">
+                        {(() => {
+                          const missingFields = [];
+                          if (!content.ageGroup) missingFields.push('Yaş');
+                          if (!content.studentPublishDate) missingFields.push('Öğrenci Yayın Tarihi');
+                          if (!content.teacherPublishDate) missingFields.push('Öğretmen Yayın Tarihi');
+                          if (!content.branch) missingFields.push('Branş');
+                          return missingFields.length > 0 ? (
+                            <span className="text-red-600">{missingFields.join(', ')}</span>
+                          ) : '-';
+                        })()}
                       </div>
                     </td>
                     <td className="px-3 py-2">
