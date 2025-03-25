@@ -13,7 +13,6 @@ export async function GET(request, { params }) {
     if (!content) {
       return NextResponse.json({ error: "İçerik bulunamadı" }, { status: 404 });
     }
-
     return NextResponse.json(content);
   } catch (error) {
     console.error("İçerik alınırken hata oluştu:", error);
