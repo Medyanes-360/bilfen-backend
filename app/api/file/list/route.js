@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
 import { r2 } from '@/lib/r2';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { getServerSession } from 'next-auth';
 
 export async function GET() {
-    const session = await getServerSession();
-    if (!session)
-        return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
-
     try {
         const command = new ListObjectsV2Command({
             Bucket: process.env.R2_BUCKET_NAME,
