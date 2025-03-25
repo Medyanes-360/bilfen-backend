@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { r2 } from "@/lib/r2";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getServerSession } from "next-auth";
+import { requireAdmin } from "@/lib/auth";
 
 export async function DELETE(req) {
+     const session = await requireAdmin()
+      if (session instanceof Response) return session;
     try {
         const { searchParams } = new URL(req.url);
         const fileUrl = searchParams.get("fileUrl");
@@ -11,9 +13,7 @@ export async function DELETE(req) {
         if (!fileUrl)
             return NextResponse.json({ error: "Geçerli bir dosya değil." }, { status: 400 });
 
-        const session = await getServerSession();
-        if (!session)
-            return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
+      
 
         const command = new DeleteObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,

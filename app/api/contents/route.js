@@ -25,6 +25,8 @@ export async function GET() {
 
 // Yeni içerik ekle
 export async function POST(request) {
+  const session = await requireAdmin()
+  if (session instanceof Response) return session;
   try {
     const data = await request.json();
 
