@@ -74,12 +74,13 @@ const deleteAPI = async (
         if (!response.ok) {
             throw new Error('Failed to delete resource');
         }
-
+        if (response.status === 204) return null;
         return response.json();
     } catch (err) {
         throw new Error(`API request failed: ${err}`);
     }
 };
+
 
 // UPDATE request function (using PUT)
 const updateAPI = async (

@@ -11,21 +11,22 @@ const TaskList = () => {
   const [activeFilter, setActiveFilter] = useState('Tümü');
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [taskDeleted, setTaskDeleted] = useState(false);
+
 
   // Fetch tasks from the API
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const fetchedTasks = await getAPI('/api/tasks');
-        setTasks(fetchedTasks);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
+  const fetchTasks = async () => {
+    try {
+      const fetchedTasks = await getAPI('/api/tasks');
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchTasks();
-  }, [taskDeleted]);
+  }, []);
+
 
   // Form için state
   const [taskForm, setTaskForm] = useState({
@@ -80,8 +81,7 @@ const TaskList = () => {
   const deleteTask = async (taskId) => {
     try {
       await deleteAPI(`/api/tasks/${taskId}`);
-      setTaskDeleted(!taskDeleted);
-      console.log(taskDeleted)
+      fetchTasks(); // Refetch tasks after deletion to update the UI
     } catch (error) {
       console.error('Error deleting task:', error);
     }
