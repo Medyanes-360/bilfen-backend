@@ -708,8 +708,6 @@ const ContentManagement = () => {
                 value={sortOption}
                 onChange={(e) => handleSort(e.target.value)}
               >
-                <option value="newest">En Yeni</option>
-                <option value="oldest">En Eski</option>
                 <option value="title-asc">Başlık (A-Z)</option>
                 <option value="title-desc">Başlık (Z-A)</option>
               </select>

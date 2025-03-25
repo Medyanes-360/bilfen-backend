@@ -1,47 +1,25 @@
-'use client';
+"use client";
 
-import { useState,useEffect } from 'react';
-import useAccessSettings from '@/lib/store/useAccessSettings';
+import { useState } from "react";
+import Link from "next/link"; 
 
+const dayOptions = [1, 3, 5, 7, 9, 12];
 
-export default function SettingsPage() {
-  const {
-    studentDays,
-    teacherDays,
-    setStudentDays,
-    setTeacherDays,
-    fetchAccessSettings //  eklenen fonksiyon
-  } = useAccessSettings();
-
-  const dayOptions = [1, 3, 5, 7, 9, 12]; 
-
-  const [localStudentDays, setLocalStudentDays] = useState(studentDays);
-  const [localTeacherDays, setLocalTeacherDays] = useState(teacherDays);
-
-  //  Sayfa ilk yüklendiğinde veritabanından ayarları al
-  useEffect(() => {
-    fetchAccessSettings();
-  }, []);
-
-  //  store güncellenince local stateleri de güncelle
-  useEffect(() => {
-    setLocalStudentDays(studentDays);
-  }, [studentDays]);
-
-  useEffect(() => {
-    setLocalTeacherDays(teacherDays);
-  }, [teacherDays]);
-
-  const handleStudentConfirm = () => {
-    setStudentDays(localStudentDays);
-  };
-
-  const handleTeacherConfirm = () => {
-    setTeacherDays(localTeacherDays);
-  };
+export default function Settings() {
+  const [studentDays, setStudentDays] = useState(5);
+  const [teacherDays, setTeacherDays] = useState(7);
+  const [confirmedStudentDays, setConfirmedStudentDays] = useState(null);
+  const [confirmedTeacherDays, setConfirmedTeacherDays] = useState(null);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center relative px-4">
+      <Link
+        href="/"
+        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition"
+      >
+        Geri
+      </Link>
+
       <div className="bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full">
         <h1 className="text-2xl font-bold text-center mb-8 text-gray-800">Erişim Ayarları</h1>
 
@@ -52,8 +30,8 @@ export default function SettingsPage() {
           </label>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <select
-              value={localStudentDays}
-              onChange={(e) => setLocalStudentDays(Number(e.target.value))}
+              value={studentDays}
+              onChange={(e) => setStudentDays(Number(e.target.value))}
               className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               {dayOptions.map((day) => (
@@ -63,15 +41,17 @@ export default function SettingsPage() {
               ))}
             </select>
             <button
-              onClick={handleStudentConfirm}
+              onClick={() => setConfirmedStudentDays(studentDays)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition cursor-pointer"
             >
               Onayla
             </button>
           </div>
-          <p className="mt-2 text-sm text-green-600">
-            Öğrenciler {studentDays} gün öncesine kadar geçmişi görebilir.
-          </p>
+          {confirmedStudentDays !== null && (
+            <p className="mt-4 text-sm text-green-600">
+              Öğrenciler {confirmedStudentDays} gün öncesine kadar geçmişi görüntüleyebilir.
+            </p>
+          )}
         </div>
 
         <hr className="my-6 border-gray-300" />
@@ -83,9 +63,9 @@ export default function SettingsPage() {
           </label>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <select
-              value={localTeacherDays}
-              onChange={(e) => setLocalTeacherDays(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              value={teacherDays}
+              onChange={(e) => setTeacherDays(Number(e.target.value))}
+              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
             >
               {dayOptions.map((day) => (
                 <option key={day} value={day}>
@@ -94,15 +74,17 @@ export default function SettingsPage() {
               ))}
             </select>
             <button
-              onClick={handleTeacherConfirm}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
+              onClick={() => setConfirmedTeacherDays(teacherDays)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition"
             >
               Onayla
             </button>
           </div>
-          <p className="mt-2 text-sm text-green-600">
-            Öğretmenler {teacherDays} gün öncesine kadar geçmişi görebilir.
-          </p>
+          {confirmedTeacherDays !== null && (
+            <p className="mt-4 text-sm text-green-600">
+              Öğretmenler {confirmedTeacherDays} gün öncesine kadar geçmişi görüntüleyebilir.
+            </p>
+          )}
         </div>
       </div>
     </div>
