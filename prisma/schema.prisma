@@ -60,21 +60,21 @@ model Content {
   fileUrl            String? // İçerik Dosyası (URL olarak saklanır)
   description        String? // İçerik Açıklaması
   tags               String[] // Etiketler (virgülle ayrılmış etiketler dizisi olarak saklanır)
-  updatedAt          DateTime   @updatedAt
-  createdAt          DateTime   @default(now())
+  updatedAt          DateTime? // Opsiyonel olarak değiştirildi
+  createdAt          DateTime?  @default(now()) // Opsiyonel olarak değiştirildi
   Feedback           Feedback[]
 }
 
 // Adminin Todo listi
 model Task {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     String
   priority    String
   status      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime? @default(now()) // Opsiyonel olarak değiştirildi
+  updatedAt   DateTime? // Opsiyonel olarak değiştirildi
 }
 
 model Feedback {
