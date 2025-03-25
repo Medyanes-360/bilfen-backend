@@ -1,5 +1,4 @@
 import "./globals.css";
-import AppSidebar from "./admin/sidebar";
 
 export const metadata = {
   title: "Create Next App",
@@ -9,14 +8,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <div className="flex min-h-screen">
-          <div className="md:relative md:w-64">
-            <AppSidebar />
-          </div>
-          <main className="flex-1 p-4">{children}</main>
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
