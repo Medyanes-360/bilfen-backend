@@ -298,9 +298,15 @@ const ContentManagement = () => {
       setIsBulkUpdating(true);
 
       const bulkCategory = document.getElementById('bulkCategory')?.value;
+      const bulkBranch = document.getElementById('bulkBranch')?.value;
+      const bulkType = document.getElementById('bulkType')?.value;
       const bulkAgeGroup = document.getElementById('bulkAgeGroup')?.value;
-      const bulkStatus = document.getElementById('bulkStatus')?.value;
       const bulkDescription = document.getElementById('bulkDescription')?.value;
+      const bulkStudentPublishDate = document.getElementById('bulkStudentPublishDate')?.value;
+      const bulkTeacherPublishDate = document.getElementById('bulkTeacherPublishDate')?.value;
+      const bulkIsWeeklyContent = document.getElementById('bulkIsWeeklyContent')?.checked;
+      const bulkWeeklyContentStartDate = document.getElementById('bulkWeeklyContentStartDate')?.value;
+      const bulkWeeklyContentEndDate = document.getElementById('bulkWeeklyContentEndDate')?.value;
 
       // Toplu güncelleme simülasyonu
       setTimeout(() => {
@@ -309,9 +315,15 @@ const ContentManagement = () => {
             return {
               ...item,
               category: bulkCategory || item.category,
+              branch: bulkBranch || item.branch,
+              type: bulkType || item.type,
               ageGroup: bulkAgeGroup || item.ageGroup,
-              status: bulkStatus || item.status,
-              description: bulkDescription || item.description
+              description: bulkDescription || item.description,
+              studentPublishDate: bulkStudentPublishDate || item.studentPublishDate,
+              teacherPublishDate: bulkTeacherPublishDate || item.teacherPublishDate,
+              isWeeklyContent: bulkIsWeeklyContent !== undefined ? bulkIsWeeklyContent : item.isWeeklyContent,
+              weeklyContentStartDate: bulkIsWeeklyContent ? (bulkWeeklyContentStartDate || item.weeklyContentStartDate) : null,
+              weeklyContentEndDate: bulkIsWeeklyContent ? (bulkWeeklyContentEndDate || item.weeklyContentEndDate) : null
             };
           }
           return item;
@@ -544,6 +556,7 @@ const ContentManagement = () => {
       id: currentContent ? currentContent.id : Date.now(),
       title: formData.get('title'),
       category: formData.get('category'),
+      branch: formData.get('branch'),
       ageGroup: formData.get('ageGroup'),
       studentPublishDate: formData.get('studentPublishDate'),
       teacherPublishDate: formData.get('teacherPublishDate'),
@@ -860,13 +873,16 @@ const ContentManagement = () => {
                     Kategori
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Branş
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Yaş
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Öğrenci
+                    Öğrenci Yayın Tarihi
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Öğretmen
+                    Öğretmen Yayın Tarihi
                   </th>
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ek
@@ -909,6 +925,9 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">{content.category}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="text-xs text-gray-900">{content.branch}</div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">{content.ageGroup}</div>
@@ -1118,7 +1137,6 @@ const ContentManagement = () => {
                         id="type"
                         name="type"
                         defaultValue={currentContent?.type || ''}
-                        required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         onChange={handleTypeChange}
                       >
@@ -1141,9 +1159,39 @@ const ContentManagement = () => {
                         name="category"
                         id="category"
                         defaultValue={currentContent?.category || ''}
-                        required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       />
+                    </div>
+
+                    {/* Branş */}
+                    <div>
+                      <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                        Branş
+                      </label>
+                      <select
+                        id="branch"
+                        name="branch"
+                        defaultValue={currentContent?.branch || ''}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="">Seçiniz</option>
+                        <option value="Okul Öncesi">Okul Öncesi</option>
+                        <option value="Müzik">Müzik</option>
+                        <option value="İngilizce">İngilizce</option>
+                        <option value="Görsel Sanatlar">Görsel Sanatlar</option>
+                        <option value="Bilim">Bilim</option>
+                        <option value="Matematik">Matematik</option>
+                        <option value="Dil Gelişimi">Dil Gelişimi</option>
+                        <option value="Sosyal Gelişim">Sosyal Gelişim</option>
+                        <option value="Sağlık">Sağlık</option>
+                        <option value="Beden Eğitimi">Beden Eğitimi</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Bilişim">Bilişim</option>
+                        <option value="Değerler Eğitimi">Değerler Eğitimi</option>
+                        <option value="Çevre Eğitimi">Çevre Eğitimi</option>
+                        <option value="Güvenlik">Güvenlik</option>
+                        <option value="Beslenme">Beslenme</option>
+                      </select>
                     </div>
 
                     {/* Yaş Grubu */}
@@ -1155,7 +1203,6 @@ const ContentManagement = () => {
                         id="ageGroup"
                         name="ageGroup"
                         defaultValue={currentContent?.ageGroup || ''}
-                        required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
                         <option value="">Seçiniz</option>
@@ -1179,7 +1226,6 @@ const ContentManagement = () => {
                           name="studentPublishDate"
                           id="studentPublishDate"
                           defaultValue={currentContent?.studentPublishDate || new Date().toISOString().split('T')[0]}
-                          required
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
@@ -1193,7 +1239,6 @@ const ContentManagement = () => {
                           name="teacherPublishDate"
                           id="teacherPublishDate"
                           defaultValue={currentContent?.teacherPublishDate || new Date().toISOString().split('T')[0]}
-                          required
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
@@ -1417,6 +1462,48 @@ const ContentManagement = () => {
                         />
                       </div>
 
+                      {/* Branş */}
+                      <div>
+                        <label htmlFor="bulkBranch" className="block text-sm font-medium text-gray-700">
+                          Branş
+                        </label>
+                        <select
+                          id="bulkBranch"
+                          name="bulkBranch"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        >
+                          <option value="">Seçiniz</option>
+                          <option value="Okul Öncesi">Okul Öncesi</option>
+                          <option value="Müzik">Müzik</option>
+                          <option value="İngilizce">İngilizce</option>
+                          <option value="Görsel Sanatlar">Görsel Sanatlar</option>
+                          <option value="Bilim">Bilim</option>
+                          <option value="Matematik">Matematik</option>
+                          <option value="Dil Gelişimi">Dil Gelişimi</option>
+                          <option value="Sosyal Gelişim">Sosyal Gelişim</option>
+                          <option value="Sağlık">Sağlık</option>
+                        </select>
+                      </div>
+
+                      {/* İçerik Türü */}
+                      <div>
+                        <label htmlFor="bulkType" className="block text-sm font-medium text-gray-700">
+                          İçerik Türü
+                        </label>
+                        <select
+                          id="bulkType"
+                          name="bulkType"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        >
+                          <option value="">Seçiniz</option>
+                          <option value="video">Video</option>
+                          <option value="audio">Ses</option>
+                          <option value="document">Döküman</option>
+                          <option value="interactive">Etkileşimli</option>
+                          <option value="game">Oyun</option>
+                        </select>
+                      </div>
+
                       {/* Yaş Grubu */}
                       <div>
                         <label htmlFor="bulkAgeGroup" className="block text-sm font-medium text-gray-700">
@@ -1427,7 +1514,7 @@ const ContentManagement = () => {
                           name="bulkAgeGroup"
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         >
-                          <option value="">Seçiniz (Değiştirmemek için boş bırakın)</option>
+                          <option value="">Seçiniz</option>
                           <option value="3-4 yaş">3-4 yaş</option>
                           <option value="4-5 yaş">4-5 yaş</option>
                           <option value="5-6 yaş">5-6 yaş</option>
@@ -1435,7 +1522,6 @@ const ContentManagement = () => {
                           <option value="7-8 yaş">7-8 yaş</option>
                         </select>
                       </div>
-
 
                       {/* Açıklama */}
                       <div>
