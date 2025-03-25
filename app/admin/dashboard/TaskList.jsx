@@ -1,64 +1,31 @@
 'use client';
 
 // TaskList.jsx - İşlevsel Görev Listesi bileşeni
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, Calendar, Clock, ChevronDown, ChevronUp, PlusCircle, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { getAPI, postAPI, deleteAPI } from '@/services/fetchAPI';
 
 const TaskList = () => {
-  // Mock görevler
-  const initialTasks = [
-    {
-      id: 1,
-      title: '3-4 yaş grubu için haftalık içerik planlaması',
-      description: 'Önümüzdeki hafta için 3-4 yaş grubu öğrencilere yönelik içerikleri planla.',
-      dueDate: '2025-03-25',
-      priority: 'Yüksek',
-      status: 'Beklemede',
-      expanded: false,
-    },
-    {
-      id: 2,
-      title: 'Öğretmen geri bildirimlerini değerlendir',
-      description: 'Öğretmenlerden gelen son geri bildirimleri inceleyip yanıtla.',
-      dueDate: '2025-03-24',
-      priority: 'Orta',
-      status: 'Tamamlandı',
-      expanded: false,
-    },
-    {
-      id: 3,
-      title: 'Yeni video içerikleri yükle',
-      description: 'Hazırlanan 5 yeni video içeriğini sisteme yükle ve yaş gruplarına göre sınıflandır.',
-      dueDate: '2025-03-26',
-      priority: 'Düşük',
-      status: 'Devam Ediyor',
-      expanded: false,
-    },
-    {
-      id: 4,
-      title: 'Haftalık performans raporlarını hazırla',
-      description: 'Öğrenci aktivite ve tamamlama oranlarına göre haftalık performans raporu hazırla.',
-      dueDate: '2025-03-27',
-      priority: 'Yüksek',
-      status: 'Beklemede',
-      expanded: false,
-    },
-    {
-      id: 5,
-      title: 'Arşiv ayarlarını güncelle',
-      description: 'Geçmiş içeriklerin arşivleme sürelerini ve erişim izinlerini düzenle.',
-      dueDate: '2025-03-28',
-      priority: 'Orta',
-      status: 'Beklemede',
-      expanded: false,
-    },
-  ];
-
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [showCompleted, setShowCompleted] = useState(true);
   const [activeFilter, setActiveFilter] = useState('Tümü');
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskDeleted, setTaskDeleted] = useState(false);
+
+  // Fetch tasks from the API
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const fetchedTasks = await getAPI('/api/tasks');
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [taskDeleted]);
 
   // Form için state
   const [taskForm, setTaskForm] = useState({
@@ -110,9 +77,13 @@ const TaskList = () => {
   };
 
   // Görevi sil
-  const deleteTask = (id) => {
-    if (window.confirm("Bu görevi silmek istediğinize emin misiniz?")) {
-      setTasks(tasks.filter(task => task.id !== id));
+  const deleteTask = async (taskId) => {
+    try {
+      await deleteAPI(`/api/tasks/${taskId}`);
+      setTaskDeleted(!taskDeleted);
+      console.log(taskDeleted)
+    } catch (error) {
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -139,27 +110,24 @@ const TaskList = () => {
   };
 
   // Form gönderimi
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (editingTask) {
-      // Görevi güncelle
-      setTasks(tasks.map(task => 
-        task.id === editingTask.id 
-          ? { ...task, ...taskForm, expanded: true } 
-          : task
-      ));
-    } else {
-      // Yeni görev oluştur
+
+    try {
       const newTask = {
-        id: Math.max(...tasks.map(t => t.id), 0) + 1,
         ...taskForm,
         expanded: true
       };
-      setTasks([newTask, ...tasks]);
+
+      // Use postAPI to send the new task to the server
+      const addedTask = await postAPI('/api/tasks', newTask);
+
+      // Update the state with the newly added task
+      setTasks((prevTasks) => [addedTask, ...prevTasks]);
+      setShowTaskModal(false);
+    } catch (error) {
+      console.error('Error adding task:', error);
     }
-    
-    setShowTaskModal(false);
   };
 
   // Filtreleme
@@ -234,7 +202,7 @@ const TaskList = () => {
       <div className="px-6 py-5 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900">Görevler</h3>
-          <button 
+          <button
             onClick={openNewTaskModal}
             className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
           >
@@ -251,11 +219,10 @@ const TaskList = () => {
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md ${
-                  activeFilter === button.value
-                    ? 'bg-indigo-100 text-indigo-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md ${activeFilter === button.value
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 {button.label}
               </button>
@@ -284,11 +251,10 @@ const TaskList = () => {
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                      task.status === 'Tamamlandı'
-                        ? 'bg-green-500 border-green-500 text-white'
-                        : 'border-gray-400'
-                    }`}
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${task.status === 'Tamamlandı'
+                      ? 'bg-green-500 border-green-500 text-white'
+                      : 'border-gray-400'
+                      }`}
                   >
                     {task.status === 'Tamamlandı' && <Check size={12} />}
                   </button>
@@ -300,9 +266,8 @@ const TaskList = () => {
                       className="flex items-center cursor-pointer"
                     >
                       <h4
-                        className={`text-sm font-medium ${
-                          task.status === 'Tamamlandı' ? 'text-gray-500 line-through' : 'text-gray-900'
-                        }`}
+                        className={`text-sm font-medium ${task.status === 'Tamamlandı' ? 'text-gray-500 line-through' : 'text-gray-900'
+                          }`}
                       >
                         {task.title}
                       </h4>
@@ -339,14 +304,14 @@ const TaskList = () => {
                         <span>Son Tarih: {task.dueDate}</span>
                       </div>
                       <div className="mt-3 flex space-x-2">
-                        <button 
+                        <button
                           onClick={() => editTask(task)}
                           className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                         >
                           <Edit size={12} className="mr-1" />
                           Düzenle
                         </button>
-                        <button 
+                        <button
                           onClick={() => deleteTask(task.id)}
                           className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
                         >
@@ -394,7 +359,7 @@ const TaskList = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
@@ -411,7 +376,7 @@ const TaskList = () => {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                     Açıklama
@@ -425,7 +390,7 @@ const TaskList = () => {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   ></textarea>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
@@ -441,7 +406,7 @@ const TaskList = () => {
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
                       Öncelik
@@ -460,7 +425,7 @@ const TaskList = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="status" className="block text-sm font-medium text-gray-700">
                     Durum
@@ -478,7 +443,7 @@ const TaskList = () => {
                     <option value="Tamamlandı">Tamamlandı</option>
                   </select>
                 </div>
-                
+
                 <div className="flex items-center justify-end space-x-3 pt-3">
                   <button
                     type="button"
