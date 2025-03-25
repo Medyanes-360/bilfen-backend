@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/provider/AuthProvider";
 import "./globals.css";
 
 export const metadata = {
