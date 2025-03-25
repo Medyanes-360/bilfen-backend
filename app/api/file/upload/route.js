@@ -3,14 +3,20 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { r2 } from '@/lib/r2';
 import slugify from 'slugify';
+import { getServerSession } from "next-auth";
+import { requireAdmin } from '@/lib/auth';
+
 
 export async function POST(req) {
   const formData = await req.formData();
   const file = formData.get('file');
+   const session = await requireAdmin()
+    if (session instanceof Response) return session;
 
   if (!file) {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
   }
+
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -30,7 +36,7 @@ export async function POST(req) {
 
   try {
     await r2.send(command);
-    const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+    const url = key;
     return NextResponse.json({ status: 'success', url });
   } catch (err) {
     return NextResponse.json({ error: 'Yükleme başarısız', detail: err.message }, { status: 500 });

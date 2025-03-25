@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Eye, Calendar, Clock, Edit, Trash2, Play, Download, Plus, Search, ChevronDown, Filter, X } from 'lucide-react';
 import { contents, branches, ageGroups, contentTypes } from './mockData';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const RecentOrders = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -11,6 +12,8 @@ const RecentOrders = () => {
   const [selectedContent, setSelectedContent] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false) //modal açılması için 
+  const [selectedId, setSelectedId] = useState(null); //modal için id
   const [filters, setFilters] = useState({
     ageGroup: 'Tümü',
     branch: 'Tümü',
@@ -95,12 +98,25 @@ const RecentOrders = () => {
 
   // İçerik silme
   const handleDeleteContent = (id) => {
-    const confirmDelete = window.confirm('Bu içeriği silmek istediğinizden emin misiniz?');
-    if (confirmDelete) {
-      setAllContents(allContents.filter(content => content.id !== id));
-      alert(`İçerik silindi (ID: ${id})`);
-    }
+    setSelectedId(id);
+    setConfirmOpen(true);
   };
+  const handleConfirmDelete = () => {
+    setAllContents(allContents.filter(content => content.id !== selectedId));
+    setConfirmOpen(false);
+    setSelectedId(null);
+  };
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
+    setSelectedId(null);
+  };
+  // const handleDeleteContent = (id) => {
+  //   const confirmDelete = window.confirm('Bu içeriği silmek istediğinizden emin misiniz?');
+  //   if (confirmDelete) {
+  //     setAllContents(allContents.filter(content => content.id !== id));
+  //     setConfirmOpen(true);
+  //   }
+  // };
   
   // İçerik verisi ve filtreleme
   const filteredContents = allContents.filter(content => {
@@ -204,24 +220,24 @@ const RecentOrders = () => {
           <h2 className="text-lg font-semibold text-gray-900">Son Eklenen İçerikler</h2>
           <div className="flex flex-wrap gap-2">
             <button
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-                activeTab === 'all' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+              className={`px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
+                activeTab === 'all' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 '
               }`}
               onClick={() => setActiveTab('all')}
             >
               Tümü
             </button>
             <button
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-                activeTab === 'video' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+              className={`px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
+                activeTab === 'video' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 '
               }`}
               onClick={() => setActiveTab('video')}
             >
               Video
             </button>
             <button
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-                activeTab === 'interactive' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+              className={`px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer ${
+                activeTab === 'interactive' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 '
               }`}
               onClick={() => setActiveTab('interactive')}
             >
@@ -256,7 +272,7 @@ const RecentOrders = () => {
           
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${showFilters ? 'bg-gray-100' : ''}`}
+              className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer ${showFilters ? 'bg-gray-100' : ''}`}
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter size={16} className="mr-1 text-gray-500" />
@@ -266,7 +282,7 @@ const RecentOrders = () => {
             
             {(filters.ageGroup !== 'Tümü' || filters.branch !== 'Tümü' || filters.type !== 'Tümü') && (
               <button
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm cursor-pointer text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
                 onClick={resetFilters}
               >
                 <X size={16} className="mr-1" />
@@ -624,7 +640,15 @@ const RecentOrders = () => {
             </form>
           </div>
         </div>
+        
       )}
+       <ConfirmModal
+        isOpen={confirmOpen}
+        title="İçeriği silmek istediğinize emin misiniz?"
+        description={`Bu işlem geri alınamaz. `}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

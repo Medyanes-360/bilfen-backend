@@ -1,3 +1,4 @@
+
 // components/ContentManagement.jsx
 
 // 1. İmport İfadeleri
@@ -66,8 +67,7 @@ import {
   CheckSquare
 } from 'lucide-react';
 
-
-
+import ConfirmModal from '@/components/ConfirmModal';
 
 // İçerik türleri
 const contentTypes = [
@@ -250,8 +250,11 @@ const ContentManagement = () => {
   const [contents, setContents] = useState(initialContents);
   const [filteredContents, setFilteredContents] = useState(initialContents);
   const [activeType, setActiveType] = useState('all');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [currentContent, setCurrentContent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
@@ -273,12 +276,12 @@ const ContentManagement = () => {
   const [bulkAction, setBulkAction] = useState(''); // Hangi toplu işlem yapılacak: 'update' veya 'delete'
   const [isBulkUpdating, setIsBulkUpdating] = useState(false); // Toplu güncelleme işlemi devam ediyor mu?
 
-
   const filterMenuRef = useRef(null);
 
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
   };
+
 
   // Toplu işlem yapma
   const handleBulkAction = (e) => {
@@ -286,13 +289,13 @@ const ContentManagement = () => {
 
     if (bulkAction === 'delete') {
       // Toplu silme işlemi
-      if (window.confirm(`${selectedItems.length} içeriği silmek istediğinize emin misiniz?`)) {
-        const updatedContents = contents.filter(item => !selectedItems.includes(item.id));
-        setContents(updatedContents);
-        setSelectedItems([]);
-        setBulkActionModalOpen(false);
-        setBulkMode(false);
-      }
+
+      const updatedContents = contents.filter(item => !selectedItems.includes(item.id));
+      setContents(updatedContents);
+      setSelectedItems([]);
+      setBulkActionModalOpen(false);
+      setBulkMode(false);
+
     } else if (bulkAction === 'update') {
       // Toplu güncelleme işlemi
       setIsBulkUpdating(true);
@@ -307,7 +310,6 @@ const ContentManagement = () => {
       const bulkIsWeeklyContent = document.getElementById('bulkIsWeeklyContent')?.checked;
       const bulkWeeklyContentStartDate = document.getElementById('bulkWeeklyContentStartDate')?.value;
       const bulkWeeklyContentEndDate = document.getElementById('bulkWeeklyContentEndDate')?.value;
-
       // Toplu güncelleme simülasyonu
       setTimeout(() => {
         const updatedContents = contents.map(item => {
@@ -353,7 +355,6 @@ const ContentManagement = () => {
       searchTerm !== '';
   };
 
-
   // İçerik filtreleme
   useEffect(() => {
     const filteredContents = contents.filter((content) => {
@@ -398,7 +399,6 @@ const ContentManagement = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [filterMenuRef]);
-
 
 
   // İçerik ikonlarını belirleme
@@ -465,6 +465,7 @@ const ContentManagement = () => {
     e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50');
   }, []);
 
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -529,12 +530,23 @@ const ContentManagement = () => {
     setIsModalOpen(true);
   };
 
+
   // İçerik silme
-  const deleteContent = (id) => {
-    if (window.confirm('Bu içeriği silmek istediğinize emin misiniz?')) {
-      const updatedContents = contents.filter(item => item.id !== id);
-      setContents(updatedContents);
-    }
+  const handleDeleteContent = (id) => {
+    setSelectedId(id);         // sadece id saklanıyor
+    setConfirmOpen(true);      // modal açılıyor
+  };
+
+  const handleConfirmDelete = () => {
+    const updatedContents = contents.filter(item => item.id !== selectedId);
+    setContents(updatedContents);
+    setConfirmOpen(false);
+    setSelectedId(null);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
+    setSelectedId(null);
   };
 
   // Form gönderildiğinde
@@ -852,18 +864,31 @@ const ContentManagement = () => {
                 <tr>
                   {bulkMode && (
                     <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                        checked={selectedItems.length === currentItems.length}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedItems(currentItems.map(item => item.id));
-                          } else {
-                            setSelectedItems([]);
-                          }
-                        }}
-                      />
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-indigo-600 rounded border-gray-300 cursor-pointer focus:ring-indigo-500"
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              const newSelections = [
+                                ...new Set([...selectedItems, ...currentItems.map(item => item.id)])
+                              ];
+
+                              if (newSelections.length > 10) {
+                                setShowLimitModal(true); // modal aç
+                                return;
+                              }
+
+                              setSelectedItems(newSelections);
+                            } else {
+                              // Seçim kaldırılıyorsa sadece currentItems'ları çıkar
+                              setSelectedItems(selectedItems.filter(id => !currentItems.map(item => item.id).includes(id)));
+                            }
+                          }}
+                          checked={currentItems.every(item => selectedItems.includes(item.id)) && currentItems.length > 0}
+                        />
+
+                      </div>
                     </th>
                   )}
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -900,18 +925,28 @@ const ContentManagement = () => {
                   <tr key={content.id}>
                     {bulkMode && (
                       <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                          checked={selectedItems.includes(content.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedItems([...selectedItems, content.id]);
-                            } else {
-                              setSelectedItems(selectedItems.filter(id => id !== content.id));
-                            }
-                          }}
-                        />
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 && !selectedItems.includes(content.id) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                              }`} //11.yi seçtirmiyor.
+                            checked={selectedItems.includes(content.id)}
+                            disabled={selectedItems.length >= 10 && !selectedItems.includes(content.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                if (selectedItems.length >= 10) {
+                                  setShowLimitModal(true); // Uyarı modalı aç
+                                  return;
+                                }
+                                setSelectedItems([...selectedItems, content.id]);
+                              } else {
+                                setSelectedItems(selectedItems.filter(id => id !== content.id));
+                              }
+                            }}
+                          />
+
+
+                        </div>
                       </td>
                     )}
                     <td className="px-3 py-2">
@@ -983,10 +1018,11 @@ const ContentManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => deleteContent(content.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
+                          title="Sil"
+                          onClick={() => handleDeleteContent(content.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
@@ -1594,6 +1630,31 @@ const ContentManagement = () => {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+      {/* silmek için açılan modal */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="İçeriği silmek istediğinize emin misiniz?"
+        description="Bu işlem geri alınamaz."
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
+      {/* seçilen checkbox sayısı 10'u geçince açılan modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Seçim Limiti</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              En fazla <strong>10</strong> içerik seçebilirsiniz.
+            </p>
+            <button
+              onClick={() => setShowLimitModal(false)}
+              className="px-4 py-2 bg-indigo-600 cursor-pointer text-white rounded hover:bg-indigo-700"
+            >
+              Tamam
+            </button>
           </div>
         </div>
       )}
