@@ -4,8 +4,8 @@ import { NextResponse } from "next/server";
 
 // İçerikleri listele
 export async function GET() {
-  const session = await requireAdmin()
-  if (session instanceof Response) return session;
+      //const session = await requireAdmin()
+      //if (session instanceof Response) return session;
   try {
     const contents = await prisma.content.findMany({
       orderBy: {
@@ -25,8 +25,8 @@ export async function GET() {
 
 // Yeni içerik ekle
 export async function POST(request) {
-  const session = await requireAdmin()
-  if (session instanceof Response) return session;
+     //const session = await requireAdmin()
+      //if (session instanceof Response) return session;
   try {
     const data = await request.json();
 
