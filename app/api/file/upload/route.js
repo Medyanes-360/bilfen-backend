@@ -30,7 +30,7 @@ export async function POST(req) {
 
   try {
     await r2.send(command);
-    const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+    const url = key;
     return NextResponse.json({ status: 'success', url });
   } catch (err) {
     return NextResponse.json({ error: 'Yükleme başarısız', detail: err.message }, { status: 500 });
