@@ -5,8 +5,8 @@ import { getServerSession } from 'next-auth';
 import { requireAdmin } from '@/lib/auth';
 
 export async function GET() {
-    const session = await requireAdmin()
-     if (session instanceof Response) return session;
+        //const session = await requireAdmin()
+      //if (session instanceof Response) return session;
     try {
         const command = new ListObjectsV2Command({
             Bucket: process.env.R2_BUCKET_NAME,
