@@ -215,14 +215,18 @@ const TimelineComponent = () => {
 
   // Önceki haftaya git
   const goToPreviousWeek = () => {
-    alert('Önceki hafta verileri yüklenecek');
-    // Gerçek uygulamada burada API isteği olacak
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() - 7); // 7 gün geri al
+    setSelectedDate(newDate.toISOString().split('T')[0]);
+    setDays(createTimelineData(newDate));
   };
 
   // Sonraki haftaya git
   const goToNextWeek = () => {
-    alert('Sonraki hafta verileri yüklenecek');
-    // Gerçek uygulamada burada API isteği olacak
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + 7); // 7 gün ileri al
+    setSelectedDate(newDate.toISOString().split('T')[0]);
+    setDays(createTimelineData(newDate));
   };
 
   // Bugüne git
