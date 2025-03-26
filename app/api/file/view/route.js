@@ -3,6 +3,8 @@ import { r2 } from "@/lib/r2";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 export async function GET(req) {
+       //const session = await requireAdmin()
+      //if (session instanceof Response) return session;
     try {
         const { searchParams } = new URL(req.url);
         const fileUrl = searchParams.get("fileUrl");

@@ -90,11 +90,11 @@ const Header = ({ toggleSidebar }) => {
       <div className="flex-1 flex justify-between px-4">
         <div className="flex-1 flex items-center">
           <div className="w-full flex items-center md:ml-0">
-            <div className="hidden md:block text-sm text-gray-500 mr-4">
+            {/* <div className="hidden md:block text-sm text-gray-500 mr-4">
               <span className="font-medium">{currentDate}</span>
-            </div>
+            </div> */}
 
-            <div className="w-full max-w-md relative">
+            {/* <div className="w-full max-w-md relative">
               <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-3">
                 <Search size={18} className="text-gray-400" />
               </div>
@@ -104,13 +104,13 @@ const Header = ({ toggleSidebar }) => {
                 placeholder="İçerik, öğrenci veya öğretmen ara..."
                 type="search"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
         <div className="ml-4 flex items-center space-x-4">
           {/* Hızlı İşlemler butonu */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
               className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
@@ -143,19 +143,19 @@ const Header = ({ toggleSidebar }) => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Yardım butonu */}
-          <button
+          {/* <button
             type="button"
             className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             onClick={() => alert("Yardım sayfası açılıyor...")}>
             <span className="sr-only">Yardım</span>
             <HelpCircle size={20} />
-          </button>
+          </button> */}
 
           {/* Mesajlar butonu */}
-          <button
+          {/* <button
             type="button"
             className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 relative">
             <span className="sr-only">Mesajlar</span>
@@ -163,11 +163,11 @@ const Header = ({ toggleSidebar }) => {
             <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
               3
             </span>
-          </button>
+          </button> */}
 
           {/* Bildirimler butonu */}
           <div className="relative">
-            <button
+            {/* <button
               type="button"
               className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
@@ -180,7 +180,7 @@ const Header = ({ toggleSidebar }) => {
               <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
                 {notifications.length}
               </span>
-            </button>
+            </button> */}
 
             {/* Bildirimler menüsü */}
             {showNotifications && (

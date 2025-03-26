@@ -3,10 +3,9 @@ import { r2 } from "@/lib/r2";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { requireAdmin } from "@/lib/auth";
 
-export async function DELETE(req, res) {
-    const session = await requireAdmin(req, res);
-    if (!session) return res.status(200).json({ message: "Bu veri sadece admin içindir." })
-
+export async function DELETE(req) {
+         //const session = await requireAdmin()
+      //if (session instanceof Response) return session;
     try {
         const { searchParams } = new URL(req.url);
         const fileUrl = searchParams.get("fileUrl");
