@@ -87,6 +87,7 @@ const contentTypes = [
 const ContentManagement = () => {
 
   // State tanımlamaları
+  const [previewUrl, setPreviewUrl] = useState("");
   const [contents, setContents] = useState([]);
   const [filteredContents, setFilteredContents] = useState([]);
   const [activeType, setActiveType] = useState('all');
@@ -419,13 +420,43 @@ const ContentManagement = () => {
     const formData = new FormData(e.target);
     const contentType = formData.get("type");
 
+    // Etiketleri düzenle
     const tagsString = formData.get("tags") || "";
-    
     const tagsArray = tagsString
       .split(",")
       .map((tag) => tag.trim())
       .filter((tag) => tag !== "");
 
+    //  Dosya yükleme
+    let fileUrl = null;
+
+    if (selectedFile) {
+      try {
+        const uploadForm = new FormData();
+        uploadForm.append("file", selectedFile);
+
+        const uploadRes = await fetch("/api/file/upload", {
+          method: "POST",
+          body: uploadForm,
+        });
+
+        const uploadJson = await uploadRes.json();
+
+        if (!uploadRes.ok) {
+          throw new Error("Dosya yüklenemedi: " + uploadJson?.detail);
+        }
+
+        // 🎯 fileUrl artık sadece dosya key'i (örnek: uploads/abc-uuid.docx)
+        fileUrl = uploadJson.url || uploadJson.key;
+      } catch (uploadErr) {
+        console.error("Dosya yükleme hatası:", uploadErr);
+        alert("Dosya yüklenemedi. Lütfen tekrar deneyin.");
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    // İçerik verisi
     const contentData = {
       title: formData.get("title"),
       type: contentType,
@@ -437,7 +468,7 @@ const ContentManagement = () => {
       endDateStudent: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
       endDateTeacher: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
       isActive: formData.get("status") === "active",
-      fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : null,
+      fileUrl: fileUrl,
       description: formData.get("description") || null,
       tags: tagsArray,
       createdAt: new Date().toISOString(),
@@ -448,7 +479,7 @@ const ContentManagement = () => {
     try {
       let response;
       if (currentContent) {
-        // Update existing content
+        // Mevcut içeriği güncelle
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`, {
           method: 'PUT',
           headers: {
@@ -458,16 +489,15 @@ const ContentManagement = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update content');
+          throw new Error('İçerik güncellenemedi');
         }
 
-        // Update the content in the state
         setContents(contents.map(content =>
           content.id === currentContent.id ? { ...content, ...contentData } : content
         ));
         console.log("İçerik güncellendi:", contentData);
       } else {
-        // Create new content
+        // Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
           setContents([...contents, response]);
@@ -476,6 +506,7 @@ const ContentManagement = () => {
       }
     } catch (error) {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
+      alert("İçerik kaydedilirken bir hata oluştu.");
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
@@ -485,15 +516,39 @@ const ContentManagement = () => {
   };
 
 
-  // İçeriği görüntüleme
-  const viewContent = (id) => {
-    const content = contents.find(item => item.id === id);
-    if (content) {
-      // Preview sayfasına yönlendirme veya modal açma işlemi yapılabilir
-      alert(`${content.title} içeriği görüntüleniyor`);
-    }
-  };
 
+  // İçeriği görüntüleme
+  const viewContent = async (id) => {
+    const content = contents.find(item => item.id === id);
+    if (!content) return;
+
+    try {
+      console.log("Dosya çağırılıyor:", content.fileUrl);
+
+      const fileUrl = content.fileUrl;
+      const response = await fetch(`/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`);
+
+
+      console.log("API Yanıt:", response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Dosya alınamadı");
+      }
+
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+
+      console.log("Dosya Başarıyla Alındı:", fileURL);
+
+      // State'e dosya URL'sini kaydet
+      setPreviewUrl(fileURL);
+    } catch (error) {
+      console.error("Hata:", error);
+      alert("Dosya görüntülenirken hata oluştu: " + error.message);
+    }
+
+  }
   // Sayfalama hesaplamaları
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -1137,10 +1192,10 @@ const ContentManagement = () => {
                         <option value="7-8 yaş">7-8 yaş</option>
                       </select>
                     </div>
-{
-  console.log("currentContent",currentContent)
-  
-}
+                    {
+                      console.log("currentContent", currentContent)
+
+                    }
                     {/* İki Kolonlu Alan: Yayın Tarihleri */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Öğrenci Yayın Tarihi */}
@@ -1542,6 +1597,25 @@ const ContentManagement = () => {
           </div>
         </div>
       )}
+      {/* içeriği ön izleme */}
+      {previewUrl && (
+        <div
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50"
+        >
+          <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
+          <iframe
+            src={previewUrl}
+            className="w-full h-96 border border-gray-300 rounded-lg"
+          />
+          <button
+            onClick={() => setPreviewUrl("")}
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600"
+          >
+            Kapat
+          </button>
+        </div>
+      )}
+
     </div>
   );
 };
