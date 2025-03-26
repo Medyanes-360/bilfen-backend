@@ -16,15 +16,15 @@ export async function POST(req) {
   const formData = await req.formData();
   const file = formData.get('file');
 
-  if (!file) {
+  if (!file || typeof file.name !== 'string') {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const originalName = file.name.split('.').slice(0, -1).join('.');
-  const extension = file.name.split('.').pop();
+  const originalName = file?.name?.split('.')?.slice(0, -1)?.join('.') || 'dosya';
+  const extension = file?.name?.split('.')?.pop() || 'bin';
   const safeName = slugify(originalName, { lower: true, strict: true });
   const fileName = `${safeName}-${uuidv4()}.${extension}`;
   const key = `uploads/${fileName}`;
