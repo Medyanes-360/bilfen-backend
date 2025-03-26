@@ -3,18 +3,18 @@
 // TimelineComponent.jsx - Tam responsive ve işlevsel zaman çizelgesi bileşeni
 import React, { useState, useEffect, useRef } from 'react';
 import { timelineDays, dailyContents } from './mockData';
-import { 
-  Calendar, 
-  ChevronLeft, 
-  ChevronRight, 
-  Play, 
-  FileText, 
-  Gamepad2, 
-  Layers, 
-  Plus, 
-  Clock, 
-  BookOpen, 
-  Users, 
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  FileText,
+  Gamepad2,
+  Layers,
+  Plus,
+  Clock,
+  BookOpen,
+  Users,
   MonitorPlay,
   X
 } from 'lucide-react';
@@ -24,28 +24,28 @@ const TimelineComponent = () => {
   const createTimelineData = (centerDate) => {
     const result = [];
     const baseDate = new Date(centerDate);
-  
+
     for (let i = -5; i <= 5; i++) {
       const date = new Date(baseDate);
       date.setDate(baseDate.getDate() + i);
-  
+
       const dateString = date.toISOString().split('T')[0];
-  
+
       result.push({
         date: dateString,
         isPast: date < new Date(), // karşılaştırmayı direkt tarih nesneleriyle yap
       });
     }
-  
+
     return result;
   };
-  
-  
+
+
 
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
   const [days, setDays] = useState(createTimelineData(today));
-  
+
   const [dailyContent, setDailyContent] = useState([]);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [showAddContentModal, setShowAddContentModal] = useState(false);
@@ -57,20 +57,20 @@ const TimelineComponent = () => {
     duration: '00:15:00',
     description: ''
   });
-  
-  
+
+
   const scrollContainerRef = useRef(null);
-  
+
   // Responsive davranış için pencere genişliğini dinle
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // Seçilen güne göre içerikleri yükle
   useEffect(() => {
     if (selectedDate) {
@@ -80,21 +80,21 @@ const TimelineComponent = () => {
       } else {
         // Örnek içerikler (mock veri)
         setDailyContent([
-          { 
-            id: `auto-${selectedDate}-1`, 
-            title: "Gün İçi Aktivite", 
-            type: "Video", 
-            ageGroup: "4-5 yaş", 
-            branch: "Okul Öncesi", 
+          {
+            id: `auto-${selectedDate}-1`,
+            title: "Gün İçi Aktivite",
+            type: "Video",
+            ageGroup: "4-5 yaş",
+            branch: "Okul Öncesi",
             duration: "00:15:00"
           },
-          { 
-            id: `auto-${selectedDate}-2`, 
-            title: "Dil Gelişimi", 
-            type: "Etkileşimli İçerik", 
-            ageGroup: "5-6 yaş", 
-            branch: "İngilizce", 
-            duration: "00:20:00" 
+          {
+            id: `auto-${selectedDate}-2`,
+            title: "Dil Gelişimi",
+            type: "Etkileşimli İçerik",
+            ageGroup: "5-6 yaş",
+            branch: "İngilizce",
+            duration: "00:20:00"
           }
         ]);
       }
@@ -108,7 +108,7 @@ const TimelineComponent = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const selectedElement = container.querySelector('.date-selected');
-      
+
       if (selectedElement) {
         // Seçili elementi ortala
         const centerPosition = selectedElement.offsetLeft - (container.offsetWidth / 2) + (selectedElement.offsetWidth / 2);
@@ -123,15 +123,15 @@ const TimelineComponent = () => {
   // Tarih formatı
   const formatDate = (dateString) => {
     if (!dateString) return { day: '', month: '', weekday: '', full: '' };
-    
+
     const date = new Date(dateString);
     const day = date.getDate();
     const month = date.toLocaleString('tr-TR', { month: 'short' });
     const weekday = date.toLocaleString('tr-TR', { weekday: 'short' });
-    
-    return { 
-      day, 
-      month, 
+
+    return {
+      day,
+      month,
       weekday,
       full: date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
     };
@@ -142,7 +142,7 @@ const TimelineComponent = () => {
     setSelectedDate(newDate);
     setDays(createTimelineData(newDate)); // yeni timeline'ı oluştur
   };
-  
+
 
   // Gün stili
   const getDayStyle = (day) => {
@@ -261,13 +261,13 @@ const TimelineComponent = () => {
     e.preventDefault();
     // Yeni içerik eklendiğini simüle et
     alert(`Yeni içerik eklendi: ${formData.title}`);
-    
+
     // Günlük içeriklere yeni içeriği ekle
     const newContent = {
       ...formData,
       id: `new-${Date.now()}` // Gerçek uygulamada arka uçtan gelecek
     };
-    
+
     setDailyContent([...dailyContent, newContent]);
     setShowAddContentModal(false);
   };
@@ -278,20 +278,20 @@ const TimelineComponent = () => {
       <div className="flex flex-col sm:flex-row items-center justify-between p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Zaman Çizelgesi</h2>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
             onClick={goToPreviousWeek}
           >
             <ChevronLeft size={20} className="text-gray-700" />
           </button>
-          <button 
+          <button
             className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors duration-200"
             onClick={goToToday}
           >
             <Calendar size={16} className="mr-2 text-orange-500" />
             Bugün
           </button>
-          <button 
+          <button
             className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
             onClick={goToNextWeek}
           >
@@ -305,14 +305,14 @@ const TimelineComponent = () => {
         {/* Sol-Sağ Scroll Gradyanları */}
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none"></div>
-        
+
         {/* Scroll Container */}
-        <div 
+        <div
           ref={scrollContainerRef}
           className="flex px-2 py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
-          style={{ 
-            scrollbarWidth: 'none', 
-            msOverflowStyle: 'none' 
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}
         >
           <div className="flex mx-auto space-x-2 md:space-x-3">
@@ -320,14 +320,13 @@ const TimelineComponent = () => {
               const date = formatDate(day.date);
               return (
                 <div
-                key={day.date}
-                onClick={() => selectDay(day.date)}
-                className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer snap-center ${
-                  getDayStyle(day)
-                } ${day.date === selectedDate ? 'ring-2 ring-offset-2 ring-orange-300 date-selected' : ''}
+                  key={day.date}
+                  onClick={() => selectDay(day.date)}
+                  className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer snap-center ${getDayStyle(day)
+                    } ${day.date === selectedDate ? 'ring-2 ring-offset-2 ring-orange-300 date-selected' : ''}
 `} // <-- BURAYA 'date-selected' classı
-              >
-              
+                >
+
                   <div className="text-xs font-medium uppercase">{date.weekday}</div>
                   <div className="my-1 text-xl sm:text-2xl font-bold">{date.day}</div>
                   <div className="text-xs">{date.month}</div>
@@ -349,7 +348,7 @@ const TimelineComponent = () => {
             Planlanmış İçerikler
           </p>
         </div>
-        <button 
+        <button
           onClick={openAddContentModal}
           className="mt-3 sm:mt-0 inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
         >
@@ -363,7 +362,7 @@ const TimelineComponent = () => {
         {dailyContent && dailyContent.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {dailyContent.map((content, index) => (
-              <div 
+              <div
                 key={content.id}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
               >
@@ -378,11 +377,11 @@ const TimelineComponent = () => {
                     <span className="text-xs font-medium">{content.duration}</span>
                   </div>
                 </div>
-                
+
                 {/* İçerik Bilgileri */}
                 <div className="p-4">
                   <h4 className="text-base font-semibold text-gray-900 mb-2">{content.title}</h4>
-                  
+
                   <div className="flex flex-wrap gap-2 mb-3">
                     <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(content.ageGroup)}`}>
                       <Users size={12} className="mr-1" />
@@ -394,17 +393,17 @@ const TimelineComponent = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 {/* Butonlar */}
                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
-                  <button 
+                  <button
                     onClick={() => handleWatchContent(content)}
                     className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                   >
                     <Play size={14} className="mr-1" />
                     İzle
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleViewDetails(content)}
                     className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
                   >
@@ -424,7 +423,7 @@ const TimelineComponent = () => {
             <p className="text-sm text-gray-500 max-w-md mb-4">
               Bu tarihe ait planlanmış içerik bulunmamaktadır. Yeni içerik eklemek için aşağıdaki butona tıklayabilirsiniz.
             </p>
-            <button 
+            <button
               onClick={openAddContentModal}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
             >
@@ -442,22 +441,22 @@ const TimelineComponent = () => {
             <div className="w-3 h-3 rounded-full bg-orange-500 mr-1.5"></div>
             <span className="text-gray-600">Bugün</span>
           </div>
-          
+
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-gray-200 mr-1.5"></div>
             <span className="text-gray-600">Geçmiş</span>
           </div>
-          
+
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-green-100 mr-1.5"></div>
             <span className="text-gray-600">Gelecek</span>
           </div>
         </div>
-        
-        <button className="text-orange-500 hover:text-orange-700 font-medium flex items-center transition-colors duration-200">
+
+        {/* <button className="text-orange-500 hover:text-orange-700 font-medium flex items-center transition-colors duration-200">
           Tüm içerik planını gör
           <ChevronRight size={16} className="ml-1" />
-        </button>
+        </button> */}
       </div>
 
       {/* İçerik Ekleme Modalı */}
@@ -466,14 +465,14 @@ const TimelineComponent = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Yeni İçerik Ekle</h3>
-              <button 
+              <button
                 onClick={() => setShowAddContentModal(false)}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 <div>
@@ -490,7 +489,7 @@ const TimelineComponent = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
@@ -510,7 +509,7 @@ const TimelineComponent = () => {
                       <option value="Etkileşimli İçerik">Etkileşimli İçerik</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700 mb-1">
                       Yaş Grubu
@@ -529,7 +528,7 @@ const TimelineComponent = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
@@ -551,7 +550,7 @@ const TimelineComponent = () => {
                       <option value="Beden Eğitimi">Beden Eğitimi</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
                       Süre (HH:MM:SS)
@@ -569,7 +568,7 @@ const TimelineComponent = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                     Açıklama
@@ -584,7 +583,7 @@ const TimelineComponent = () => {
                   ></textarea>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end space-x-3">
                 <button
                   type="button"

@@ -33,7 +33,7 @@ const Dashboard = () => {
         {/* <RevenueChart /> */}
 
         {/* İçerikler Tablosu */}
-        <RecentOrders />
+        {/* <RecentOrders /> */}
 
         {/* Üst İçerikler ve Öğrenciler */}
         {/* <TopProducts /> */}
@@ -47,7 +47,7 @@ const Dashboard = () => {
           {/* <ActivityFeed /> */}
 
           {/* Görevler */}
-         
+
         </div>
         <TaskList />
 
