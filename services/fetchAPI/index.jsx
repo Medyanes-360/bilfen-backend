@@ -44,12 +44,9 @@ const getAPI = async (
         cache: "no-store",
     })
         .then((res) => {
-            if (res.redirected) {
-                // bazı yerlerde window'u bulamıyor kontrol et
-                //return window.location.href = res.url;
-            } else {
+         
                 return res.json();
-            }
+            
         })
         .catch((err) => console.log(err));
 
@@ -65,21 +62,23 @@ const deleteAPI = async (
         if (!process.env.NEXT_PUBLIC_API_URL || !URL) {
             throw new Error("URL bulunamadı!");
         }
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL + URL}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${URL}`, {
             method: "DELETE",
             headers: headers,
             cache: "no-store",
         });
 
         if (!response.ok) {
-            throw new Error('Failed to delete resource');
+            throw new Error("Failed to delete resource");
         }
 
-        return response.json();
+        return response.status === 204 ? null : await response.json();
     } catch (err) {
         throw new Error(`API request failed: ${err}`);
     }
 };
+
+
 
 // UPDATE request function (using PUT)
 const updateAPI = async (
