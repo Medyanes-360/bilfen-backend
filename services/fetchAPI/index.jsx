@@ -44,12 +44,9 @@ const getAPI = async (
         cache: "no-store",
     })
         .then((res) => {
-            if (res.redirected) {
-                // bazı yerlerde window'u bulamıyor kontrol et
-                //return window.location.href = res.url;
-            } else {
+          
                 return res.json();
-            }
+            
         })
         .catch((err) => console.log(err));
 
