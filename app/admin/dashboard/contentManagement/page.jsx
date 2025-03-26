@@ -68,6 +68,8 @@ import {
 } from 'lucide-react';
 
 import ConfirmModal from '@/components/ConfirmModal';
+import { getAPI,deleteAPI,postAPI } from '@/services/fetchAPI';
+
 
 // İçerik türleri
 const contentTypes = [
@@ -247,8 +249,8 @@ const initialContents = [
 const ContentManagement = () => {
 
   // State tanımlamaları
-  const [contents, setContents] = useState(initialContents);
-  const [filteredContents, setFilteredContents] = useState(initialContents);
+  const [contents, setContents] = useState([]);
+  const [filteredContents, setFilteredContents] = useState([]);
   const [activeType, setActiveType] = useState('all');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -277,6 +279,18 @@ const ContentManagement = () => {
   const [isBulkUpdating, setIsBulkUpdating] = useState(false); // Toplu güncelleme işlemi devam ediyor mu?
 
   const filterMenuRef = useRef(null);
+  useEffect(() => {
+    const fetchData = async () => {
+        const data = await getAPI("/api/contents"); // endpoint’i güncelle
+        if (data) {
+           console.log("data",data);
+           setContents(data);
+           setFilteredContents(data)
+        }
+    };
+
+    fetchData();
+}, []);
 
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
@@ -537,12 +551,23 @@ const ContentManagement = () => {
     setConfirmOpen(true);      // modal açılıyor
   };
 
-  const handleConfirmDelete = () => {
-    const updatedContents = contents.filter(item => item.id !== selectedId);
-    setContents(updatedContents);
-    setConfirmOpen(false);
-    setSelectedId(null);
-  };
+  const handleConfirmDelete = async () => {
+    if (!selectedId) return;
+
+    try {
+        // API'den veriyi sil
+        await deleteAPI(`/api/contents/${selectedId}`);
+
+        // Başarıyla silindiyse state'ten de kaldır
+        setContents(prevContents => prevContents.filter(item => item.id !== selectedId));
+
+        // Modal'ı kapat ve seçili ID'yi temizle
+        setConfirmOpen(false);
+        setSelectedId(null);
+    } catch (error) {
+        console.error("Silme işlemi başarısız:", error);
+    }
+};
 
   const handleCancelDelete = () => {
     setConfirmOpen(false);
@@ -550,62 +575,51 @@ const ContentManagement = () => {
   };
 
   // Form gönderildiğinde
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsUploading(true);
 
-    // Form verilerini al
     const formData = new FormData(e.target);
-    const contentType = formData.get('type');
+    const contentType = formData.get("type");
 
-    // Etiketleri diziye dönüştür
-    const tagsString = formData.get('tags') || '';
-    const tagsArray = tagsString.split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag !== '');
+    const tagsString = formData.get("tags") || "";
+    const tagsArray = tagsString
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
 
     const newContent = {
-      id: currentContent ? currentContent.id : Date.now(),
-      title: formData.get('title'),
-      category: formData.get('category'),
-      branch: formData.get('branch'),
-      ageGroup: formData.get('ageGroup'),
-      studentPublishDate: formData.get('studentPublishDate'),
-      teacherPublishDate: formData.get('teacherPublishDate'),
-      duration: contentType === 'video' ? formData.get('duration') : null,
-      status: formData.get('status'),
-      type: contentType,
-      description: formData.get('description') || '',
-      tags: tagsArray,
-      fileName: selectedFile ? selectedFile.name : (currentContent?.fileName || ''),
-      fileSize: selectedFile ? selectedFile.size : (currentContent?.fileSize || 0),
-      uploadDate: new Date().toISOString(),
-      isWeeklyContent: formData.get('isWeeklyContent') === 'on',
-      weeklyContentStartDate: formData.get('isWeeklyContent') === 'on' ? formData.get('weeklyContentStartDate') : null,
-      weeklyContentEndDate: formData.get('isWeeklyContent') === 'on' ? formData.get('weeklyContentEndDate') : null
+        title: formData.get("title"),
+        type: contentType,
+        category: formData.get("category"),
+        ageGroup: formData.get("ageGroup"),
+        publishDateStudent: formData.get("studentPublishDate"),
+        publishDateTeacher: formData.get("teacherPublishDate"),
+        endDateStudent: formData.get("weeklyContentEndDate"),
+        endDateTeacher: formData.get("weeklyContentEndDate"),
+        isActive: formData.get("status") === "active",
+        fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : "",
+        description: formData.get("description") || "",
+        tags: tagsArray,
+        updatedAt: new Date().toISOString(),
     };
 
-    // Dosya yükleme simulasyonu
-    setTimeout(() => {
-      if (currentContent) {
-        // Mevcut içeriği güncelle
-        const updatedContents = contents.map(item =>
-          item.id === currentContent.id ? newContent : item
-        );
-        setContents(updatedContents);
-      } else {
-        // Yeni içerik ekle
-        setContents([...contents, newContent]);
-      }
+    try {
+        const response = await postAPI("/api/contents", newContent);
 
-      // Yükleme durumunu sıfırla
-      setIsUploading(false);
-      setSelectedFile(null);
+        if (response) {
+            setContents([...contents, response]); // Yeni içeriği state'e ekle
+            console.log("Yeni içerik eklendi:", response);
+        }
+    } catch (error) {
+        console.error("İçerik eklenirken hata oluştu:", error);
+    } finally {
+        setIsUploading(false);
+        setSelectedFile(null);
+        setIsModalOpen(false);
+    }
+};
 
-      // Modalı kapat
-      setIsModalOpen(false);
-    }, 1500);
-  };
 
   // İçeriği görüntüleme
   const viewContent = (id) => {
@@ -1061,7 +1075,7 @@ const ContentManagement = () => {
                   setBulkAction('delete');
                   setBulkActionModalOpen(true);
                 }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
                 Sil

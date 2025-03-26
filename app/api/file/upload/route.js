@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  PutObjectCommand,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand
+} from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { r2 } from '@/lib/r2';
 import slugify from 'slugify';
-import { getServerSession } from "next-auth";
 import { requireAdmin } from '@/lib/auth';
 
+const MULTIPART_THRESHOLD = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req) {
+  const start = Date.now();
+  // const session = await requireAdmin(req, res);
+  // if (!session) return res.status(200).json({ message: "Bu veri sadece admin içindir." })
+
   const formData = await req.formData();
   const file = formData.get('file');
       //const session = await requireAdmin()
@@ -16,7 +26,6 @@ export async function POST(req) {
   if (!file) {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
   }
-
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -27,18 +36,77 @@ export async function POST(req) {
   const fileName = `${safeName}-${uuidv4()}.${extension}`;
   const key = `uploads/${fileName}`;
 
-  const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
-    Key: key,
-    Body: buffer,
-    ContentType: file.type || 'application/octet-stream',
-  });
+  let uploadId;
 
   try {
-    await r2.send(command);
+    // Eğer dosya 10MB boyuttan daha küçükse burada PutObjectCommand ile kaydedilir.
+    if (buffer.length < MULTIPART_THRESHOLD) {
+      const command = new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type || 'application/octet-stream',
+      });
+
+      await r2.send(command);
+    }
+    // Eğer dosya 10MB boyuttan büyükse burada multipart upload işlemi yapılır.
+    else {
+      const create = await r2.send(new CreateMultipartUploadCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        ContentType: file.type || 'application/octet-stream',
+      }));
+      const millis = Date.now() - start;
+      console.log("upload started", Math.floor(millis / 1000))
+
+      uploadId = create.UploadId;
+
+      const partSize = 5 * 1024 * 1024; // 5 MB
+      const partCount = Math.ceil(buffer.length / partSize);
+      const parts = [];
+
+      for (let i = 0; i < partCount; i++) {
+        const start = i * partSize;
+        const end = Math.min(start + partSize, buffer.length);
+        const partBuffer = buffer.subarray(start, end);
+
+        const uploadPart = await r2.send(new UploadPartCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: key,
+          UploadId: uploadId,
+          PartNumber: i + 1,
+          Body: partBuffer,
+        }));
+        const millis = Date.now() - start;
+        console.log(`part ${i + 1} uploaded`, Math.floor(millis / 1000))
+        parts.push({
+          ETag: uploadPart.ETag,
+          PartNumber: i + 1,
+        })
+      }
+
+      await r2.send(new CompleteMultipartUploadCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        UploadId: uploadId,
+        MultipartUpload: { Parts: parts },
+      }))
+    }
+    const millis = Date.now() - start;
+    console.log(`upload finished`, Math.floor(millis / 1000))
     const url = key;
     return NextResponse.json({ status: 'success', url });
   } catch (err) {
+
+    if (uploadId) {
+      await r2.send(new AbortMultipartUploadCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        UploadId: uploadId
+      }))
+    }
+
     return NextResponse.json({ error: 'Yükleme başarısız', detail: err.message }, { status: 500 });
   }
 }

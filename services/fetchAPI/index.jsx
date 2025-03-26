@@ -65,14 +65,14 @@ const deleteAPI = async (
         if (!process.env.NEXT_PUBLIC_API_URL || !URL) {
             throw new Error("URL bulunamadı!");
         }
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL + URL}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${URL}`, {
             method: "DELETE",
             headers: headers,
             cache: "no-store",
         });
 
         if (!response.ok) {
-            throw new Error('Failed to delete resource');
+            throw new Error("Failed to delete resource");
         }
         if (response.status === 204) return null;
         return response.json();
