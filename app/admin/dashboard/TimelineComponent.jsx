@@ -227,10 +227,8 @@ const TimelineComponent = () => {
 
   // Bugüne git
   const goToToday = () => {
-    const today = days.find(day => day.isActive === true);
-    if (today) {
-      selectDay(today.date);
-    }
+    setSelectedDate(today.toISOString().split('T')[0]); 
+    setDays(createTimelineData(today)); 
   };
 
   // İçerik ekleme modalını aç
