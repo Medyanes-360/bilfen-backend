@@ -82,168 +82,7 @@ const contentTypes = [
 
 // Örnek içerik verileri
 // Örnek içerik verileri - komponent dışında tanımlayın
-const initialContents = [
-  {
-    id: 1,
-    title: 'Ritmik Hareketler',
-    category: 'Müzik',
-    ageGroup: '3-4 yaş',
-    studentPublishDate: '2025-03-24',
-    teacherPublishDate: '2025-03-20',
-    duration: null,
-    status: 'Yüksek Katılım',
-    type: 'audio',
-    description: 'Çocukların ritim duygusu ve motor becerilerini geliştiren eğlenceli müzik etkinlikleri.',
-    tags: ['müzik', 'ritim', 'dans', 'motor gelişim'],
-    isWeeklyContent: true,
-    weeklyContentStartDate: '2025-03-25',
-    weeklyContentEndDate: '2025-03-31'
-  },
-  {
-    id: 2,
-    title: 'Şekiller ve Uzamsal Farkındalık',
-    category: 'Okul Öncesi',
-    ageGroup: '4-5 yaş',
-    studentPublishDate: '2025-03-23',
-    teacherPublishDate: '2025-03-19',
-    duration: null,
-    status: 'Yüksek Katılım',
-    type: 'interactive',
-    description: 'Geometrik şekilleri tanıma ve uzamsal düşünme yeteneklerini geliştirmeye yönelik interaktif oyunlar.',
-    tags: ['matematik', 'geometri', 'şekiller', 'uzamsal zeka'],
-    isWeeklyContent: false,
-    weeklyContentStartDate: null,
-    weeklyContentEndDate: null
-  },
-  {
-    id: 3,
-    title: 'Hayvanlar Alemi',
-    category: 'Okul Öncesi',
-    ageGroup: '5-6 yaş',
-    studentPublishDate: '2025-03-22',
-    teacherPublishDate: '2025-03-18',
-    duration: '00:15:00',
-    status: 'Yüksek Katılım',
-    type: 'video',
-    description: 'Çocukların hayvanları tanımasını sağlayan eğitici belgesel türünde video içeriği.',
-    tags: ['hayvanlar', 'doğa', 'bilim', 'biyoloji'],
-    isWeeklyContent: true,
-    weeklyContentStartDate: '2025-03-26',
-    weeklyContentEndDate: '2025-04-01'
-  },
-  {
-    id: 4,
-    title: 'İngilizce Sayılar',
-    category: 'İngilizce',
-    ageGroup: '4-5 yaş',
-    studentPublishDate: '2025-03-21',
-    teacherPublishDate: '2025-03-17',
-    duration: null,
-    status: 'Yüksek Katılım',
-    type: 'interactive',
-    description: 'İngilizce sayıları öğretmek için tasarlanmış etkileşimli dijital kartlar ve oyunlar.',
-    tags: ['ingilizce', 'sayılar', 'matematik', 'yabancı dil'],
-    isWeeklyContent: false,
-    weeklyContentStartDate: null,
-    weeklyContentEndDate: null
-  },
-  {
-    id: 5,
-    title: 'Renkleri Öğreniyorum',
-    category: 'Okul Öncesi',
-    ageGroup: '3-4 yaş',
-    studentPublishDate: '2025-03-20',
-    teacherPublishDate: '2025-03-16',
-    duration: '00:08:45',
-    status: 'Yüksek Katılım',
-    type: 'video',
-    description: 'Renkleri tanıma, adlandırma ve günlük hayatta ayırt etme becerilerini geliştiren video serisi.',
-    tags: ['renkler', 'görsel algı', 'sanat'],
-    isWeeklyContent: true,
-    weeklyContentStartDate: '2025-03-27',
-    weeklyContentEndDate: '2025-04-02'
-  },
-  {
-    id: 6,
-    title: 'El Becerileri Geliştirme',
-    category: 'Görsel Sanatlar',
-    ageGroup: '5-6 yaş',
-    studentPublishDate: '2025-03-19',
-    teacherPublishDate: '2025-03-15',
-    duration: null,
-    status: 'Orta Katılım',
-    type: 'document',
-    description: 'Çocukların ince motor becerilerini geliştiren sanat ve el işi etkinlikleri rehberi.',
-    tags: ['el becerileri', 'sanat', 'motor gelişim', 'yaratıcılık'],
-    isWeeklyContent: false,
-    weeklyContentStartDate: null,
-    weeklyContentEndDate: null
-  },
-  {
-    id: 7,
-    title: 'Mevsimler ve Hava Durumu',
-    category: 'Okul Öncesi',
-    ageGroup: '4-5 yaş',
-    studentPublishDate: '2025-03-18',
-    teacherPublishDate: '2025-03-14',
-    duration: null,
-    status: 'Yüksek Katılım',
-    type: 'interactive',
-    description: 'Mevsimleri ve hava olaylarını tanıtıcı, etkileşimli öğrenme materyalleri.',
-    tags: ['mevsimler', 'hava durumu', 'doğa', 'çevre'],
-    isWeeklyContent: true,
-    weeklyContentStartDate: '2025-03-28',
-    weeklyContentEndDate: '2025-04-03'
-  },
-  {
-    id: 8,
-    title: 'Örüntü Oluşturma',
-    category: 'Okul Öncesi',
-    ageGroup: '5-6 yaş',
-    studentPublishDate: '2025-03-17',
-    teacherPublishDate: '2025-03-13',
-    duration: null,
-    status: 'Yüksek Katılım',
-    type: 'game',
-    description: 'Matematiksel düşünme ve örüntü algısını geliştirmeye yönelik oyunlar.',
-    tags: ['matematik', 'örüntü', 'problem çözme', 'mantık'],
-    isWeeklyContent: false,
-    weeklyContentStartDate: null,
-    weeklyContentEndDate: null
-  },
-  {
-    id: 9,
-    title: 'Hikaye Anlatma Sanatı',
-    category: 'Dil Gelişimi',
-    ageGroup: '6-7 yaş',
-    studentPublishDate: '2025-03-16',
-    teacherPublishDate: '2025-03-12',
-    duration: null,
-    status: 'Orta Katılım',
-    type: 'audio',
-    description: 'Çocukların kendi hikayelerini oluşturma ve anlatma becerilerini geliştiren sesli rehber.',
-    tags: ['hikaye', 'yaratıcılık', 'dil becerileri', 'anlatım'],
-    isWeeklyContent: true,
-    weeklyContentStartDate: '2025-03-29',
-    weeklyContentEndDate: '2025-04-04'
-  },
-  {
-    id: 10,
-    title: 'Temel Fen Deneyleri',
-    category: 'Bilim',
-    ageGroup: '6-7 yaş',
-    studentPublishDate: '2025-03-15',
-    teacherPublishDate: '2025-03-11',
-    duration: '00:22:15',
-    status: 'Yüksek Katılım',
-    type: 'video',
-    description: 'Evde yapılabilecek basit ve eğlenceli bilim deneyleri ile bilimsel düşünce temelleri.',
-    tags: ['bilim', 'deneyler', 'fen', 'keşif'],
-    isWeeklyContent: false,
-    weeklyContentStartDate: null,
-    weeklyContentEndDate: null
-  }
-];
+
 
 const ContentManagement = () => {
 
@@ -267,8 +106,8 @@ const ContentManagement = () => {
     ageGroup: '',
     category: '',
     status: '',
-    studentPublishDate: '',
-    teacherPublishDate: ''
+    publishDateStudent: '',
+    publishDateTeacher: ''
   });
   const [sortOption, setSortOption] = useState('newest');
   const [bulkMode, setBulkMode] = useState(false); // Toplu mod aktif mi?
@@ -333,8 +172,8 @@ const ContentManagement = () => {
               type: bulkType || item.type,
               ageGroup: bulkAgeGroup || item.ageGroup,
               description: bulkDescription || item.description,
-              studentPublishDate: bulkStudentPublishDate || item.studentPublishDate,
-              teacherPublishDate: bulkTeacherPublishDate || item.teacherPublishDate,
+              publishDateStudent: bulkStudentPublishDate || item.publishDateStudent,
+              publishDateTeacher: bulkTeacherPublishDate || item.publishDateTeacher,
               isWeeklyContent: bulkIsWeeklyContent !== undefined ? bulkIsWeeklyContent : item.isWeeklyContent,
               weeklyContentStartDate: bulkIsWeeklyContent ? (bulkWeeklyContentStartDate || item.weeklyContentStartDate) : null,
               weeklyContentEndDate: bulkIsWeeklyContent ? (bulkWeeklyContentEndDate || item.weeklyContentEndDate) : null
@@ -361,8 +200,8 @@ const ContentManagement = () => {
     return advancedFilterOptions.ageGroup !== '' ||
       advancedFilterOptions.category !== '' ||
       advancedFilterOptions.status !== '' ||
-      advancedFilterOptions.teacherPublishDate !== '' ||
-      advancedFilterOptions.studentPublishDate !== '' ||
+      advancedFilterOptions.publishDateStudent !== '' ||
+      advancedFilterOptions.publishDateTeacher !== '' ||
       activeType !== 'all' ||
       searchTerm !== '';
   };
@@ -377,14 +216,14 @@ const ContentManagement = () => {
       const matchesAgeGroup = advancedFilterOptions.ageGroup === '' || content.ageGroup === advancedFilterOptions.ageGroup;
 
       // Öğrenci yayın tarihi kontrolü
-      const studentDate = advancedFilterOptions.studentPublishDate ? new Date(advancedFilterOptions.studentPublishDate) : null;
-      const contentStudentDate = content.studentPublishDate ? new Date(content.studentPublishDate) : null;
+      const studentDate = advancedFilterOptions.publishDateStudent ? new Date(advancedFilterOptions.publishDateStudent) : null;
+      const contentStudentDate = content.publishDateStudent ? new Date(content.publishDateStudent) : null;
       const matchesStudentDate = !studentDate || !contentStudentDate ||
         contentStudentDate.toDateString() === studentDate.toDateString();
 
       // Öğretmen yayın tarihi kontrolü
-      const teacherDate = advancedFilterOptions.teacherPublishDate ? new Date(advancedFilterOptions.teacherPublishDate) : null;
-      const contentTeacherDate = content.teacherPublishDate ? new Date(content.teacherPublishDate) : null;
+      const teacherDate = advancedFilterOptions.publishDateStudent ? new Date(advancedFilterOptions.publishDateTeacher) : null;
+      const contentTeacherDate = content.publishDateTeacher ? new Date(content.publishDateTeacher) : null;
       const matchesTeacherDate = !teacherDate || !contentTeacherDate ||
         contentTeacherDate.toDateString() === teacherDate.toDateString();
 
@@ -581,6 +420,7 @@ const ContentManagement = () => {
     const contentType = formData.get("type");
 
     const tagsString = formData.get("tags") || "";
+    
     const tagsArray = tagsString
       .split(",")
       .map((tag) => tag.trim())
@@ -592,8 +432,8 @@ const ContentManagement = () => {
       category: formData.get("category"),
       branch: formData.get("branch"),
       ageGroup: formData.get("ageGroup"),
-      publishDateStudent: formData.get("studentPublishDate") ? new Date(formData.get("studentPublishDate")).toISOString() : null,
-      publishDateTeacher: formData.get("teacherPublishDate") ? new Date(formData.get("teacherPublishDate")).toISOString() : null,
+      publishDateStudent: formData.get("publishDateStudent") ? new Date(formData.get("publishDateStudent")).toISOString() : null,
+      publishDateTeacher: formData.get("publishDateTeacher") ? new Date(formData.get("publishDateTeacher")).toISOString() : null,
       endDateStudent: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
       endDateTeacher: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
       isActive: formData.get("status") === "active",
@@ -776,8 +616,8 @@ const ContentManagement = () => {
                         ageGroup: '',
                         category: '',
                         status: '',
-                        studentPublishDate: '',
-                        teacherPublishDate: ''
+                        publishDateStudent: '',
+                        publishDateTeacher: ''
                       });
                       setActiveType('all');
                       setSearchTerm('');
@@ -843,8 +683,8 @@ const ContentManagement = () => {
                           <input
                             type="date"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            value={advancedFilterOptions.studentPublishDate}
-                            onChange={(e) => setAdvancedFilterOptions({ ...advancedFilterOptions, studentPublishDate: e.target.value })}
+                            value={advancedFilterOptions.publishDateStudent}
+                            onChange={(e) => setAdvancedFilterOptions({ ...advancedFilterOptions, publishDateStudent: e.target.value })}
                           />
                         </div>
                       </div>
@@ -856,8 +696,8 @@ const ContentManagement = () => {
                           <input
                             type="date"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            value={advancedFilterOptions.teacherPublishDate}
-                            onChange={(e) => setAdvancedFilterOptions({ ...advancedFilterOptions, teacherPublishDate: e.target.value })}
+                            value={advancedFilterOptions.publishDateTeacher}
+                            onChange={(e) => setAdvancedFilterOptions({ ...advancedFilterOptions, publishDateTeacher: e.target.value })}
                           />
                         </div>
                       </div>
@@ -870,8 +710,8 @@ const ContentManagement = () => {
                               ageGroup: '',
                               category: '',
                               status: '',
-                              studentPublishDate: '',
-                              teacherPublishDate: ''
+                              publishDateStudent: '',
+                              publishDateTeacher: ''
                             });
                           }}
                         >
@@ -1005,12 +845,12 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.studentPublishDate ? new Date(content.publishDateStudent).toLocaleDateString('tr-TR') : '-'}
+                        {content.publishDateStudent ? new Date(content.publishDateStudent).toLocaleDateString('tr-TR') : '-'}
                       </div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.teacherPublishDate ? new Date(content.publishDateTeacher).toLocaleDateString('tr-TR') : '-'}
+                        {content.publishDateTeacher ? new Date(content.publishDateTeacher).toLocaleDateString('tr-TR') : '-'}
                       </div>
                     </td>
                     <td className="px-3 py-2">
@@ -1297,32 +1137,43 @@ const ContentManagement = () => {
                         <option value="7-8 yaş">7-8 yaş</option>
                       </select>
                     </div>
-
+{
+  console.log("currentContent",currentContent)
+  
+}
                     {/* İki Kolonlu Alan: Yayın Tarihleri */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Öğrenci Yayın Tarihi */}
                       <div>
-                        <label htmlFor="studentPublishDate" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="publishDateStudent" className="block text-sm font-medium text-gray-700">
                           Öğrenci Yayın Tarihi
                         </label>
                         <input
                           type="date"
-                          name="studentPublishDate"
-                          id="studentPublishDate"
-                          defaultValue={currentContent?.studentPublishDate || ''}
+                          name="publishDateStudent"
+                          id="publishDateStudent"
+                          defaultValue={
+                            currentContent?.publishDateStudent
+                              ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+                              : ""
+                          }
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
                       {/* Öğretmen Yayın Tarihi */}
                       <div>
-                        <label htmlFor="teacherPublishDate" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="publishDateTeacher" className="block text-sm font-medium text-gray-700">
                           Öğretmen Yayın Tarihi
                         </label>
                         <input
                           type="date"
-                          name="teacherPublishDate"
-                          id="teacherPublishDate"
-                          defaultValue={currentContent?.teacherPublishDate || ''}
+                          name="publishDateTeacher"
+                          id="publishDateTeacher"
+                          defaultValue={
+                            currentContent?.publishDateTeacher
+                              ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+                              : ""
+                          }
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
