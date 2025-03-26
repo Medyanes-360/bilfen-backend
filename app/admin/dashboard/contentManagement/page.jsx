@@ -1,4 +1,3 @@
-
 // components/ContentManagement.jsx
 
 // 1. İmport İfadeleri
@@ -68,7 +67,7 @@ import {
 } from 'lucide-react';
 
 import ConfirmModal from '@/components/ConfirmModal';
-import { getAPI,deleteAPI,postAPI } from '@/services/fetchAPI';
+import { getAPI, deleteAPI, postAPI } from '@/services/fetchAPI';
 
 
 // İçerik türleri
@@ -281,16 +280,15 @@ const ContentManagement = () => {
   const filterMenuRef = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
-        const data = await getAPI("/api/contents"); // endpoint’i güncelle
-        if (data) {
-           console.log("data",data);
-           setContents(data);
-           setFilteredContents(data)
-        }
+      const data = await getAPI("/api/contents"); // endpoint'i güncelle
+      if (data) {
+        setContents(data);
+        setFilteredContents(data)
+      }
     };
 
     fetchData();
-}, []);
+  }, []);
 
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
@@ -372,11 +370,11 @@ const ContentManagement = () => {
   // İçerik filtreleme
   useEffect(() => {
     const filteredContents = contents.filter((content) => {
-      const matchesSearch = content.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const title = content.title || ''; // Ensure title is a string
+      const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = activeType === 'all' || content.type === activeType;
       const matchesStatus = advancedFilterOptions.status === '' || content.status === advancedFilterOptions.status;
       const matchesAgeGroup = advancedFilterOptions.ageGroup === '' || content.ageGroup === advancedFilterOptions.ageGroup;
-      const matchesCategory = advancedFilterOptions.category === '' || content.category === advancedFilterOptions.category;
 
       // Öğrenci yayın tarihi kontrolü
       const studentDate = advancedFilterOptions.studentPublishDate ? new Date(advancedFilterOptions.studentPublishDate) : null;
@@ -390,11 +388,11 @@ const ContentManagement = () => {
       const matchesTeacherDate = !teacherDate || !contentTeacherDate ||
         contentTeacherDate.toDateString() === teacherDate.toDateString();
 
-      return matchesSearch && matchesType && matchesStatus && matchesAgeGroup && matchesCategory && matchesStudentDate && matchesTeacherDate;
+      return matchesSearch && matchesType && matchesStatus && matchesAgeGroup && matchesStudentDate && matchesTeacherDate;
     });
 
     setFilteredContents(filteredContents);
-    setCurrentPage(1); // Filtreleme yapıldığında ilk sayfaya dön
+    setCurrentPage(1); // Reset to the first page when filtering
   }, [activeType, searchTerm, advancedFilterOptions, contents]);
 
   // Filtreleme menüsü dışına tıklandığında kapatma
@@ -555,19 +553,19 @@ const ContentManagement = () => {
     if (!selectedId) return;
 
     try {
-        // API'den veriyi sil
-        await deleteAPI(`/api/contents/${selectedId}`);
+      // API'den veriyi sil
+      await deleteAPI(`/api/contents/${selectedId}`);
 
-        // Başarıyla silindiyse state'ten de kaldır
-        setContents(prevContents => prevContents.filter(item => item.id !== selectedId));
+      // Başarıyla silindiyse state'ten de kaldır
+      setContents(prevContents => prevContents.filter(item => item.id !== selectedId));
 
-        // Modal'ı kapat ve seçili ID'yi temizle
-        setConfirmOpen(false);
-        setSelectedId(null);
+      // Modal'ı kapat ve seçili ID'yi temizle
+      setConfirmOpen(false);
+      setSelectedId(null);
     } catch (error) {
-        console.error("Silme işlemi başarısız:", error);
+      console.error("Silme işlemi başarısız:", error);
     }
-};
+  };
 
   const handleCancelDelete = () => {
     setConfirmOpen(false);
@@ -584,41 +582,67 @@ const ContentManagement = () => {
 
     const tagsString = formData.get("tags") || "";
     const tagsArray = tagsString
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag !== "");
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== "");
 
-    const newContent = {
-        title: formData.get("title"),
-        type: contentType,
-        category: formData.get("category"),
-        ageGroup: formData.get("ageGroup"),
-        publishDateStudent: formData.get("studentPublishDate"),
-        publishDateTeacher: formData.get("teacherPublishDate"),
-        endDateStudent: formData.get("weeklyContentEndDate"),
-        endDateTeacher: formData.get("weeklyContentEndDate"),
-        isActive: formData.get("status") === "active",
-        fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : "",
-        description: formData.get("description") || "",
-        tags: tagsArray,
-        updatedAt: new Date().toISOString(),
+    const contentData = {
+      title: formData.get("title"),
+      type: contentType,
+      category: formData.get("category"),
+      branch: formData.get("branch"),
+      ageGroup: formData.get("ageGroup"),
+      publishDateStudent: formData.get("studentPublishDate") ? new Date(formData.get("studentPublishDate")).toISOString() : null,
+      publishDateTeacher: formData.get("teacherPublishDate") ? new Date(formData.get("teacherPublishDate")).toISOString() : null,
+      endDateStudent: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
+      endDateTeacher: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
+      isActive: formData.get("status") === "active",
+      fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : null,
+      description: formData.get("description") || null,
+      tags: tagsArray,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      Feedback: []
     };
 
     try {
-        const response = await postAPI("/api/contents", newContent);
+      let response;
+      if (currentContent) {
+        // Update existing content
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(contentData),
+        });
 
-        if (response) {
-            setContents([...contents, response]); // Yeni içeriği state'e ekle
-            console.log("Yeni içerik eklendi:", response);
+        if (!response.ok) {
+          throw new Error('Failed to update content');
         }
+
+        // Update the content in the state
+        setContents(contents.map(content =>
+          content.id === currentContent.id ? { ...content, ...contentData } : content
+        ));
+        console.log("İçerik güncellendi:", contentData);
+      } else {
+        // Create new content
+        response = await postAPI("/api/contents", contentData);
+        if (response) {
+          setContents([...contents, response]);
+          console.log("Yeni içerik eklendi:", response);
+        }
+      }
     } catch (error) {
-        console.error("İçerik eklenirken hata oluştu:", error);
+      console.error("İçerik işlemi sırasında hata oluştu:", error);
     } finally {
-        setIsUploading(false);
-        setSelectedFile(null);
-        setIsModalOpen(false);
+      setIsUploading(false);
+      setSelectedFile(null);
+      setIsModalOpen(false);
+      setCurrentContent(null);
     }
-};
+  };
 
 
   // İçeriği görüntüleme
@@ -940,14 +964,13 @@ const ContentManagement = () => {
                         <div className="flex items-center">
                           <input
                             type="checkbox"
-                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 && !selectedItems.includes(content.id) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                              }`} //11.yi seçtirmiyor.
+                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 && !selectedItems.includes(content.id) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                             checked={selectedItems.includes(content.id)}
                             disabled={selectedItems.length >= 10 && !selectedItems.includes(content.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
                                 if (selectedItems.length >= 10) {
-                                  setShowLimitModal(true); // Uyarı modalı aç
+                                  setShowLimitModal(true);
                                   return;
                                 }
                                 setSelectedItems([...selectedItems, content.id]);
@@ -956,8 +979,6 @@ const ContentManagement = () => {
                               }
                             }}
                           />
-
-
                         </div>
                       </td>
                     )}
@@ -984,12 +1005,12 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.studentPublishDate ? new Date(content.studentPublishDate).toLocaleDateString('tr-TR') : '-'}
+                        {content.studentPublishDate ? new Date(content.publishDateStudent).toLocaleDateString('tr-TR') : '-'}
                       </div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.teacherPublishDate ? new Date(content.teacherPublishDate).toLocaleDateString('tr-TR') : '-'}
+                        {content.teacherPublishDate ? new Date(content.publishDateTeacher).toLocaleDateString('tr-TR') : '-'}
                       </div>
                     </td>
                     <td className="px-3 py-2">
@@ -1005,9 +1026,9 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {(() => {
                           const missingFields = [];
-                          if (!content.ageGroup) missingFields.push('Yaş');
-                          if (!content.studentPublishDate) missingFields.push('Öğrenci Yayın Tarihi');
-                          if (!content.teacherPublishDate) missingFields.push('Öğretmen Yayın Tarihi');
+                          if (!content.ageGroup) missingFields.push('Yaş Grubu');
+                          if (!content.publishDateStudent) missingFields.push('Öğrenci Yayın Tarihi');
+                          if (!content.publishDateTeacher) missingFields.push('Öğretmen Yayın Tarihi');
                           if (!content.branch) missingFields.push('Branş');
                           return missingFields.length > 0 ? (
                             <span className="text-red-600">{missingFields.join(', ')}</span>
