@@ -348,13 +348,13 @@ const TimelineComponent = () => {
             Planlanmış İçerikler
           </p>
         </div>
-        <button
+        {/* <button
           onClick={openAddContentModal}
           className="mt-3 sm:mt-0 inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
         >
           <Plus size={16} className="mr-2" />
           İçerik Ekle
-        </button>
+        </button> */}
       </div>
 
       {/* İçerik Kartları - Responsive Grid */}
