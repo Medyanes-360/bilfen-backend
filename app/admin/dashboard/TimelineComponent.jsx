@@ -461,145 +461,236 @@ const TimelineComponent = () => {
 
       {/* İçerik Ekleme Modalı */}
       {showAddContentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Yeni İçerik Ekle</h3>
-              <button
-                onClick={() => setShowAddContentModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X size={20} />
-              </button>
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-transparent backdrop-blur-sm"></div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                    İçerik Başlığı
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  />
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleSubmit}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    Yeni İçerik Ekle
+                  </h3>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* İçerik Başlığı */}
+                    <div>
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                        İçerik Başlığı
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        required
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    {/* İçerik Türü */}
+                    <div>
+                      <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                        İçerik Türü
+                      </label>
+                      <select
+                        id="type"
+                        name="type"
+                        value={formData.type}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="Video">Video</option>
+                        <option value="Doküman">Doküman</option>
+                        <option value="Oyun">Oyun</option>
+                        <option value="Etkileşimli İçerik">Etkileşimli İçerik</option>
+                      </select>
+                    </div>
+
+                    {/* Kategori */}
+                    <div>
+                      <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                        Kategori
+                      </label>
+                      <input
+                        type="text"
+                        name="category"
+                        id="category"
+                        value={formData.category || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      />
+                    </div>
+
+                    {/* Branş */}
+                    <div>
+                      <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                        Branş
+                      </label>
+                      <select
+                        id="branch"
+                        name="branch"
+                        value={formData.branch}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="Okul Öncesi">Okul Öncesi</option>
+                        <option value="İngilizce">İngilizce</option>
+                        <option value="Müzik">Müzik</option>
+                        <option value="Görsel Sanatlar">Görsel Sanatlar</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Beden Eğitimi">Beden Eğitimi</option>
+                      </select>
+                    </div>
+
+                    {/* Yaş Grubu */}
+                    <div>
+                      <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700">
+                        Yaş Grubu
+                      </label>
+                      <select
+                        id="ageGroup"
+                        name="ageGroup"
+                        value={formData.ageGroup}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="3-4 yaş">3-4 yaş</option>
+                        <option value="4-5 yaş">4-5 yaş</option>
+                        <option value="5-6 yaş">5-6 yaş</option>
+                      </select>
+                    </div>
+
+                    {/* İki Kolonlu Alan: Yayın Tarihleri */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Öğrenci Yayın Tarihi */}
+                      <div>
+                        <label htmlFor="studentPublishDate" className="block text-sm font-medium text-gray-700">
+                          Öğrenci Yayın Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="studentPublishDate"
+                          id="studentPublishDate"
+                          value={formData.studentPublishDate || ''}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      {/* Öğretmen Yayın Tarihi */}
+                      <div>
+                        <label htmlFor="teacherPublishDate" className="block text-sm font-medium text-gray-700">
+                          Öğretmen Yayın Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="teacherPublishDate"
+                          id="teacherPublishDate"
+                          value={formData.teacherPublishDate || ''}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Ek Materyal Seçeneği */}
+                    <div className="mt-2">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          name="isWeeklyContent"
+                          id="isWeeklyContent"
+                          checked={formData.isWeeklyContent || false}
+                          onChange={(e) => {
+                            handleInputChange({
+                              target: {
+                                name: 'isWeeklyContent',
+                                value: e.target.checked
+                              }
+                            });
+                            const dateContainer = document.getElementById('weeklyContentDateContainer');
+                            if (dateContainer) {
+                              dateContainer.classList.toggle('hidden', !e.target.checked);
+                            }
+                          }}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Ek Materyal</span>
+                      </label>
+                    </div>
+
+                    {/* Ek Materyal Tarih Aralığı */}
+                    <div id="weeklyContentDateContainer" className={formData.isWeeklyContent ? '' : 'hidden'}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="weeklyContentStartDate" className="block text-sm font-medium text-gray-700">
+                            Başlangıç Tarihi
+                          </label>
+                          <input
+                            type="date"
+                            name="weeklyContentStartDate"
+                            id="weeklyContentStartDate"
+                            value={formData.weeklyContentStartDate || ''}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="weeklyContentEndDate" className="block text-sm font-medium text-gray-700">
+                            Bitiş Tarihi
+                          </label>
+                          <input
+                            type="date"
+                            name="weeklyContentEndDate"
+                            id="weeklyContentEndDate"
+                            value={formData.weeklyContentEndDate || ''}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Açıklama */}
+                    <div>
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                        Açıklama
+                      </label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        rows="3"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="İçerik hakkında kısa bir açıklama yazın..."
+                      ></textarea>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                      İçerik Türü
-                    </label>
-                    <select
-                      id="type"
-                      name="type"
-                      required
-                      value={formData.type}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    >
-                      <option value="Video">Video</option>
-                      <option value="Doküman">Doküman</option>
-                      <option value="Oyun">Oyun</option>
-                      <option value="Etkileşimli İçerik">Etkileşimli İçerik</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700 mb-1">
-                      Yaş Grubu
-                    </label>
-                    <select
-                      id="ageGroup"
-                      name="ageGroup"
-                      required
-                      value={formData.ageGroup}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    >
-                      <option value="3-4 yaş">3-4 yaş</option>
-                      <option value="4-5 yaş">4-5 yaş</option>
-                      <option value="5-6 yaş">5-6 yaş</option>
-                    </select>
-                  </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    İçerik Ekle
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddContentModal(false)}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    İptal
+                  </button>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
-                      Branş
-                    </label>
-                    <select
-                      id="branch"
-                      name="branch"
-                      required
-                      value={formData.branch}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    >
-                      <option value="Okul Öncesi">Okul Öncesi</option>
-                      <option value="İngilizce">İngilizce</option>
-                      <option value="Müzik">Müzik</option>
-                      <option value="Görsel Sanatlar">Görsel Sanatlar</option>
-                      <option value="Drama">Drama</option>
-                      <option value="Beden Eğitimi">Beden Eğitimi</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
-                      Süre (HH:MM:SS)
-                    </label>
-                    <input
-                      type="text"
-                      id="duration"
-                      name="duration"
-                      required
-                      pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}"
-                      placeholder="00:15:00"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Açıklama
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows="3"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  ></textarea>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddContentModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600"
-                >
-                  İçerik Ekle
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
