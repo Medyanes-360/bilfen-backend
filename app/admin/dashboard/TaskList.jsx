@@ -251,7 +251,7 @@ const TaskList = () => {
       </div>
 
       <ul className="divide-y divide-gray-200">
-        {filteredTasks.length > 0 ? (
+        {filteredTasks?.length > 0 ? (
           filteredTasks.map((task) => (
             <li key={task.id} className="px-6 py-4 hover:bg-gray-50">
               <div className="flex items-start">
@@ -341,9 +341,9 @@ const TaskList = () => {
 
       <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
         <div className="text-sm text-gray-500">
-          <span className="font-medium">{tasks.filter(t => t.status === 'Tamamlandı').length}</span> tamamlandı,{' '}
+          <span className="font-medium">{tasks?.filter(t => t.status === 'Tamamlandı').length}</span> tamamlandı,{' '}
           <span className="font-medium">
-            {tasks.filter(t => t.status !== 'Tamamlandı').length}
+            {tasks?.filter(t => t.status !== 'Tamamlandı').length}
           </span> devam ediyor
         </div>
         <button className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
