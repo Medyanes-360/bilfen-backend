@@ -9,19 +9,12 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { r2 } from '@/lib/r2';
 import slugify from 'slugify';
-import { requireAdmin } from '@/lib/auth';
 
 const MULTIPART_THRESHOLD = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req) {
-  const start = Date.now();
-  // const session = await requireAdmin(req, res);
-  // if (!session) return res.status(200).json({ message: "Bu veri sadece admin içindir." })
-
   const formData = await req.formData();
   const file = formData.get('file');
-      //const session = await requireAdmin()
-      //if (session instanceof Response) return session;
 
   if (!file) {
     return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
@@ -57,8 +50,6 @@ export async function POST(req) {
         Key: key,
         ContentType: file.type || 'application/octet-stream',
       }));
-      const millis = Date.now() - start;
-      console.log("upload started", Math.floor(millis / 1000))
 
       uploadId = create.UploadId;
 
@@ -78,8 +69,6 @@ export async function POST(req) {
           PartNumber: i + 1,
           Body: partBuffer,
         }));
-        const millis = Date.now() - start;
-        console.log(`part ${i + 1} uploaded`, Math.floor(millis / 1000))
         parts.push({
           ETag: uploadPart.ETag,
           PartNumber: i + 1,
@@ -93,8 +82,6 @@ export async function POST(req) {
         MultipartUpload: { Parts: parts },
       }))
     }
-    const millis = Date.now() - start;
-    console.log(`upload finished`, Math.floor(millis / 1000))
     const url = key;
     return NextResponse.json({ status: 'success', url });
   } catch (err) {

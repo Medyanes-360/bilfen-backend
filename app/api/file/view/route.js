@@ -12,7 +12,7 @@ export async function GET(req) {
 
         const command = new GetObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
-            Key: `uploads/${fileUrl}`,
+            Key: `uploads/${fileUrl.split('/').pop()}`,
         });
 
         const response = await r2.send(command);
