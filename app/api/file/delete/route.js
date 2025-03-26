@@ -13,8 +13,6 @@ export async function DELETE(req) {
         if (!fileUrl)
             return NextResponse.json({ error: "Geçerli bir dosya değil." }, { status: 400 });
 
-      
-
         const command = new DeleteObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
             Key: `uploads/${fileUrl}`,
