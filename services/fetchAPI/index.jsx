@@ -110,4 +110,33 @@ const updateAPI = async (
     }
 };
 
-export { postAPI, getAPI, deleteAPI, updateAPI };
+const patchAPI = async (
+    URL,
+    body,
+    headers = { "Content-Type": "application/json" }
+) => {
+    try {
+        if (!process.env.NEXT_PUBLIC_API_URL || !URL) {
+            throw new Error("URL bulunamadı!");
+        }
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL + URL}`, {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify(body),
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to patch resource');
+        }
+
+        // Handle 204 No Content response
+        if (response.status === 204) return null;
+
+        return response.json();
+    } catch (err) {
+        throw new Error(`API request failed: ${err}`);
+    }
+};
+
+export { postAPI, getAPI, deleteAPI, updateAPI, patchAPI };

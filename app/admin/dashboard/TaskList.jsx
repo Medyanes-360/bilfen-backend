@@ -3,7 +3,7 @@
 // TaskList.jsx - İşlevsel Görev Listesi bileşeni
 import React, { useState, useEffect } from 'react';
 import { Check, X, Calendar, Clock, ChevronDown, ChevronUp, PlusCircle, Edit, Trash2, AlertCircle } from 'lucide-react';
-import { getAPI, postAPI, deleteAPI } from '@/services/fetchAPI';
+import { getAPI, postAPI, deleteAPI, patchAPI } from '@/services/fetchAPI';
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
@@ -114,19 +114,26 @@ const TaskList = () => {
     e.preventDefault();
 
     try {
-      const newTask = {
-        ...taskForm,
-        expanded: true
-      };
+      const { expanded, ...taskData } = taskForm; // Exclude 'expanded' from the task data
 
-      // Use postAPI to send the new task to the server
-      const addedTask = await postAPI('/api/tasks', newTask);
+      if (editingTask) {
+        // If editing, send a PATCH request
+        const updatedTask = await patchAPI(`/api/tasks/${editingTask.id}`, taskData);
+        if (updatedTask !== null) { // Check if updatedTask is not null
+          setTasks((prevTasks) => prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+        } else {
+          // If updatedTask is null, refetch tasks to ensure the list is updated
+          fetchTasks();
+        }
+      } else {
+        // If adding a new task, send a POST request
+        const addedTask = await postAPI('/api/tasks', taskData);
+        setTasks((prevTasks) => [addedTask, ...prevTasks]);
+      }
 
-      // Update the state with the newly added task
-      setTasks((prevTasks) => [addedTask, ...prevTasks]);
-      setShowTaskModal(false);
+      setShowTaskModal(false); // Close the modal after successful submission
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Error submitting task:', error);
     }
   };
 
@@ -346,7 +353,7 @@ const TaskList = () => {
 
       {/* Görev Ekleme/Düzenleme Modal */}
       {showTaskModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-0 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
