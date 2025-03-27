@@ -133,6 +133,7 @@ const ContentManagement = () => {
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
   };
+  
   const branchOptions = [
     { label: "Matematik", value: "MATEMATIK" },
     { label: "Türkçe", value: "TURKCE" },
@@ -140,6 +141,7 @@ const ContentManagement = () => {
     { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
     { label: "İngilizce", value: "INGILIZCE" }
   ];
+  
 
 
   // Toplu işlem yapma
@@ -318,6 +320,12 @@ const ContentManagement = () => {
     e.currentTarget.classList.add('border-indigo-500', 'bg-indigo-50');
   }, []);
 
+  const getCleanFileName = (url) => {
+    const filename = url.split("/").pop() || "";
+    const parts = filename.split("-");
+    return parts.length > 1 ? parts.slice(1).join("-") : filename;
+  };
+
   const handleDragLeave = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -362,6 +370,7 @@ const ContentManagement = () => {
   const handleSort = useCallback((option) => {
     setSortOption(option);
     let sortedContents = [...filteredContents];
+    
 
     switch (option) {
       case 'newest':
@@ -396,64 +405,132 @@ const ContentManagement = () => {
     setConfirmOpen(true);      // modal açılıyor
   };
 
+  //aynı zamanda r2den de silme ekleniyor.
   const handleConfirmDelete = async () => {
     if (!selectedId) return;
-
+  
     try {
-      // API'den veriyi sil
+      // 1. Silinecek içeriği bul (state'ten)
+      const contentToDelete = contents.find(item => item.id === selectedId);
+  
+      // 2. Eğer fileUrl varsa önce R2'den sil
+      if (contentToDelete?.fileUrl) {
+        try {
+          await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(contentToDelete.fileUrl)}`, {
+            method: "DELETE",
+          });
+        } catch (err) {
+          console.error("R2 dosyası silinirken hata oluştu:", err);
+        }
+      }
+  
+      // 3. İçeriği API'den sil
       await deleteAPI(`/api/contents/${selectedId}`);
-
-      // Başarıyla silindiyse state'ten de kaldır
+  
+      // 4. State'ten kaldır
       setContents(prevContents => prevContents.filter(item => item.id !== selectedId));
-
-      // Modal'ı kapat ve seçili ID'yi temizle
+  
+      // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
       setSelectedId(null);
     } catch (error) {
       console.error("Silme işlemi başarısız:", error);
     }
   };
+  
 
   const handleCancelDelete = () => {
     setConfirmOpen(false);
     setSelectedId(null);
   };
-
+    //dosyayı silme
+    const handleDeleteFile = async () => {
+      if (!currentContent?.fileUrl || !currentContent?.id) return;
+    
+      const fileKey = currentContent.fileUrl;
+    
+      try {
+        // 🔸 1. R2'den dosyayı sil
+        const res = await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(fileKey)}`, {
+          method: "DELETE",
+        });
+    
+        const json = await res.json();
+    
+        if (!res.ok) {
+          throw new Error(json?.error || "Dosya silinemedi");
+        }
+    
+        // 🔸 2. API'de içerik verisini güncelle (fileUrl'i kaldır)
+        await fetch(`/api/contents/${currentContent.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fileUrl: null }),
+        });
+        
+        
+    
+        // 🔸 3. State'te de fileUrl'i kaldır
+        setCurrentContent(prev => ({
+          ...prev,
+          fileUrl: null,
+        }));
+      } catch (err) {
+        console.error("Silme hatası:", err);
+        alert("Dosya silinemedi. Lütfen tekrar deneyin.");
+      }
+    };
+    
   // Form gönderildiğinde
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsUploading(true);
-
+  
     const formData = new FormData(e.target);
     const contentType = formData.get("type");
-
+  
     // Etiketleri düzenle
     const tagsString = formData.get("tags") || "";
     const tagsArray = tagsString
       .split(",")
       .map((tag) => tag.trim())
       .filter((tag) => tag !== "");
-
-    //  Dosya yükleme
+  
+    // Dosya yükleme
     let fileUrl = null;
-
-    if (selectedFile) {
+  
+    const isNewFileSelected = selectedFile instanceof File;
+  
+    // 🔥 1. Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa → önce eski dosyayı sil
+    if (currentContent?.fileUrl && isNewFileSelected) {
+      try {
+        await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(currentContent.fileUrl)}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.error("Eski dosya silinemedi:", err);
+      }
+    }
+  
+    // 🔥 2. Yeni dosya yüklenecekse → R2'ye gönder
+    if (isNewFileSelected) {
       try {
         const uploadForm = new FormData();
         uploadForm.append("file", selectedFile);
-
+  
         const uploadRes = await fetch("/api/file/upload", {
           method: "POST",
           body: uploadForm,
         });
-
+  
         const uploadJson = await uploadRes.json();
-
+  
         if (!uploadRes.ok) {
           throw new Error("Dosya yüklenemedi: " + uploadJson?.detail);
         }
-
-        // 🎯 fileUrl artık sadece dosya key'i (örnek: uploads/abc-uuid.docx)
+  
         fileUrl = uploadJson.url || uploadJson.key;
       } catch (uploadErr) {
         console.error("Dosya yükleme hatası:", uploadErr);
@@ -462,52 +539,64 @@ const ContentManagement = () => {
         return;
       }
     }
-
-    // İçerik verisi
+  
+    // 🔧 3. İçerik verisi
     const contentData = {
       title: formData.get("title"),
       type: contentType,
       category: formData.get("category"),
       branch: formData.get("branch"),
       ageGroup: formData.get("ageGroup"),
-      publishDateStudent: formData.get("publishDateStudent") ? new Date(formData.get("publishDateStudent")).toISOString() : null,
-      publishDateTeacher: formData.get("publishDateTeacher") ? new Date(formData.get("publishDateTeacher")).toISOString() : null,
-      endDateStudent: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
-      endDateTeacher: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
+      publishDateStudent: formData.get("publishDateStudent")
+        ? new Date(formData.get("publishDateStudent")).toISOString()
+        : null,
+      publishDateTeacher: formData.get("publishDateTeacher")
+        ? new Date(formData.get("publishDateTeacher")).toISOString()
+        : null,
+      endDateStudent: formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
+      endDateTeacher: formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
       isActive: formData.get("status") === "active",
-      fileUrl: fileUrl,
+      fileUrl: fileUrl !== null ? fileUrl : currentContent?.fileUrl || null,
       description: formData.get("description") || null,
       tags: tagsArray,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      Feedback: []
+      Feedback: [],
     };
-
+  
     try {
       let response;
+  
       if (currentContent) {
-        // Mevcut içeriği güncelle
+        // ✏️ Mevcut içeriği güncelle
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`, {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(contentData),
         });
-
+  
         if (!response.ok) {
-          throw new Error('İçerik güncellenemedi');
+          throw new Error("İçerik güncellenemedi");
         }
-
-        setContents(contents.map(content =>
-          content.id === currentContent.id ? { ...content, ...contentData } : content
-        ));
+  
+        // State güncelle
+        setContents((prev) =>
+          prev.map((content) =>
+            content.id === currentContent.id ? { ...content, ...contentData } : content
+          )
+        );
         console.log("İçerik güncellendi:", contentData);
       } else {
-        // Yeni içerik oluştur
+        // 🆕 Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
-          setContents([...contents, response]);
+          setContents((prev) => [...prev, response]);
           console.log("Yeni içerik eklendi:", response);
         }
       }
@@ -515,12 +604,15 @@ const ContentManagement = () => {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
       alert("İçerik kaydedilirken bir hata oluştu.");
     } finally {
+      // 🧹 Temizlik
       setIsUploading(false);
       setSelectedFile(null);
       setIsModalOpen(false);
       setCurrentContent(null);
     }
   };
+  
+  
 
 
 
@@ -1249,43 +1341,75 @@ const ContentManagement = () => {
                   </div>
                 </div>
               </div>
+             {/* Dosya Yükleme */}
+             <div>
+  <label className="block text-sm font-medium text-gray-700">İçerik Dosyası</label>
 
-              {/* Dosya Yükleme */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  İçerik Dosyası
-                </label>
-                <div
-                  className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                      >
-                        <span>Dosya seçin</span>
-                        <input
-                          id="file-upload"
-                          name="file-upload"
-                          type="file"
-                          className="sr-only"
-                          accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                      <p className="pl-1">veya sürükleyip bırakın</p>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar (maks. 50MB)
-                    </p>
-                  </div>
-                </div>
-              </div>
+  {currentContent?.fileUrl ? (
+    <div className="mt-2 text-sm text-gray-700 space-y-1">
+      <p className="font-medium">Yüklü dosya:</p>
+      <p className="text-sm font-medium text-green-600 break-all ">
+        {currentContent.fileUrl.split("/").pop()}
+      </p>
+
+      <button
+        type="button"
+        onClick={() => {
+          // sadece UI'da fileUrl'i sıfırla → böylece drag-drop alanı tekrar görünür
+          setCurrentContent(prev => ({
+            ...prev,
+            fileUrl: null,
+          }));
+          setSelectedFile(null); // önceki yükleme temizlensin
+        }}
+        className="mt-1 inline-flex items-center px-3 py-1.5 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 hover:bg-indigo-50 transition cursor-pointer"
+      >
+        Dosyayı değiştir
+      </button>
+    </div>
+  ) : (
+    <div
+      className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div className="space-y-1 text-center">
+        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+        <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
+          <label
+            htmlFor="file-upload"
+            className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            <span>Dosya seçin</span>
+            <input
+              id="file-upload"
+              name="file-upload"
+              type="file"
+              className="sr-only"
+              accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
+              onChange={handleFileChange}
+            />
+          </label>
+          <p className="pl-1">veya sürükleyip bırakın</p>
+        </div>
+        <p className="text-xs text-gray-500">
+          PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar (maks. 50MB)
+        </p>
+
+        {/* ✅ Seçilen dosya adı (sürüklenmiş ya da seçilmiş) */}
+        {selectedFile && (
+          <p className="mt-2 text-sm text-green-600 font-medium">
+            Seçilen dosya: {selectedFile.name}
+          </p>
+        )}
+      </div>
+    </div>
+  )}
+</div>
+
+
+
 
               {/* Açıklama Alanı */}
               <div>
@@ -1366,7 +1490,11 @@ const ContentManagement = () => {
             <button
               type="button"
               className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setSelectedFile(null); // seçilen dosyayı sıfırla
+              }}
+              
             >
               Kapat
             </button>
