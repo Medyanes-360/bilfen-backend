@@ -51,7 +51,7 @@ export async function POST(request) {
       data: {
         title: data.title,
         type: data.type,
-        category: data.category,
+        branch: data.branch,
         ageGroup: data.ageGroup,
         publishDateStudent,
         publishDateTeacher,
