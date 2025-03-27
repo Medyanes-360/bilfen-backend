@@ -18,7 +18,7 @@ import {
   MonitorPlay,
   X
 } from 'lucide-react';
-
+import { getAPI } from '@/services/fetchAPI';
 const TimelineComponent = () => {
   // 11 günlük bir zaman aralığı oluştur (5 gün önce, bugün, 5 gün sonra)
   const createTimelineData = (centerDate) => {
@@ -39,8 +39,21 @@ const TimelineComponent = () => {
 
     return result;
   };
+  const [contents, setContents] = useState([]);
+  useEffect(() => {
+    const fetchContents = async () => {
+      try {
+        const data = await getAPI("/api/contents");
+        if (data) {
+          setContents(data);
+        }
+      } catch (error) {
+        console.error("İçerikler yüklenirken hata oluştu:", error);
+      }
+    };
 
-
+    fetchContents();
+  }, []);
 
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
@@ -74,34 +87,24 @@ const TimelineComponent = () => {
   // Seçilen güne göre içerikleri yükle
   useEffect(() => {
     if (selectedDate) {
-      // Eğer seçilen gün için içerik varsa getir, yoksa örnek veri oluştur
-      if (dailyContents[selectedDate]) {
-        setDailyContent(dailyContents[selectedDate]);
+      const filtered = contents.filter((item) => {
+        const studentDate = item.publishDateStudent;
+        const teacherDate = item.publishDateTeacher;
+        return (
+          (studentDate && studentDate === selectedDate) ||
+          (teacherDate && teacherDate === selectedDate)
+        );
+      });
+
+      if (filtered.length > 0) {
+        setDailyContent(filtered);
       } else {
-        // Örnek içerikler (mock veri)
-        setDailyContent([
-          {
-            id: `auto-${selectedDate}-1`,
-            title: "Gün İçi Aktivite",
-            type: "Video",
-            ageGroup: "4-5 yaş",
-            branch: "Okul Öncesi",
-            duration: "00:15:00"
-          },
-          {
-            id: `auto-${selectedDate}-2`,
-            title: "Dil Gelişimi",
-            type: "Etkileşimli İçerik",
-            ageGroup: "5-6 yaş",
-            branch: "İngilizce",
-            duration: "00:20:00"
-          }
-        ]);
+        setDailyContent(null); // içerik yok
       }
     } else {
       setDailyContent([]);
     }
-  }, [selectedDate]);
+  }, [selectedDate, contents]);
 
   // Seçili gün değiştiğinde scroll pozisyonunu ayarla
   useEffect(() => {
@@ -200,16 +203,24 @@ const TimelineComponent = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+  const [modalType, setModalType] = useState(null);
 
   // İçerik izleme
   const handleWatchContent = (content) => {
     alert(`"${content.title}" içeriği izleniyor...`);
     // Gerçek uygulamada video oynatıcı açılacak
+    setCurrentContent(content);
+    setModalType('watch');
+    setIsModalOpen(true);
   };
-
+  const [currentContent, setCurrentContent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
-    alert(`"${content.title}" içeriğinin detayları görüntüleniyor...`);
+    setCurrentContent(content);
+    setIsModalOpen(true);
+    setModalType('details');
+
     // Gerçek uygulamada detay sayfasına yönlendirilecek
   };
 
@@ -231,8 +242,8 @@ const TimelineComponent = () => {
 
   // Bugüne git
   const goToToday = () => {
-    setSelectedDate(today.toISOString().split('T')[0]); 
-    setDays(createTimelineData(today)); 
+    setSelectedDate(today.toISOString().split('T')[0]);
+    setDays(createTimelineData(today));
   };
 
   // İçerik ekleme modalını aç
@@ -361,6 +372,8 @@ const TimelineComponent = () => {
 
       {/* İçerik Kartları - Responsive Grid */}
       <div className="p-4 md:p-6">
+
+
         {dailyContent && dailyContent.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {dailyContent.map((content, index) => (
@@ -423,15 +436,15 @@ const TimelineComponent = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">İçerik Bulunamadı</h3>
             <p className="text-sm text-gray-500 max-w-md mb-4">
-              Bu tarihe ait planlanmış içerik bulunmamaktadır. Yeni içerik eklemek için aşağıdaki butona tıklayabilirsiniz.
+              Bu tarihe ait planlanmış içerik bulunmamaktadır.
             </p>
-            <button
+            {/* <button
               onClick={openAddContentModal}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
             >
               <Plus size={16} className="mr-2" />
               İçerik Planla
-            </button>
+            </button> */}
           </div>
         )}
       </div>
@@ -696,6 +709,49 @@ const TimelineComponent = () => {
           </div>
         </div>
       )}
+
+      {isModalOpen && currentContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 px-4">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8">
+            {/* X Butonu */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Başlık */}
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentContent.title}</h2>
+
+            {/* İçerik Bilgileri */}
+
+            <div className="text-sm text-gray-800 space-y-2">
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Tür:</span>
+                {currentContent.type}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Yaş Grubu:</span>
+                {currentContent.ageGroup}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Branş:</span>
+                {currentContent.branch}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Açıklama:</span>
+                {currentContent.description || 'Açıklama bulunmuyor.'}
+              </p>
+
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
 
       {/* Scrollbar Gizleme için CSS */}
       <style jsx global>{`
