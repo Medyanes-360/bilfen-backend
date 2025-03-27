@@ -7,87 +7,98 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Branch {
+  MATEMATIK
+  TURKCE
+  FEN_BILGISI
+  SOSYAL_BILGILER
+  INGILIZCE
+}
+
 enum Role {
+  STUDENT
+  TEACHER
   ADMIN
-  TEACHER
-  STUDENT
 }
 
-enum Visibility {
-  STUDENT
-  TEACHER
-  BOTH
+// Öğretmen tablosu
+model Teacher {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  tcNo       String   @unique
+  password   String
+  name       String
+  surname    String
+  email      String
+  branch     Branch // Öğretmen branşı
+  role       Role     @default(TEACHER) // Role alanı eklendi
+  phone      String
+  experience Int? // Deneyim yılı
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-enum FeedbackStatus {
-  PENDING // İnceleme Bekliyor
-  REVIEWED // Değerlendirildi
-  APPROVED // Onaylandı
-  REJECTED // Reddedildi
+// Öğrenci tablosu
+model Student {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  tcNo          String   @unique
+  password      String
+  name          String
+  surname       String
+  role          Role     @default(STUDENT) // Role alanı eklendi
+  studentNumber String?
+  grade         Int? // Sınıf seviyesi
+  classroom     String? // Şube bilgisi
+  parentName    String
+  parentPhone   String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
-model User {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  email       String       @unique
-  password    String
-  name        String
-  role        Role
-  teacherInfo TeacherInfo?
-  feedbacks   Feedback[]   @relation("TeacherFeedbacks")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-model TeacherInfo {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique @db.ObjectId
-  branch String
+// Admin tablosu
+model Admin {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  role      Role     @default(ADMIN) // Role alanı eklendi
+  updatedAt DateTime @updatedAt
 }
 
 // RecentOrders.jsx -> Yeni icerik ekleme/duzenleme modalı icin
 model Content {
-  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
-  title              String // İçerik Başlığı
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
   type               String // İçerik Türü (Video, PDF, Sunum, Etkileşimli, Test)
-  category           String // Kategori
-  ageGroup           String // Yaş Grubu (3-6 Yaş, 7-10 Yaş, 11-14 Yaş, 15-18 Yaş)
-  publishDateStudent DateTime? // Opsiyonel olarak işaretlendi
-  publishDateTeacher DateTime? // Opsiyonel olarak işaretlendi
-  endDateStudent     DateTime? // Opsiyonel olarak işaretlendi
-  endDateTeacher     DateTime? // Opsiyonel olarak işaretlendi
-  isActive           Boolean    @default(true) // Katılım Durumu
+  branch             Branch // ders bilgisi
+  ageGroup           String
+  grade              Int? // Sınıf seviyesi (1, 2, 3, ...)
+  classroom          String? // Şube bilgisi (A, B, C, ...)
+  parentName         String? // Veli adı
+  parentPhone        String? // Veli telefon numarası
+  publishDateStudent DateTime?
+  publishDateTeacher DateTime?
+  endDateStudent     DateTime?
+  endDateTeacher     DateTime?
+  isActive           Boolean   @default(true) // Katılım Durumu
   fileUrl            String? // İçerik Dosyası (URL olarak saklanır)
-  description        String? // İçerik Açıklaması
-  tags               String[] // Etiketler (virgülle ayrılmış etiketler dizisi olarak saklanır)
-  updatedAt          DateTime? // Opsiyonel olarak değiştirildi
-  createdAt          DateTime?  @default(now()) // Opsiyonel olarak değiştirildi
-  Feedback           Feedback[]
+  description        String?
+  tags               String[]
+  updatedAt          DateTime?
+  createdAt          DateTime? @default(now())
 }
 
 // Adminin Todo listi
 model Task {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     String
   priority    String
   status      String
   createdAt   DateTime @default(now()) // Opsiyonel olarak değiştirildi
-  updatedAt   DateTime  // Opsiyonel olarak değiştirildi
-}
-
-model Feedback {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  teacher    User           @relation("TeacherFeedbacks", fields: [teacherId], references: [id])
-  teacherId  String         @db.ObjectId
-  content    Content        @relation(fields: [contentId], references: [id])
-  contentId  String         @db.ObjectId
-  message    String
-  status     FeedbackStatus @default(PENDING)
-  adminReply String?
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  updatedAt   DateTime // Opsiyonel olarak değiştirildi
 }
 
 model AccessSettings {

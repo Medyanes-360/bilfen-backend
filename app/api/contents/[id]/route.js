@@ -40,7 +40,7 @@ export async function PUT(request, { params }) {
       data: {
         title: data.title,
         type: data.type,
-        category: data.category,
+        branch: data.branch,
         ageGroup: data.ageGroup,
         publishDateStudent,
         publishDateTeacher,
