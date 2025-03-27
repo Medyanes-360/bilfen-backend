@@ -105,7 +105,6 @@ const ContentManagement = () => {
   const [formType, setFormType] = useState('');
   const [advancedFilterOptions, setAdvancedFilterOptions] = useState({
     ageGroup: '',
-    category: '',
     status: '',
     publishDateStudent: '',
     publishDateTeacher: ''
@@ -133,6 +132,7 @@ const ContentManagement = () => {
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
   };
+
   const branchOptions = [
     { label: "Matematik", value: "MATEMATIK" },
     { label: "Türkçe", value: "TURKCE" },
@@ -140,6 +140,7 @@ const ContentManagement = () => {
     { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
     { label: "İngilizce", value: "INGILIZCE" }
   ];
+
 
 
   // Toplu işlem yapma
@@ -159,7 +160,6 @@ const ContentManagement = () => {
       // Toplu güncelleme işlemi
       setIsBulkUpdating(true);
 
-      const bulkCategory = document.getElementById('bulkCategory')?.value;
       const bulkBranch = document.getElementById('bulkBranch')?.value;
       const bulkType = document.getElementById('bulkType')?.value;
       const bulkAgeGroup = document.getElementById('bulkAgeGroup')?.value;
@@ -175,7 +175,6 @@ const ContentManagement = () => {
           if (selectedItems.includes(item.id)) {
             return {
               ...item,
-              category: bulkCategory || item.category,
               branch: bulkBranch || item.branch,
               type: bulkType || item.type,
               ageGroup: bulkAgeGroup || item.ageGroup,
@@ -206,7 +205,6 @@ const ContentManagement = () => {
 
   const hasActiveFilters = () => {
     return advancedFilterOptions.ageGroup !== '' ||
-      advancedFilterOptions.category !== '' ||
       advancedFilterOptions.status !== '' ||
       advancedFilterOptions.publishDateStudent !== '' ||
       advancedFilterOptions.publishDateTeacher !== '' ||
@@ -318,6 +316,12 @@ const ContentManagement = () => {
     e.currentTarget.classList.add('border-indigo-500', 'bg-indigo-50');
   }, []);
 
+  const getCleanFileName = (url) => {
+    const filename = url.split("/").pop() || "";
+    const parts = filename.split("-");
+    return parts.length > 1 ? parts.slice(1).join("-") : filename;
+  };
+
   const handleDragLeave = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -363,6 +367,7 @@ const ContentManagement = () => {
     setSortOption(option);
     let sortedContents = [...filteredContents];
 
+
     switch (option) {
       case 'newest':
         sortedContents.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
@@ -396,17 +401,32 @@ const ContentManagement = () => {
     setConfirmOpen(true);      // modal açılıyor
   };
 
+  //aynı zamanda r2den de silme ekleniyor.
   const handleConfirmDelete = async () => {
     if (!selectedId) return;
 
     try {
-      // API'den veriyi sil
+      // 1. Silinecek içeriği bul (state'ten)
+      const contentToDelete = contents.find(item => item.id === selectedId);
+
+      // 2. Eğer fileUrl varsa önce R2'den sil
+      if (contentToDelete?.fileUrl) {
+        try {
+          await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(contentToDelete.fileUrl)}`, {
+            method: "DELETE",
+          });
+        } catch (err) {
+          console.error("R2 dosyası silinirken hata oluştu:", err);
+        }
+      }
+
+      // 3. İçeriği API'den sil
       await deleteAPI(`/api/contents/${selectedId}`);
 
-      // Başarıyla silindiyse state'ten de kaldır
+      // 4. State'ten kaldır
       setContents(prevContents => prevContents.filter(item => item.id !== selectedId));
 
-      // Modal'ı kapat ve seçili ID'yi temizle
+      // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
       setSelectedId(null);
     } catch (error) {
@@ -414,9 +434,49 @@ const ContentManagement = () => {
     }
   };
 
+
   const handleCancelDelete = () => {
     setConfirmOpen(false);
     setSelectedId(null);
+  };
+  //dosyayı silme
+  const handleDeleteFile = async () => {
+    if (!currentContent?.fileUrl || !currentContent?.id) return;
+
+    const fileKey = currentContent.fileUrl;
+
+    try {
+      // 🔸 1. R2'den dosyayı sil
+      const res = await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(fileKey)}`, {
+        method: "DELETE",
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error || "Dosya silinemedi");
+      }
+
+      // 🔸 2. API'de içerik verisini güncelle (fileUrl'i kaldır)
+      await fetch(`/api/contents/${currentContent.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileUrl: null }),
+      });
+
+
+
+      // 🔸 3. State'te de fileUrl'i kaldır
+      setCurrentContent(prev => ({
+        ...prev,
+        fileUrl: null,
+      }));
+    } catch (err) {
+      console.error("Silme hatası:", err);
+      alert("Dosya silinemedi. Lütfen tekrar deneyin.");
+    }
   };
 
   // Form gönderildiğinde
@@ -434,10 +494,24 @@ const ContentManagement = () => {
       .map((tag) => tag.trim())
       .filter((tag) => tag !== "");
 
-    //  Dosya yükleme
+    // Dosya yükleme
     let fileUrl = null;
 
-    if (selectedFile) {
+    const isNewFileSelected = selectedFile instanceof File;
+
+    // 🔥 1. Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa → önce eski dosyayı sil
+    if (currentContent?.fileUrl && isNewFileSelected) {
+      try {
+        await fetch(`/api/file/delete?fileUrl=${encodeURIComponent(currentContent.fileUrl)}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.error("Eski dosya silinemedi:", err);
+      }
+    }
+
+    // 🔥 2. Yeni dosya yüklenecekse → R2'ye gönder
+    if (isNewFileSelected) {
       try {
         const uploadForm = new FormData();
         uploadForm.append("file", selectedFile);
@@ -453,7 +527,6 @@ const ContentManagement = () => {
           throw new Error("Dosya yüklenemedi: " + uploadJson?.detail);
         }
 
-        // 🎯 fileUrl artık sadece dosya key'i (örnek: uploads/abc-uuid.docx)
         fileUrl = uploadJson.url || uploadJson.key;
       } catch (uploadErr) {
         console.error("Dosya yükleme hatası:", uploadErr);
@@ -463,51 +536,62 @@ const ContentManagement = () => {
       }
     }
 
-    // İçerik verisi
+    // 🔧 3. İçerik verisi
     const contentData = {
       title: formData.get("title"),
       type: contentType,
-      category: formData.get("category"),
       branch: formData.get("branch"),
       ageGroup: formData.get("ageGroup"),
-      publishDateStudent: formData.get("publishDateStudent") ? new Date(formData.get("publishDateStudent")).toISOString() : null,
-      publishDateTeacher: formData.get("publishDateTeacher") ? new Date(formData.get("publishDateTeacher")).toISOString() : null,
-      endDateStudent: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
-      endDateTeacher: formData.get("weeklyContentEndDate") ? new Date(formData.get("weeklyContentEndDate")).toISOString() : null,
+      publishDateStudent: formData.get("publishDateStudent")
+        ? new Date(formData.get("publishDateStudent")).toISOString()
+        : null,
+      publishDateTeacher: formData.get("publishDateTeacher")
+        ? new Date(formData.get("publishDateTeacher")).toISOString()
+        : null,
+      endDateStudent: formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
+      endDateTeacher: formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
       isActive: formData.get("status") === "active",
-      fileUrl: fileUrl,
+      fileUrl: fileUrl !== null ? fileUrl : currentContent?.fileUrl || null,
       description: formData.get("description") || null,
       tags: tagsArray,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      Feedback: []
+      Feedback: [],
     };
 
     try {
       let response;
+
       if (currentContent) {
-        // Mevcut içeriği güncelle
+        // ✏️ Mevcut içeriği güncelle
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`, {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(contentData),
         });
 
         if (!response.ok) {
-          throw new Error('İçerik güncellenemedi');
+          throw new Error("İçerik güncellenemedi");
         }
 
-        setContents(contents.map(content =>
-          content.id === currentContent.id ? { ...content, ...contentData } : content
-        ));
+        // State güncelle
+        setContents((prev) =>
+          prev.map((content) =>
+            content.id === currentContent.id ? { ...content, ...contentData } : content
+          )
+        );
         console.log("İçerik güncellendi:", contentData);
       } else {
-        // Yeni içerik oluştur
+        // 🆕 Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
-          setContents([...contents, response]);
+          setContents((prev) => [...prev, response]);
           console.log("Yeni içerik eklendi:", response);
         }
       }
@@ -515,12 +599,15 @@ const ContentManagement = () => {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
       alert("İçerik kaydedilirken bir hata oluştu.");
     } finally {
+      // 🧹 Temizlik
       setIsUploading(false);
       setSelectedFile(null);
       setIsModalOpen(false);
       setCurrentContent(null);
     }
   };
+
+
 
 
 
@@ -676,7 +763,6 @@ const ContentManagement = () => {
                     onClick={() => {
                       setAdvancedFilterOptions({
                         ageGroup: '',
-                        category: '',
                         status: '',
                         publishDateStudent: '',
                         publishDateTeacher: ''
@@ -717,26 +803,8 @@ const ContentManagement = () => {
                         </select>
                       </div>
 
-                      {/* Kategori Filtresi */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                        <select
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          value={advancedFilterOptions.category}
-                          onChange={(e) => setAdvancedFilterOptions({ ...advancedFilterOptions, category: e.target.value })}
-                        >
-                          <option value="">Tümü</option>
-                          <option value="Okul Öncesi">Okul Öncesi</option>
-                          <option value="Müzik">Müzik</option>
-                          <option value="İngilizce">İngilizce</option>
-                          <option value="Görsel Sanatlar">Görsel Sanatlar</option>
-                          <option value="Bilim">Bilim</option>
-                          <option value="Matematik">Matematik</option>
-                          <option value="Dil Gelişimi">Dil Gelişimi</option>
-                          <option value="Sosyal Gelişim">Sosyal Gelişim</option>
-                          <option value="Sağlık">Sağlık</option>
-                        </select>
-                      </div>
+
+
 
                       {/* Öğrenci Yayın Tarihi Filtresi */}
                       <div>
@@ -770,7 +838,6 @@ const ContentManagement = () => {
                           onClick={() => {
                             setAdvancedFilterOptions({
                               ageGroup: '',
-                              category: '',
                               status: '',
                               publishDateStudent: '',
                               publishDateTeacher: ''
@@ -832,7 +899,7 @@ const ContentManagement = () => {
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     İçerik
                   </th>
-               
+
                   <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Branş
                   </th>
@@ -1078,304 +1145,340 @@ const ContentManagement = () => {
 
       {/* İçerik Ekleme/Düzenleme Modal */}
       {isModalOpen && (
-  <div className="fixed inset-0 overflow-y-auto z-50">
-    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-        <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
 
-      <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <form onSubmit={handleSubmit}>
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              {currentContent ? 'İçerik Düzenle' : 'Yeni İçerik Ekle'}
-            </h3>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleSubmit}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    {currentContent ? 'İçerik Düzenle' : 'Yeni İçerik Ekle'}
+                  </h3>
 
-            <div className="grid grid-cols-1 gap-4">
-              {/* İçerik Başlığı */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                  İçerik Başlığı
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  id="title"
-                  defaultValue={currentContent?.title || ''}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-
-              {/* İçerik Türü */}
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                  İçerik Türü
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  defaultValue={currentContent?.type || ''}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  onChange={handleTypeChange}
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="video">Video</option>
-                  <option value="audio">Ses</option>
-                  <option value="document">Döküman</option>
-                  <option value="interactive">Etkileşimli</option>
-                  <option value="game">Oyun</option>
-                </select>
-              </div>
-
-              {/* Branş */}
-              <div>
-                <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                  Branş
-                </label>
-                <select
-                  id="branch"
-                  name="branch"
-                  defaultValue={currentContent?.branch || ''}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <option value="">Seçiniz</option>
-                  {branchOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Yaş Grubu */}
-              <div>
-                <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700">
-                  Yaş Grubu
-                </label>
-                <select
-                  id="ageGroup"
-                  name="ageGroup"
-                  defaultValue={currentContent?.ageGroup || ''}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="3-4 yaş">3-4 yaş</option>
-                  <option value="4-5 yaş">4-5 yaş</option>
-                  <option value="5-6 yaş">5-6 yaş</option>
-                  <option value="6-7 yaş">6-7 yaş</option>
-                  <option value="7-8 yaş">7-8 yaş</option>
-                </select>
-              </div>
-
-              {/* Yayın Tarihleri */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Öğrenci Yayın Tarihi */}
-                <div>
-                  <label htmlFor="publishDateStudent" className="block text-sm font-medium text-gray-700">
-                    Öğrenci Yayın Tarihi
-                  </label>
-                  <input
-                    type="date"
-                    name="publishDateStudent"
-                    id="publishDateStudent"
-                    defaultValue={currentContent?.publishDateStudent ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0] : ""}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                {/* Öğretmen Yayın Tarihi */}
-                <div>
-                  <label htmlFor="publishDateTeacher" className="block text-sm font-medium text-gray-700">
-                    Öğretmen Yayın Tarihi
-                  </label>
-                  <input
-                    type="date"
-                    name="publishDateTeacher"
-                    id="publishDateTeacher"
-                    defaultValue={currentContent?.publishDateTeacher ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0] : ""}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Ek Materyal Seçeneği */}
-              <div className="mt-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    name="isWeeklyContent"
-                    id="isWeeklyContent"
-                    defaultChecked={currentContent?.isWeeklyContent || false}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    onChange={(e) => {
-                      const dateContainer = document.getElementById('weeklyContentDateContainer');
-                      if (dateContainer) {
-                        dateContainer.classList.toggle('hidden', !e.target.checked);
-                      }
-                    }}
-                  />
-                  <span className="text-sm font-medium text-gray-700">Ek Materyal</span>
-                </label>
-              </div>
-
-              {/* Ek Materyal Tarih Aralığı */}
-              <div id="weeklyContentDateContainer" className={`mt-2 ${currentContent?.isWeeklyContent || false ? '' : 'hidden'}`}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="weeklyContentStartDate" className="block text-sm font-medium text-gray-700">
-                      Başlangıç Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      name="weeklyContentStartDate"
-                      id="weeklyContentStartDate"
-                      defaultValue={currentContent?.weeklyContentStartDate || new Date().toISOString().split('T')[0]}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="weeklyContentEndDate" className="block text-sm font-medium text-gray-700">
-                      Bitiş Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      name="weeklyContentEndDate"
-                      id="weeklyContentEndDate"
-                      defaultValue={currentContent?.weeklyContentEndDate || new Date().toISOString().split('T')[0]}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Dosya Yükleme */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  İçerik Dosyası
-                </label>
-                <div
-                  className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                      >
-                        <span>Dosya seçin</span>
-                        <input
-                          id="file-upload"
-                          name="file-upload"
-                          type="file"
-                          className="sr-only"
-                          accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
-                          onChange={handleFileChange}
-                        />
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* İçerik Başlığı */}
+                    <div>
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                        İçerik Başlığı
                       </label>
-                      <p className="pl-1">veya sürükleyip bırakın</p>
+                      <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        defaultValue={currentContent?.title || ''}
+                        required
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      />
                     </div>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar (maks. 50MB)
-                    </p>
+
+                    {/* İçerik Türü */}
+                    <div>
+                      <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                        İçerik Türü
+                      </label>
+                      <select
+                        id="type"
+                        name="type"
+                        defaultValue={currentContent?.type || ''}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        onChange={handleTypeChange}
+                      >
+                        <option value="">Seçiniz</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Ses</option>
+                        <option value="document">Döküman</option>
+                        <option value="interactive">Etkileşimli</option>
+                        <option value="game">Oyun</option>
+                      </select>
+                    </div>
+
+                    {/* Branş */}
+                    <div>
+                      <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                        Branş
+                      </label>
+                      <select
+                        id="branch"
+                        name="branch"
+                        defaultValue={currentContent?.branch || ''}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="">Seçiniz</option>
+                        {branchOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Yaş Grubu */}
+                    <div>
+                      <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700">
+                        Yaş Grubu
+                      </label>
+                      <select
+                        id="ageGroup"
+                        name="ageGroup"
+                        defaultValue={currentContent?.ageGroup || ''}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="">Seçiniz</option>
+                        <option value="3-4 yaş">3-4 yaş</option>
+                        <option value="4-5 yaş">4-5 yaş</option>
+                        <option value="5-6 yaş">5-6 yaş</option>
+                        <option value="6-7 yaş">6-7 yaş</option>
+                        <option value="7-8 yaş">7-8 yaş</option>
+                      </select>
+                    </div>
+
+                    {/* Yayın Tarihleri */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Öğrenci Yayın Tarihi */}
+                      <div>
+                        <label htmlFor="publishDateStudent" className="block text-sm font-medium text-gray-700">
+                          Öğrenci Yayın Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="publishDateStudent"
+                          id="publishDateStudent"
+                          defaultValue={currentContent?.publishDateStudent ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0] : ""}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      {/* Öğretmen Yayın Tarihi */}
+                      <div>
+                        <label htmlFor="publishDateTeacher" className="block text-sm font-medium text-gray-700">
+                          Öğretmen Yayın Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="publishDateTeacher"
+                          id="publishDateTeacher"
+                          defaultValue={currentContent?.publishDateTeacher ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0] : ""}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Ek Materyal Seçeneği */}
+                    <div className="mt-2">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          name="isWeeklyContent"
+                          id="isWeeklyContent"
+                          defaultChecked={currentContent?.isWeeklyContent || false}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          onChange={(e) => {
+                            const dateContainer = document.getElementById('weeklyContentDateContainer');
+                            if (dateContainer) {
+                              dateContainer.classList.toggle('hidden', !e.target.checked);
+                            }
+                          }}
+                        />
+                        <span className="text-sm font-medium text-gray-700">Ek Materyal</span>
+                      </label>
+                    </div>
+
+                    {/* Ek Materyal Tarih Aralığı */}
+                    <div id="weeklyContentDateContainer" className={`mt-2 ${currentContent?.isWeeklyContent || false ? '' : 'hidden'}`}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="weeklyContentStartDate" className="block text-sm font-medium text-gray-700">
+                            Başlangıç Tarihi
+                          </label>
+                          <input
+                            type="date"
+                            name="weeklyContentStartDate"
+                            id="weeklyContentStartDate"
+                            defaultValue={currentContent?.weeklyContentStartDate || new Date().toISOString().split('T')[0]}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="weeklyContentEndDate" className="block text-sm font-medium text-gray-700">
+                            Bitiş Tarihi
+                          </label>
+                          <input
+                            type="date"
+                            name="weeklyContentEndDate"
+                            id="weeklyContentEndDate"
+                            defaultValue={currentContent?.weeklyContentEndDate || new Date().toISOString().split('T')[0]}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Dosya Yükleme */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">İçerik Dosyası</label>
+
+                      {currentContent?.fileUrl ? (
+                        <div className="mt-2 text-sm text-gray-700 space-y-1">
+                          <p className="font-medium">Yüklü dosya:</p>
+                          <p className="text-sm font-medium text-green-600 break-all ">
+                            {currentContent.fileUrl.split("/").pop()}
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // sadece UI'da fileUrl'i sıfırla → böylece drag-drop alanı tekrar görünür
+                              setCurrentContent(prev => ({
+                                ...prev,
+                                fileUrl: null,
+                              }));
+                              setSelectedFile(null); // önceki yükleme temizlensin
+                            }}
+                            className="mt-1 inline-flex items-center px-3 py-1.5 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 hover:bg-indigo-50 transition cursor-pointer"
+                          >
+                            Dosyayı değiştir
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                        >
+                          <div className="space-y-1 text-center">
+                            <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                            <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
+                              <label
+                                htmlFor="file-upload"
+                                className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500"
+                              >
+                                <span>Dosya seçin</span>
+                                <input
+                                  id="file-upload"
+                                  name="file-upload"
+                                  type="file"
+                                  className="sr-only"
+                                  accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
+                                  onChange={handleFileChange}
+                                />
+                              </label>
+                              <p className="pl-1">veya sürükleyip bırakın</p>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar (maks. 50MB)
+                            </p>
+
+                            {/* ✅ Seçilen dosya adı (sürüklenmiş ya da seçilmiş) */}
+                            {selectedFile && (
+                              <p className="mt-2 text-sm text-green-600 font-medium">
+                                Seçilen dosya: {selectedFile.name}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
+
+
+                    {/* Açıklama Alanı */}
+                    <div>
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                        İçerik Açıklaması
+                      </label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        rows="3"
+                        defaultValue={currentContent?.description || ''}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="İçerik hakkında kısa bir açıklama yazın..."
+                      ></textarea>
+                    </div>
+
+                    {/* Etiketler */}
+                    <div>
+                      <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
+                        Etiketler (virgülle ayırın)
+                      </label>
+                      <div className="mt-1 flex rounded-md shadow-sm">
+                        <div className="relative flex items-stretch flex-grow">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Tag className="h-4 w-4 text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            name="tags"
+                            id="tags"
+                            defaultValue={currentContent?.tags?.join(', ') || ''}
+                            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                            placeholder="eğitim, müzik, matematik"
+                          />
+                        </div>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">Aramada kolaylık sağlamak için etiketler ekleyin</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Açıklama Alanı */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  İçerik Açıklaması
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  rows="3"
-                  defaultValue={currentContent?.description || ''}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="İçerik hakkında kısa bir açıklama yazın..."
-                ></textarea>
-              </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          aria-hidden="true"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 1116 0A8 8 0 014 12z"
+                          ></path>
+                        </svg>
+                        Yükleniyor...
+                      </>
+                    ) : (
+                      'Kaydet'
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setSelectedFile(null); // seçilen dosyayı sıfırla
+                    }}
 
-              {/* Etiketler */}
-              <div>
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
-                  Etiketler (virgülle ayırın)
-                </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <div className="relative flex items-stretch flex-grow">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Tag className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="tags"
-                      id="tags"
-                      defaultValue={currentContent?.tags?.join(', ') || ''}
-                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                      placeholder="eğitim, müzik, matematik"
-                    />
-                  </div>
+                  >
+                    Kapat
+                  </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Aramada kolaylık sağlamak için etiketler ekleyin</p>
-              </div>
+              </form>
             </div>
           </div>
-
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="submit"
-              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 1116 0A8 8 0 014 12z"
-                    ></path>
-                  </svg>
-                  Yükleniyor...
-                </>
-              ) : (
-                'Kaydet'
-              )}
-            </button>
-            <button
-              type="button"
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Kapat
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-)}
+        </div>
+      )}
 
 
       {/* Toplu İşlem Modal */}
@@ -1397,19 +1500,7 @@ const ContentManagement = () => {
 
                   {bulkAction === 'update' && (
                     <div className="grid grid-cols-1 gap-4">
-                      {/* Kategori */}
-                      <div>
-                        <label htmlFor="bulkCategory" className="block text-sm font-medium text-gray-700">
-                          Kategori
-                        </label>
-                        <input
-                          type="text"
-                          name="bulkCategory"
-                          id="bulkCategory"
-                          placeholder="Kategoriyi güncellemek için doldurun"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        />
-                      </div>
+
 
                       {/* Branş */}
                       <div>
@@ -1419,20 +1510,18 @@ const ContentManagement = () => {
                         <select
                           id="bulkBranch"
                           name="bulkBranch"
+                          defaultValue={currentContent?.branch || ''}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         >
                           <option value="">Seçiniz</option>
-                          <option value="Okul Öncesi">Okul Öncesi</option>
-                          <option value="Müzik">Müzik</option>
-                          <option value="İngilizce">İngilizce</option>
-                          <option value="Görsel Sanatlar">Görsel Sanatlar</option>
-                          <option value="Bilim">Bilim</option>
-                          <option value="Matematik">Matematik</option>
-                          <option value="Dil Gelişimi">Dil Gelişimi</option>
-                          <option value="Sosyal Gelişim">Sosyal Gelişim</option>
-                          <option value="Sağlık">Sağlık</option>
+                          {branchOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
+
 
                       {/* İçerik Türü */}
                       <div>

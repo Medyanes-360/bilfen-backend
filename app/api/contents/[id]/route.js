@@ -72,3 +72,23 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: "İçerik silinirken bir hata oluştu" }, { status: 500 });
   }
 }
+// /api/contents/[id]/route.js
+export async function PATCH(request, { params }) {
+  try {
+    const { id } = params;
+    const data = await request.json();
+
+    const updated = await prisma.content.update({
+      where: { id },
+      data: {
+        fileUrl: data.fileUrl,
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("PATCH hatası:", error);
+    return NextResponse.json({ error: "Dosya güncellenemedi" }, { status: 500 });
+  }
+}
+
