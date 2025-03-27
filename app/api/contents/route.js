@@ -9,7 +9,16 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(contents);
+    // Tarihleri formatla
+    const formattedContents = contents.map((content) => ({
+      ...content,
+      publishDateStudent: content.publishDateStudent?.toISOString().split("T")[0],
+      publishDateTeacher: content.publishDateTeacher?.toISOString().split("T")[0],
+      endDateStudent: content.endDateStudent?.toISOString().split("T")[0],
+      endDateTeacher: content.endDateTeacher?.toISOString().split("T")[0],
+    }));
+
+    return NextResponse.json(formattedContents);
   } catch (error) {
     console.error("İçerikler alınırken hata oluştu:", error);
     return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
