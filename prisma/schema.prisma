@@ -87,14 +87,14 @@ model Content {
 
 // Adminin Todo listi
 model Task {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     String
   priority    String
   status      String
-  createdAt   DateTime @default(now()) // Opsiyonel olarak değiştirildi
-  updatedAt   DateTime @updatedAt // Opsiyonel olarak değiştirildi
+  createdAt   DateTime  @default(now()) // Opsiyonel olarak değiştirildi
+  updatedAt   DateTime? @updatedAt // Opsiyonel olarak değiştirildi
 }
 
 model AccessSettings {
