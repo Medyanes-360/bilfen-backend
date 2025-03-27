@@ -1,25 +1,35 @@
-'use client';
+"use client";
 
 // TaskList.jsx - İşlevsel Görev Listesi bileşeni
-import React, { useState, useEffect } from 'react';
-import { Check, X, Calendar, Clock, ChevronDown, ChevronUp, PlusCircle, Edit, Trash2, AlertCircle } from 'lucide-react';
-import { getAPI, postAPI, deleteAPI, patchAPI } from '@/services/fetchAPI';
+import { deleteAPI, getAPI, patchAPI, postAPI } from "@/services/fetchAPI";
+import {
+  AlertCircle,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Edit,
+  PlusCircle,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [showCompleted, setShowCompleted] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('Tümü');
+  const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
-
 
   // Fetch tasks from the API
   const fetchTasks = async () => {
     try {
-      const fetchedTasks = await getAPI('/api/tasks');
+      const fetchedTasks = await getAPI("/api/tasks");
       setTasks(fetchedTasks);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error("Error fetching tasks:", error);
     }
   };
 
@@ -27,14 +37,13 @@ const TaskList = () => {
     fetchTasks();
   }, []);
 
-
   // Form için state
   const [taskForm, setTaskForm] = useState({
-    title: '',
-    description: '',
-    dueDate: new Date().toISOString().split('T')[0],
-    priority: 'Orta',
-    status: 'Beklemede'
+    title: "",
+    description: "",
+    dueDate: new Date().toISOString().split("T")[0],
+    priority: "Orta",
+    status: "Beklemede",
   });
 
   // Görevi genişlet/daralt
@@ -56,7 +65,7 @@ const TaskList = () => {
         if (task.id === id) {
           return {
             ...task,
-            status: task.status === 'Tamamlandı' ? 'Beklemede' : 'Tamamlandı',
+            status: task.status === "Tamamlandı" ? "Beklemede" : "Tamamlandı",
           };
         }
         return task;
@@ -72,7 +81,7 @@ const TaskList = () => {
       description: task.description,
       dueDate: task.dueDate,
       priority: task.priority,
-      status: task.status
+      status: task.status,
     });
     setShowTaskModal(true);
   };
@@ -83,7 +92,7 @@ const TaskList = () => {
       await deleteAPI(`/api/tasks/${taskId}`);
       fetchTasks(); // Refetch tasks after deletion to update the UI
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
     }
   };
 
@@ -91,11 +100,11 @@ const TaskList = () => {
   const openNewTaskModal = () => {
     setEditingTask(null);
     setTaskForm({
-      title: '',
-      description: '',
-      dueDate: new Date().toISOString().split('T')[0],
-      priority: 'Orta',
-      status: 'Beklemede'
+      title: "",
+      description: "",
+      dueDate: new Date().toISOString().split("T")[0],
+      priority: "Orta",
+      status: "Beklemede",
     });
     setShowTaskModal(true);
   };
@@ -105,7 +114,7 @@ const TaskList = () => {
     const { name, value } = e.target;
     setTaskForm({
       ...taskForm,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -119,21 +128,24 @@ const TaskList = () => {
       if (editingTask) {
         // If editing, send a PATCH request
         const updatedTask = await patchAPI(`/api/tasks/${editingTask.id}`, taskData);
-        if (updatedTask !== null) { // Check if updatedTask is not null
-          setTasks((prevTasks) => prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+        if (updatedTask !== null) {
+          // Check if updatedTask is not null
+          setTasks((prevTasks) =>
+            prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+          );
         } else {
           // If updatedTask is null, refetch tasks to ensure the list is updated
           fetchTasks();
         }
       } else {
         // If adding a new task, send a POST request
-        const addedTask = await postAPI('/api/tasks', taskData);
+        const addedTask = await postAPI("/api/tasks", taskData);
         setTasks((prevTasks) => [addedTask, ...prevTasks]);
       }
 
       setShowTaskModal(false); // Close the modal after successful submission
     } catch (error) {
-      console.error('Error submitting task:', error);
+      console.error("Error submitting task:", error);
     }
   };
 
@@ -142,10 +154,10 @@ const TaskList = () => {
     let filtered = tasks;
 
     if (!showCompleted) {
-      filtered = filtered.filter((task) => task.status !== 'Tamamlandı');
+      filtered = filtered.filter((task) => task.status !== "Tamamlandı");
     }
 
-    if (activeFilter !== 'Tümü') {
+    if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
 
@@ -155,39 +167,39 @@ const TaskList = () => {
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
     switch (priority) {
-      case 'Yüksek':
-        return 'bg-red-100 text-red-800';
-      case 'Orta':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Düşük':
-        return 'bg-green-100 text-green-800';
+      case "Yüksek":
+        return "bg-red-100 text-red-800";
+      case "Orta":
+        return "bg-yellow-100 text-yellow-800";
+      case "Düşük":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Durum renkleri
   const getStatusClass = (status) => {
     switch (status) {
-      case 'Tamamlandı':
-        return 'bg-green-100 text-green-800';
-      case 'Devam Ediyor':
-        return 'bg-blue-100 text-blue-800';
-      case 'Beklemede':
-        return 'bg-gray-100 text-gray-800';
+      case "Tamamlandı":
+        return "bg-green-100 text-green-800";
+      case "Devam Ediyor":
+        return "bg-blue-100 text-blue-800";
+      case "Beklemede":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Durum ikonu
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Tamamlandı':
+      case "Tamamlandı":
         return <Check size={16} />;
-      case 'Devam Ediyor':
+      case "Devam Ediyor":
         return <Clock size={16} />;
-      case 'Beklemede':
+      case "Beklemede":
         return <AlertCircle size={16} />;
       default:
         return null;
@@ -196,10 +208,10 @@ const TaskList = () => {
 
   // Filtreleme butonları
   const filterButtons = [
-    { label: 'Tümü', value: 'Tümü' },
-    { label: 'Yüksek', value: 'Yüksek' },
-    { label: 'Orta', value: 'Orta' },
-    { label: 'Düşük', value: 'Düşük' },
+    { label: "Tümü", value: "Tümü" },
+    { label: "Yüksek", value: "Yüksek" },
+    { label: "Orta", value: "Orta" },
+    { label: "Düşük", value: "Düşük" },
   ];
 
   const filteredTasks = getFilteredTasks();
@@ -211,8 +223,7 @@ const TaskList = () => {
           <h3 className="text-lg font-medium text-gray-900">Görevler</h3>
           <button
             onClick={openNewTaskModal}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-          >
+            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
             <PlusCircle size={16} className="mr-1" />
             Yeni Görev
           </button>
@@ -226,11 +237,11 @@ const TaskList = () => {
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md ${activeFilter === button.value
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-              >
+                className={`px-3 py-1.5 text-xs font-medium rounded-md ${
+                  activeFilter === button.value
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}>
                 {button.label}
               </button>
             ))}
@@ -258,24 +269,25 @@ const TaskList = () => {
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${task.status === 'Tamamlandı'
-                      ? 'bg-green-500 border-green-500 text-white'
-                      : 'border-gray-400'
-                      }`}
-                  >
-                    {task.status === 'Tamamlandı' && <Check size={12} />}
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                      task.status === "Tamamlandı"
+                        ? "bg-green-500 border-green-500 text-white"
+                        : "border-gray-400"
+                    }`}>
+                    {task.status === "Tamamlandı" && <Check size={12} />}
                   </button>
                 </div>
                 <div className="ml-3 flex-1">
                   <div className="flex items-center justify-between">
                     <div
                       onClick={() => toggleExpand(task.id)}
-                      className="flex items-center cursor-pointer"
-                    >
+                      className="flex items-center cursor-pointer">
                       <h4
-                        className={`text-sm font-medium ${task.status === 'Tamamlandı' ? 'text-gray-500 line-through' : 'text-gray-900'
-                          }`}
-                      >
+                        className={`text-sm font-medium ${
+                          task.status === "Tamamlandı"
+                            ? "text-gray-500 line-through"
+                            : "text-gray-900"
+                        }`}>
                         {task.title}
                       </h4>
                       {task.expanded ? (
@@ -288,15 +300,13 @@ const TaskList = () => {
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full flex items-center ${getPriorityClass(
                           task.priority
-                        )}`}
-                      >
+                        )}`}>
                         {task.priority}
                       </span>
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full flex items-center ${getStatusClass(
                           task.status
-                        )}`}
-                      >
+                        )}`}>
                         {getStatusIcon(task.status)}
                         <span className="ml-1">{task.status}</span>
                       </span>
@@ -313,15 +323,13 @@ const TaskList = () => {
                       <div className="mt-3 flex space-x-2">
                         <button
                           onClick={() => editTask(task)}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-                        >
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">
                           <Edit size={12} className="mr-1" />
                           Düzenle
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
-                        >
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-red-300 text-red-700 bg-white hover:bg-red-50">
                           <Trash2 size={12} className="mr-1" />
                           Sil
                         </button>
@@ -339,6 +347,7 @@ const TaskList = () => {
         )}
       </ul>
 
+      {/* 
       <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
         <div className="text-sm text-gray-500">
           <span className="font-medium">{tasks?.filter(t => t.status === 'Tamamlandı').length}</span> tamamlandı,{' '}
@@ -349,7 +358,7 @@ const TaskList = () => {
         <button className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
           Tüm görevleri görüntüle
         </button>
-      </div>
+      </div> */}
 
       {/* Görev Ekleme/Düzenleme Modal */}
       {showTaskModal && (
@@ -357,12 +366,11 @@ const TaskList = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                {editingTask ? 'Görevi Düzenle' : 'Yeni Görev Ekle'}
+                {editingTask ? "Görevi Düzenle" : "Yeni Görev Ekle"}
               </h3>
               <button
                 onClick={() => setShowTaskModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
+                className="text-gray-400 hover:text-gray-500">
                 <X size={20} />
               </button>
             </div>
@@ -394,8 +402,7 @@ const TaskList = () => {
                     rows="3"
                     value={taskForm.description}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  ></textarea>
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -424,8 +431,7 @@ const TaskList = () => {
                       required
                       value={taskForm.priority}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    >
+                      className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                       <option value="Düşük">Düşük</option>
                       <option value="Orta">Orta</option>
                       <option value="Yüksek">Yüksek</option>
@@ -443,8 +449,7 @@ const TaskList = () => {
                     required
                     value={taskForm.status}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  >
+                    className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     <option value="Beklemede">Beklemede</option>
                     <option value="Devam Ediyor">Devam Ediyor</option>
                     <option value="Tamamlandı">Tamamlandı</option>
@@ -455,15 +460,13 @@ const TaskList = () => {
                   <button
                     type="button"
                     onClick={() => setShowTaskModal(false)}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     İptal
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    {editingTask ? 'Güncelle' : 'Ekle'}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    {editingTask ? "Güncelle" : "Ekle"}
                   </button>
                 </div>
               </div>
