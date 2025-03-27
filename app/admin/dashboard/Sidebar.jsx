@@ -1,7 +1,7 @@
 // Sidebar.jsx dosyasını güncelleyin
 "use client";
 
-import { FileText, Home, Settings, X } from "lucide-react";
+import { BookOpen, FileText, GraduationCap, Home, Settings, X } from "lucide-react";
 import Link from "next/link";
 
 const Sidebar = ({ mobile = false, closeSidebar = null }) => {
@@ -18,6 +18,8 @@ const Sidebar = ({ mobile = false, closeSidebar = null }) => {
     // { name: 'Öğretmen Talepleri', icon: <MessageCircle size={20} />, path: '/teacher-requests' },
     // { name: 'Arşiv', icon: <Archive size={20} />, path: '/archive' },
     // { name: 'İstatistikler', icon: <BarChart2 size={20} />, path: '/statistics' },
+    { name: "Öğretmenler", icon: <BookOpen size={20} />, path: "/teachers" },
+    { name: "Öğrenciler", icon: <GraduationCap size={20} />, path: "/students" },
     { name: "Ayarlar", icon: <Settings size={20} />, path: "/admin/dashboard/settings" },
   ];
 
