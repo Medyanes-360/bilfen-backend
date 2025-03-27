@@ -71,7 +71,7 @@ const TimelineComponent = () => {
     description: ''
   });
 
-
+  const [previewUrl, setPreviewUrl] = useState("");
   const scrollContainerRef = useRef(null);
 
   // Responsive davranış için pencere genişliğini dinle
@@ -122,7 +122,36 @@ const TimelineComponent = () => {
       }
     }
   }, [selectedDate]);
+  // icerik izleme
+  const viewContent = async (id) => {
+    const content = contents.find((item) => item.id === id);
+    if (!content) return;
 
+    try {
+      console.log("Dosya çağırılıyor:", content.fileUrl);
+
+      const fileUrl = content.fileUrl;
+      const response = await fetch(`/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`);
+
+      console.log("API Yanıt:", response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Dosya alınamadı");
+      }
+
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+
+      console.log("Dosya Başarıyla Alındı:", fileURL);
+
+      // State'e dosya URL'sini kaydet
+      setPreviewUrl(fileURL);
+    } catch (error) {
+      console.error("Hata:", error);
+      alert("Dosya görüntülenirken hata oluştu: " + error.message);
+    }
+  };
   // Tarih formatı
   const formatDate = (dateString) => {
     if (!dateString) return { day: '', month: '', weekday: '', full: '' };
@@ -205,14 +234,7 @@ const TimelineComponent = () => {
   };
   const [modalType, setModalType] = useState(null);
 
-  // İçerik izleme
-  const handleWatchContent = (content) => {
-    alert(`"${content.title}" içeriği izleniyor...`);
-    // Gerçek uygulamada video oynatıcı açılacak
-    setCurrentContent(content);
-    setModalType('watch');
-    setIsModalOpen(true);
-  };
+
   const [currentContent, setCurrentContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // İçerik detaylarını görüntüleme
@@ -412,7 +434,7 @@ const TimelineComponent = () => {
                 {/* Butonlar */}
                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
                   <button
-                    onClick={() => handleWatchContent(content)}
+                    onClick={() => viewContent(content.id)}
                     className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                   >
                     <Play size={14} className="mr-1" />
@@ -743,13 +765,24 @@ const TimelineComponent = () => {
                 <span className="text-gray-900 font-semibold mr-2">Açıklama:</span>
                 {currentContent.description || 'Açıklama bulunmuyor.'}
               </p>
-
-
             </div>
           </div>
         </div>
       )}
 
+      {/* içeriği ön izleme */}
+
+      {previewUrl && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50">
+          <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
+          <iframe src={previewUrl} className="w-full h-96 border border-gray-300 rounded-lg" />
+          <button
+            onClick={() => setPreviewUrl("")}
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600">
+            Kapat
+          </button>
+        </div>
+      )}
 
 
 
