@@ -6,6 +6,7 @@ export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -26,24 +27,32 @@ export default function TeachersPage() {
     fetchTeachers();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Bu öğretmeni silmek istediğinize emin misiniz?")) {
+  const handleDelete = async (id, name) => {
+    if (
+      !confirm(`${name} isimli öğretmeni silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)
+    ) {
       return;
     }
 
     try {
+      setDeleteLoading(true);
+
       const response = await fetch(`/api/teachers/${id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Silme işlemi başarısız oldu");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Silme işlemi başarısız oldu");
       }
 
-      // Başarılı silme işleminden sonra listeyi güncelle
       setTeachers(teachers.filter((teacher) => teacher.id !== id));
+
+      alert(`${name} isimli öğretmen başarıyla silindi.`);
     } catch (err) {
       alert("Silme işlemi sırasında bir hata oluştu: " + err.message);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -183,9 +192,12 @@ export default function TeachersPage() {
                             Düzenle
                           </Link>
                           <button
-                            onClick={() => handleDelete(teacher.id)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">
-                            Sil
+                            onClick={() =>
+                              handleDelete(teacher.id, `${teacher.name} ${teacher.surname}`)
+                            }
+                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md cursor-pointer"
+                            disabled={deleteLoading}>
+                            {deleteLoading ? "Siliniyor..." : "Sil"}
                           </button>
                         </div>
                       </td>

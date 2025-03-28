@@ -64,7 +64,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { deleteAPI, getAPI, postAPI } from "@/services/fetchAPI";
 import BulkContentUpload from "@/components/BulkContentUpload";
 import SingleContentForm from "@/components/SingleContentForm";
-
+import isValidDate from "@/components/dateValidation";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -136,23 +136,29 @@ const ContentManagement = () => {
 
   // Toplu işlem yapma
   const handleBulkAction = async (e) => {
-    console.log("Selected Items:", selectedItems);
     e.preventDefault();
     setIsBulkUpdating(true);
 
     try {
-      // ✅ Toplu Silme
+      //  Toplu silme
       if (bulkAction === "delete") {
+        
         const idsToDelete = selectedItems
-          .map((item) => (typeof item === "string" ? item : item?.id))
-          .filter((id) => typeof id === "string" && id.trim() !== "");
+  .map((item) => (typeof item === "string" ? item : item?.id))
+  .filter((id) => typeof id === "string" && id.trim() !== "");
 
-        const fileKeysToDelete = selectedItems
-          .map((item) => {
-            const url = typeof item === "string" ? null : item?.fileUrl;
-            if (!url) return null;
-            const parts = url.split("/");
-            return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
+const fileKeysToDelete = contents
+  .filter((item) => idsToDelete.includes(item.id))
+  .map((item) => {
+    const url = item?.fileUrl;
+    if (!url) return null;
+    const parts = url.split("/");
+    return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
+  })
+  .filter((key) => typeof key === "string" && key.trim() !== "");
+
+        
+
           })
           .filter((key) => typeof key === "string" && key.trim() !== "");
 
@@ -177,11 +183,18 @@ const ContentManagement = () => {
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
 
-        setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
+
+        setContents((prev) =>
+          prev.filter((c) => !idsToDelete.includes(c.id))
+        );
+
         alert("İçerikler başarıyla silindi.");
+        setSelectedItems([]);
       }
 
+
       // ✅ Toplu Güncelleme
+
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
 
@@ -192,7 +205,9 @@ const ContentManagement = () => {
           description: formData.get("bulkDescription") || null,
         };
 
+
         // Boş olanları kaldır
+
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
@@ -202,31 +217,39 @@ const ContentManagement = () => {
           return;
         }
 
-        const updatePromises = selectedItems.map((item) =>
-          fetch(`/api/contents/${item.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedFields),
+
+        const contentsToUpdate = selectedItems.map((id) => ({
+          id,
+          ...updatedFields,
+        }));
+
+        console.log("Gönderilen veriler:", contentsToUpdate);
+
+        const res = await fetch("/api/contents/bulk-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ contents: contentsToUpdate }),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result?.error || "Toplu güncelleme başarısız.");
+        }
+
+        // UI'daki içerikleri güncelle
+
+        setContents((prev) =>
+          prev.map((content) => {
+            const updated = contentsToUpdate.find((c) => c.id === content.id);
+            return updated ? { ...content, ...updatedFields } : content;
           })
         );
 
-        const results = await Promise.all(updatePromises);
-
-        if (results.some((res) => !res.ok)) {
-          throw new Error("Bazı içerikler güncellenemedi.");
-        }
-
-        setContents((prev) =>
-          prev.map((content) =>
-            selectedItems.some((sel) => sel.id === content.id)
-              ? { ...content, ...updatedFields }
-              : content
-          )
-        );
-
         alert("İçerikler başarıyla güncellendi.");
+        setSelectedItems([]);
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
@@ -236,6 +259,7 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
+
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
@@ -257,8 +281,10 @@ const ContentManagement = () => {
   useEffect(() => {
     const filtered = contents.filter((content) => {
       const title = (content.title || "").toLowerCase();
+
       const matchesSearch =
         searchTerm === "" || title.includes(searchTerm.toLowerCase());
+
 
       const matchesType =
         activeType === "all" ||
@@ -271,8 +297,10 @@ const ContentManagement = () => {
 
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
+
         (content.ageGroup &&
           content.ageGroup === advancedFilterOptions.ageGroup);
+
 
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
@@ -582,7 +610,7 @@ const ContentManagement = () => {
 
     const isNewFileSelected = selectedFile instanceof File;
 
-    // 🔥 1. Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa → önce eski dosyayı sil
+    // Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa önce eski dosyayı sil
     if (currentContent?.fileUrl && isNewFileSelected) {
       try {
         await fetch(
@@ -598,7 +626,7 @@ const ContentManagement = () => {
       }
     }
 
-    // 🔥 2. Yeni dosya yüklenecekse → R2'ye gönder
+    //  Yeni dosya yüklenecekse  R2'ye gönder
     if (isNewFileSelected) {
       try {
         const uploadForm = new FormData();
@@ -624,7 +652,7 @@ const ContentManagement = () => {
       }
     }
 
-    // 🔧 3. İçerik verisi
+    //İçerik verisi
     const contentData = {
       title: formData.get("title"),
       type: contentType,
@@ -636,10 +664,11 @@ const ContentManagement = () => {
       publishDateTeacher: formData.get("publishDateTeacher")
         ? new Date(formData.get("publishDateTeacher")).toISOString()
         : null,
-      endDateStudent: formData.get("weeklyContentEndDate")
+      endDateStudent: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
-      endDateTeacher: formData.get("weeklyContentEndDate")
+
+      endDateTeacher: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
       isActive: formData.get("status") === "active",
@@ -655,7 +684,7 @@ const ContentManagement = () => {
       let response;
 
       if (currentContent) {
-        // ✏️ Mevcut içeriği güncelle
+        // Mevcut içeriği güncelle
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`,
           {
@@ -681,7 +710,7 @@ const ContentManagement = () => {
         );
         console.log("İçerik güncellendi:", contentData);
       } else {
-        // 🆕 Yeni içerik oluştur
+        //  Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
           setContents((prev) => [...prev, response]);
@@ -692,7 +721,7 @@ const ContentManagement = () => {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
       alert("İçerik kaydedilirken bir hata oluştu.");
     } finally {
-      // 🧹 Temizlik
+      //  Silme
       setIsUploading(false);
       setSelectedFile(null);
       setIsModalOpen(false);
@@ -735,11 +764,10 @@ const ContentManagement = () => {
   // Sayfalama hesaplamaları
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredContents.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredContents.length / itemsPerPage);
+  const currentItems = Array.isArray(filteredContents)
+    ? filteredContents.slice(indexOfFirstItem, indexOfLastItem)
+    : [];
+  const totalPages = Math.ceil(filteredContents?.length / itemsPerPage);
 
   // Sayfa değiştirme
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -760,12 +788,10 @@ const ContentManagement = () => {
                 <button
                   key={type.id}
                   onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${
-                    activeType === type.id
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
+                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${activeType === type.id
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}>
                   {type.name}
                 </button>
               ))}
@@ -1098,12 +1124,11 @@ const ContentManagement = () => {
                         <div className="flex items-center">
                           <input
                             type="checkbox"
-                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${
-                              selectedItems.length >= 10 &&
+                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 &&
                               !selectedItems.includes(content.id)
-                                ? "cursor-not-allowed opacity-50"
-                                : "cursor-pointer"
-                            }`}
+                              ? "cursor-not-allowed opacity-50"
+                              : "cursor-pointer"
+                              }`}
                             checked={selectedItems.includes(content.id)}
                             disabled={
                               selectedItems.length >= 10 &&
@@ -1157,8 +1182,8 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {content.publishDateStudent
                           ? new Date(
-                              content.publishDateStudent
-                            ).toLocaleDateString("tr-TR")
+                            content.publishDateStudent
+                          ).toLocaleDateString("tr-TR")
                           : "-"}
                       </div>
                     </td>
@@ -1166,14 +1191,14 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {content.publishDateTeacher
                           ? new Date(
-                              content.publishDateTeacher
-                            ).toLocaleDateString("tr-TR")
+                            content.publishDateTeacher
+                          ).toLocaleDateString("tr-TR")
                           : "-"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.isWeeklyContent ? (
+                        {isValidDate(content?.endDateStudent) || isValidDate(content?.endDateTeacher) ? (
                           <CheckSquare className="w-4 h-4 text-green-500" />
                         ) : (
                           "-"
@@ -1297,12 +1322,10 @@ const ContentManagement = () => {
                     <button
                       key={pageNumber}
                       onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${
-                        isCurrentPage
-                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${isCurrentPage
+                        ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        }`}>
                       {pageNumber}
                     </button>
                   );
@@ -1368,13 +1391,18 @@ const ContentManagement = () => {
             </span>
 
             {bulkMode ? (
-              <BulkContentUpload setIsModalOpen={setIsModalOpen} />
+
+              <BulkContentUpload
+                setIsModalOpen={setIsModalOpen}
+              />
+
             ) : (
               <SingleContentForm
                 setIsModalOpen={setIsModalOpen}
                 currentContent={currentContent}
                 setCurrentContent={setCurrentContent}
                 setContents={setContents}
+
                 branchOptions={branchOptions}
                 handleFileChange={handleFileChange}
                 handleDragOver={handleDragOver}
@@ -1385,11 +1413,12 @@ const ContentManagement = () => {
                 setSelectedFile={setSelectedFile}
               />
             )}
+
           </div>
         </div>
       )}
 
-      {/* Toplu İşlem Modal */}
+      {/* Toplu İşlem Modal düzenleme */}
       {bulkActionModalOpen && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -1521,11 +1550,10 @@ const ContentManagement = () => {
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${
-                      bulkAction === "delete"
-                        ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                        : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${bulkAction === "delete"
+                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                      : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
                     disabled={isBulkUpdating}
                   >
                     {isBulkUpdating ? (

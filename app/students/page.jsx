@@ -158,11 +158,10 @@ export default function StudentsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            student.isActive
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${student.isActive
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`}>
+                            }`}>
                           {student.isActive ? "Aktif" : "Pasif"}
                         </span>
                       </td>
@@ -175,8 +174,9 @@ export default function StudentsPage() {
                           </Link>
                           <button
                             onClick={() => handleDelete(student.id)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">
-                            Sil
+                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md cursor-pointer"
+                            disabled={loading}>
+                            {loading ? "Siliniyor..." : "Sil"}
                           </button>
                         </div>
                       </td>
