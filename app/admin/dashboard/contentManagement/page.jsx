@@ -563,10 +563,11 @@ const ContentManagement = () => {
       publishDateTeacher: formData.get("publishDateTeacher")
         ? new Date(formData.get("publishDateTeacher")).toISOString()
         : null,
-      endDateStudent: formData.get("weeklyContentEndDate")
+      endDateStudent: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
-      endDateTeacher: formData.get("weeklyContentEndDate")
+
+      endDateTeacher: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
       isActive: formData.get("status") === "active",
@@ -658,11 +659,31 @@ const ContentManagement = () => {
   // Sayfalama hesaplamaları
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredContents.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredContents.length / itemsPerPage);
+
+  const currentItems = Array.isArray(filteredContents)
+    ? filteredContents.slice(indexOfFirstItem, indexOfLastItem)
+    : [];
+  const totalPages = Math.ceil(filteredContents?.length / itemsPerPage);
 
   // Sayfa değiştirme
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const isValidDateString = (dateStr) => {
+    if (!dateStr) return false;
+
+    try {
+      const date = new Date(dateStr);
+      const formatted = date.toISOString().split("T")[0];
+
+      // 1970-01-01 ve 1970-01-08 gibi default/gereksiz tarihleri filtrele
+      if (formatted === "1970-01-01" || formatted === "1970-01-08") {
+        return false;
+      }
+
+      return !isNaN(date.getTime());
+    } catch (e) {
+      return false;
+    }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -678,11 +699,10 @@ const ContentManagement = () => {
                 <button
                   key={type.id}
                   onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${
-                    activeType === type.id
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}>
+                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${activeType === type.id
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}>
                   {type.name}
                 </button>
               ))}
@@ -981,11 +1001,10 @@ const ContentManagement = () => {
                         <div className="flex items-center">
                           <input
                             type="checkbox"
-                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${
-                              selectedItems.length >= 10 && !selectedItems.includes(content.id)
-                                ? "cursor-not-allowed opacity-50"
-                                : "cursor-pointer"
-                            }`}
+                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 && !selectedItems.includes(content.id)
+                              ? "cursor-not-allowed opacity-50"
+                              : "cursor-pointer"
+                              }`}
                             checked={selectedItems.includes(content.id)}
                             disabled={
                               selectedItems.length >= 10 && !selectedItems.includes(content.id)
@@ -1037,12 +1056,13 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.isWeeklyContent ? (
+                        {isValidDateString(content.endDateStudent) || isValidDateString(content.endDateTeacher) ? (
                           <CheckSquare className="w-4 h-4 text-green-500" />
                         ) : (
                           "-"
                         )}
                       </div>
+
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
@@ -1148,11 +1168,10 @@ const ContentManagement = () => {
                     <button
                       key={pageNumber}
                       onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${
-                        isCurrentPage
-                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                      }`}>
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${isCurrentPage
+                        ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        }`}>
                       {pageNumber}
                     </button>
                   );
@@ -1302,8 +1321,8 @@ const ContentManagement = () => {
                           defaultValue={
                             currentContent?.publishDateStudent
                               ? new Date(currentContent.publishDateStudent)
-                                  .toISOString()
-                                  .split("T")[0]
+                                .toISOString()
+                                .split("T")[0]
                               : ""
                           }
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -1323,8 +1342,8 @@ const ContentManagement = () => {
                           defaultValue={
                             currentContent?.publishDateTeacher
                               ? new Date(currentContent.publishDateTeacher)
-                                  .toISOString()
-                                  .split("T")[0]
+                                .toISOString()
+                                .split("T")[0]
                               : ""
                           }
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -1357,9 +1376,8 @@ const ContentManagement = () => {
                     {/* Ek Materyal Tarih Aralığı */}
                     <div
                       id="weeklyContentDateContainer"
-                      className={`mt-2 ${
-                        currentContent?.isWeeklyContent || false ? "" : "hidden"
-                      }`}>
+                      className={`mt-2 ${currentContent?.isWeeklyContent || false ? "" : "hidden"
+                        }`}>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label
@@ -1372,8 +1390,7 @@ const ContentManagement = () => {
                             name="weeklyContentStartDate"
                             id="weeklyContentStartDate"
                             defaultValue={
-                              currentContent?.weeklyContentStartDate ||
-                              new Date().toISOString().split("T")[0]
+                              currentContent?.weeklyContentStartDate || ""
                             }
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
@@ -1389,8 +1406,7 @@ const ContentManagement = () => {
                             name="weeklyContentEndDate"
                             id="weeklyContentEndDate"
                             defaultValue={
-                              currentContent?.weeklyContentEndDate ||
-                              new Date().toISOString().split("T")[0]
+                              currentContent?.weeklyContentEndDate || ""
                             }
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
@@ -1667,11 +1683,10 @@ const ContentManagement = () => {
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${
-                      bulkAction === "delete"
-                        ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                        : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${bulkAction === "delete"
+                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                      : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
                     disabled={isBulkUpdating}>
                     {isBulkUpdating ? (
                       <>
