@@ -69,10 +69,10 @@ model Admin {
 // RecentOrders.jsx -> Yeni icerik ekleme/duzenleme modalı icin
 model Content {
   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-  title              String // İçerik Başlığı  
-  type               String // İçerik Türü (Video, PDF, Sunum, Etkileşimli, Test)
-  branch             Branch // ders bilgisi
-  ageGroup           String // Yaş Grubu (3-6 Yaş, 7-10 Yaş, 11-14 Yaş, 15-18 Yaş)
+  title              String? // İçerik Başlığı  
+  type               String? // İçerik Türü (Video, PDF, Sunum, Etkileşimli, Test)
+  branch             Branch? // ders bilgisi
+  ageGroup           String? // Yaş Grubu (3-6 Yaş, 7-10 Yaş, 11-14 Yaş, 15-18 Yaş)
   publishDateStudent DateTime? // Öğrenci yayın tarihi
   publishDateTeacher DateTime? // Öğretmen yayın tarihi  
   endDateStudent     DateTime? // Öğrenci bitiş tarihi

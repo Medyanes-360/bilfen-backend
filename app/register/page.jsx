@@ -10,9 +10,7 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // URL'den role parametresini almak için useEffect kullanıyoruz
   useEffect(() => {
-    // URL'den role parametresini al
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get("role");
 
@@ -32,7 +30,6 @@ function RegisterForm() {
     isActive: true,
   });
 
-  // Öğretmen özel alanları
   const [teacherData, setTeacherData] = useState({
     email: "",
     branch: "MATEMATIK",
@@ -40,7 +37,6 @@ function RegisterForm() {
     experience: "",
   });
 
-  // Öğrenci özel alanları
   const [studentData, setStudentData] = useState({
     studentNumber: "",
     grade: "",
@@ -456,7 +452,6 @@ function RegisterForm() {
   );
 }
 
-// Ana bileşen
 export default function AdminRegister() {
   return (
     <Suspense
