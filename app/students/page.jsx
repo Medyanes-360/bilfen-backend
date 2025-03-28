@@ -175,8 +175,9 @@ export default function StudentsPage() {
                           </Link>
                           <button
                             onClick={() => handleDelete(student.id)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">
-                            Sil
+                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md cursor-pointer"
+                            disabled={loading}>
+                            {loading ? "Siliniyor..." : "Sil"}
                           </button>
                         </div>
                       </td>
