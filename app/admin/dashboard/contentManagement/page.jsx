@@ -64,7 +64,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { deleteAPI, getAPI, postAPI } from "@/services/fetchAPI";
 import BulkContentUpload from "@/components/BulkContentUpload";
 import SingleContentForm from "@/components/SingleContentForm";
-
+import isValidDate from "@/components/dateValidation";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -138,14 +138,14 @@ const ContentManagement = () => {
   const handleBulkAction = async (e) => {
     e.preventDefault();
     setIsBulkUpdating(true);
-  
+
     try {
       //  Toplu silme
       if (bulkAction === "delete") {
         const idsToDelete = selectedItems.filter(
           (id) => typeof id === "string" && id.trim() !== ""
         );
-  
+
         const fileKeysToDelete = contents
           .filter((item) => selectedItems.includes(item.id))
           .map((item) => {
@@ -157,12 +157,12 @@ const ContentManagement = () => {
               : null;
           })
           .filter((key) => typeof key === "string" && key.trim() !== "");
-  
+
         if (idsToDelete.length === 0) {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-  
+
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -173,47 +173,47 @@ const ContentManagement = () => {
             fileKeys: fileKeysToDelete,
           }),
         });
-  
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
-  
+
         setContents((prev) =>
           prev.filter((c) => !idsToDelete.includes(c.id))
         );
         alert("İçerikler başarıyla silindi.");
         setSelectedItems([]);
       }
-  
+
       // Toplu güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
-  
+
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
           ageGroup: formData.get("bulkAgeGroup") || null,
           description: formData.get("bulkDescription") || null,
         };
-  
+
         // Boş alanları çıkar
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
-  
+
         if (Object.keys(updatedFields).length === 0) {
           alert("Güncelleme için en az bir alan doldurmalısınız.");
           return;
         }
-  
+
         const contentsToUpdate = selectedItems.map((id) => ({
           id,
           ...updatedFields,
         }));
-  
+
         console.log("Gönderilen veriler:", contentsToUpdate);
-  
+
         const res = await fetch("/api/contents/bulk-update", {
           method: "POST",
           headers: {
@@ -221,13 +221,13 @@ const ContentManagement = () => {
           },
           body: JSON.stringify({ contents: contentsToUpdate }),
         });
-  
+
         const result = await res.json();
-  
+
         if (!res.ok) {
           throw new Error(result?.error || "Toplu güncelleme başarısız.");
         }
-  
+
         // UI'daki içerikleri güncelle
         setContents((prev) =>
           prev.map((content) => {
@@ -235,7 +235,7 @@ const ContentManagement = () => {
             return updated ? { ...content, ...updatedFields } : content;
           })
         );
-  
+
         alert("İçerikler başarıyla güncellendi.");
         setSelectedItems([]);
       }
@@ -247,11 +247,16 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
@@ -274,20 +279,20 @@ const ContentManagement = () => {
     const filtered = contents.filter((content) => {
       const title = (content.title || "").toLowerCase();
       const matchesSearch = searchTerm === "" || title.includes(searchTerm.toLowerCase());
-  
+
       const matchesType =
         activeType === "all" ||
         !activeType ||
         (content.type && content.type === activeType);
-  
+
       const matchesStatus =
         !advancedFilterOptions.status ||
         (content.status && content.status === advancedFilterOptions.status);
-  
+
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
         (content.ageGroup && content.ageGroup === advancedFilterOptions.ageGroup);
-  
+
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
         : null;
@@ -298,7 +303,7 @@ const ContentManagement = () => {
         !studentDateFilter ||
         !contentStudentDate ||
         contentStudentDate.toDateString() === studentDateFilter.toDateString();
-  
+
       const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
@@ -309,7 +314,7 @@ const ContentManagement = () => {
         !teacherDateFilter ||
         !contentTeacherDate ||
         contentTeacherDate.toDateString() === teacherDateFilter.toDateString();
-  
+
       return (
         matchesSearch &&
         matchesType &&
@@ -319,13 +324,12 @@ const ContentManagement = () => {
         matchesTeacherDate
       );
     });
-  
+
     setFilteredContents(filtered);
     setCurrentPage(1); // sayfayı başa al
 
 
   }, [contents, searchTerm, activeType, advancedFilterOptions]);
-  
 
   // Filtreleme menüsü dışına tıklandığında kapatma
   useEffect(() => {
@@ -653,10 +657,11 @@ const ContentManagement = () => {
       publishDateTeacher: formData.get("publishDateTeacher")
         ? new Date(formData.get("publishDateTeacher")).toISOString()
         : null,
-      endDateStudent: formData.get("weeklyContentEndDate")
+      endDateStudent: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
-      endDateTeacher: formData.get("weeklyContentEndDate")
+
+      endDateTeacher: formData.get("weeklyContentEndDate")?.trim()
         ? new Date(formData.get("weeklyContentEndDate")).toISOString()
         : null,
       isActive: formData.get("status") === "active",
@@ -752,11 +757,10 @@ const ContentManagement = () => {
   // Sayfalama hesaplamaları
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredContents.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredContents.length / itemsPerPage);
+  const currentItems = Array.isArray(filteredContents)
+    ? filteredContents.slice(indexOfFirstItem, indexOfLastItem)
+    : [];
+  const totalPages = Math.ceil(filteredContents?.length / itemsPerPage);
 
   // Sayfa değiştirme
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -777,12 +781,10 @@ const ContentManagement = () => {
                 <button
                   key={type.id}
                   onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${
-                    activeType === type.id
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
+                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${activeType === type.id
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}>
                   {type.name}
                 </button>
               ))}
@@ -1115,12 +1117,11 @@ const ContentManagement = () => {
                         <div className="flex items-center">
                           <input
                             type="checkbox"
-                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${
-                              selectedItems.length >= 10 &&
+                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 &&
                               !selectedItems.includes(content.id)
-                                ? "cursor-not-allowed opacity-50"
-                                : "cursor-pointer"
-                            }`}
+                              ? "cursor-not-allowed opacity-50"
+                              : "cursor-pointer"
+                              }`}
                             checked={selectedItems.includes(content.id)}
                             disabled={
                               selectedItems.length >= 10 &&
@@ -1174,8 +1175,8 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {content.publishDateStudent
                           ? new Date(
-                              content.publishDateStudent
-                            ).toLocaleDateString("tr-TR")
+                            content.publishDateStudent
+                          ).toLocaleDateString("tr-TR")
                           : "-"}
                       </div>
                     </td>
@@ -1183,14 +1184,14 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {content.publishDateTeacher
                           ? new Date(
-                              content.publishDateTeacher
-                            ).toLocaleDateString("tr-TR")
+                            content.publishDateTeacher
+                          ).toLocaleDateString("tr-TR")
                           : "-"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.isWeeklyContent ? (
+                        {isValidDate(content?.endDateStudent) || isValidDate(content?.endDateTeacher) ? (
                           <CheckSquare className="w-4 h-4 text-green-500" />
                         ) : (
                           "-"
@@ -1314,12 +1315,10 @@ const ContentManagement = () => {
                     <button
                       key={pageNumber}
                       onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${
-                        isCurrentPage
-                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${isCurrentPage
+                        ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        }`}>
                       {pageNumber}
                     </button>
                   );
@@ -1385,18 +1384,18 @@ const ContentManagement = () => {
             </span>
 
             {bulkMode ? (
-        <BulkContentUpload
-          setIsModalOpen={setIsModalOpen}
-        />
-      ) : (
-        <SingleContentForm
-          setIsModalOpen={setIsModalOpen}
-          currentContent={currentContent}
-          setCurrentContent={setCurrentContent}
-          setContents={setContents}
-        />
-      )}
-            
+              <BulkContentUpload
+                setIsModalOpen={setIsModalOpen}
+              />
+            ) : (
+              <SingleContentForm
+                setIsModalOpen={setIsModalOpen}
+                currentContent={currentContent}
+                setCurrentContent={setCurrentContent}
+                setContents={setContents}
+              />
+            )}
+
           </div>
         </div>
       )}
@@ -1533,11 +1532,10 @@ const ContentManagement = () => {
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${
-                      bulkAction === "delete"
-                        ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                        : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${bulkAction === "delete"
+                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                      : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
                     disabled={isBulkUpdating}
                   >
                     {isBulkUpdating ? (
