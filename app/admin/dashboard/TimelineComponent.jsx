@@ -18,7 +18,7 @@ import {
   MonitorPlay,
   X
 } from 'lucide-react';
-
+import { getAPI } from '@/services/fetchAPI';
 const TimelineComponent = () => {
   // 11 günlük bir zaman aralığı oluştur (5 gün önce, bugün, 5 gün sonra)
   const createTimelineData = (centerDate) => {
@@ -39,8 +39,21 @@ const TimelineComponent = () => {
 
     return result;
   };
+  const [contents, setContents] = useState([]);
+  useEffect(() => {
+    const fetchContents = async () => {
+      try {
+        const data = await getAPI("/api/contents");
+        if (data) {
+          setContents(data);
+        }
+      } catch (error) {
+        console.error("İçerikler yüklenirken hata oluştu:", error);
+      }
+    };
 
-
+    fetchContents();
+  }, []);
 
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
@@ -58,7 +71,7 @@ const TimelineComponent = () => {
     description: ''
   });
 
-
+  const [previewUrl, setPreviewUrl] = useState("");
   const scrollContainerRef = useRef(null);
 
   // Responsive davranış için pencere genişliğini dinle
@@ -74,34 +87,24 @@ const TimelineComponent = () => {
   // Seçilen güne göre içerikleri yükle
   useEffect(() => {
     if (selectedDate) {
-      // Eğer seçilen gün için içerik varsa getir, yoksa örnek veri oluştur
-      if (dailyContents[selectedDate]) {
-        setDailyContent(dailyContents[selectedDate]);
+      const filtered = contents.filter((item) => {
+        const studentDate = item.publishDateStudent;
+        const teacherDate = item.publishDateTeacher;
+        return (
+          (studentDate && studentDate === selectedDate) ||
+          (teacherDate && teacherDate === selectedDate)
+        );
+      });
+
+      if (filtered.length > 0) {
+        setDailyContent(filtered);
       } else {
-        // Örnek içerikler (mock veri)
-        setDailyContent([
-          {
-            id: `auto-${selectedDate}-1`,
-            title: "Gün İçi Aktivite",
-            type: "Video",
-            ageGroup: "4-5 yaş",
-            branch: "Okul Öncesi",
-            duration: "00:15:00"
-          },
-          {
-            id: `auto-${selectedDate}-2`,
-            title: "Dil Gelişimi",
-            type: "Etkileşimli İçerik",
-            ageGroup: "5-6 yaş",
-            branch: "İngilizce",
-            duration: "00:20:00"
-          }
-        ]);
+        setDailyContent(null); // içerik yok
       }
     } else {
       setDailyContent([]);
     }
-  }, [selectedDate]);
+  }, [selectedDate, contents]);
 
   // Seçili gün değiştiğinde scroll pozisyonunu ayarla
   useEffect(() => {
@@ -119,7 +122,36 @@ const TimelineComponent = () => {
       }
     }
   }, [selectedDate]);
+  // icerik izleme
+  const viewContent = async (id) => {
+    const content = contents.find((item) => item.id === id);
+    if (!content) return;
 
+    try {
+      console.log("Dosya çağırılıyor:", content.fileUrl);
+
+      const fileUrl = content.fileUrl;
+      const response = await fetch(`/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`);
+
+      console.log("API Yanıt:", response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Dosya alınamadı");
+      }
+
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+
+      console.log("Dosya Başarıyla Alındı:", fileURL);
+
+      // State'e dosya URL'sini kaydet
+      setPreviewUrl(fileURL);
+    } catch (error) {
+      console.error("Hata:", error);
+      alert("Dosya görüntülenirken hata oluştu: " + error.message);
+    }
+  };
   // Tarih formatı
   const formatDate = (dateString) => {
     if (!dateString) return { day: '', month: '', weekday: '', full: '' };
@@ -200,16 +232,17 @@ const TimelineComponent = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+  const [modalType, setModalType] = useState(null);
 
-  // İçerik izleme
-  const handleWatchContent = (content) => {
-    alert(`"${content.title}" içeriği izleniyor...`);
-    // Gerçek uygulamada video oynatıcı açılacak
-  };
 
+  const [currentContent, setCurrentContent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
-    alert(`"${content.title}" içeriğinin detayları görüntüleniyor...`);
+    setCurrentContent(content);
+    setIsModalOpen(true);
+    setModalType('details');
+
     // Gerçek uygulamada detay sayfasına yönlendirilecek
   };
 
@@ -231,8 +264,8 @@ const TimelineComponent = () => {
 
   // Bugüne git
   const goToToday = () => {
-    setSelectedDate(today.toISOString().split('T')[0]); 
-    setDays(createTimelineData(today)); 
+    setSelectedDate(today.toISOString().split('T')[0]);
+    setDays(createTimelineData(today));
   };
 
   // İçerik ekleme modalını aç
@@ -361,6 +394,8 @@ const TimelineComponent = () => {
 
       {/* İçerik Kartları - Responsive Grid */}
       <div className="p-4 md:p-6">
+
+
         {dailyContent && dailyContent.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {dailyContent.map((content, index) => (
@@ -399,7 +434,7 @@ const TimelineComponent = () => {
                 {/* Butonlar */}
                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
                   <button
-                    onClick={() => handleWatchContent(content)}
+                    onClick={() => viewContent(content.id)}
                     className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                   >
                     <Play size={14} className="mr-1" />
@@ -423,15 +458,15 @@ const TimelineComponent = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">İçerik Bulunamadı</h3>
             <p className="text-sm text-gray-500 max-w-md mb-4">
-              Bu tarihe ait planlanmış içerik bulunmamaktadır. Yeni içerik eklemek için aşağıdaki butona tıklayabilirsiniz.
+              Bu tarihe ait planlanmış içerik bulunmamaktadır.
             </p>
-            <button
+            {/* <button
               onClick={openAddContentModal}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
             >
               <Plus size={16} className="mr-2" />
               İçerik Planla
-            </button>
+            </button> */}
           </div>
         )}
       </div>
@@ -696,6 +731,60 @@ const TimelineComponent = () => {
           </div>
         </div>
       )}
+
+      {isModalOpen && currentContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 px-4">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8">
+            {/* X Butonu */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Başlık */}
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentContent.title}</h2>
+
+            {/* İçerik Bilgileri */}
+
+            <div className="text-sm text-gray-800 space-y-2">
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Tür:</span>
+                {currentContent.type}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Yaş Grubu:</span>
+                {currentContent.ageGroup}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Branş:</span>
+                {currentContent.branch}
+              </p>
+              <p>
+                <span className="text-gray-900 font-semibold mr-2">Açıklama:</span>
+                {currentContent.description || 'Açıklama bulunmuyor.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* içeriği ön izleme */}
+
+      {previewUrl && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50">
+          <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
+          <iframe src={previewUrl} className="w-full h-96 border border-gray-300 rounded-lg" />
+          <button
+            onClick={() => setPreviewUrl("")}
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600">
+            Kapat
+          </button>
+        </div>
+      )}
+
+
 
       {/* Scrollbar Gizleme için CSS */}
       <style jsx global>{`
