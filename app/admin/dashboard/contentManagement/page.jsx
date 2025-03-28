@@ -141,7 +141,7 @@ const ContentManagement = () => {
     setIsBulkUpdating(true);
   
     try {
-      // ✅ Toplu Silme
+      // Toplu Silme
       if (bulkAction === "delete") {
         const idsToDelete = selectedItems
   .map((item) => (typeof item === "string" ? item : item?.id))
@@ -161,7 +161,7 @@ const ContentManagement = () => {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-  
+
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -180,12 +180,13 @@ const ContentManagement = () => {
   
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
         alert("İçerikler başarıyla silindi.");
+        setSelectedItems([])
       }
   
       // ✅ Toplu Güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
-  
+ 
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
@@ -226,7 +227,7 @@ const ContentManagement = () => {
               : content
           )
         );
-  
+       
         alert("İçerikler başarıyla güncellendi.");
       }
     } catch (error) {
@@ -588,7 +589,7 @@ const ContentManagement = () => {
 
     const isNewFileSelected = selectedFile instanceof File;
 
-    // 🔥 1. Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa → önce eski dosyayı sil
+    // Eğer yeni bir dosya seçildiyse ve mevcut içerikte dosya varsa önce eski dosyayı sil
     if (currentContent?.fileUrl && isNewFileSelected) {
       try {
         await fetch(
@@ -604,7 +605,7 @@ const ContentManagement = () => {
       }
     }
 
-    // 🔥 2. Yeni dosya yüklenecekse → R2'ye gönder
+    //  Yeni dosya yüklenecekse  R2'ye gönder
     if (isNewFileSelected) {
       try {
         const uploadForm = new FormData();
@@ -630,7 +631,7 @@ const ContentManagement = () => {
       }
     }
 
-    // 🔧 3. İçerik verisi
+    //İçerik verisi
     const contentData = {
       title: formData.get("title"),
       type: contentType,
@@ -661,7 +662,7 @@ const ContentManagement = () => {
       let response;
 
       if (currentContent) {
-        // ✏️ Mevcut içeriği güncelle
+        // Mevcut içeriği güncelle
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`,
           {
@@ -687,7 +688,7 @@ const ContentManagement = () => {
         );
         console.log("İçerik güncellendi:", contentData);
       } else {
-        // 🆕 Yeni içerik oluştur
+        //  Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
           setContents((prev) => [...prev, response]);
@@ -698,7 +699,7 @@ const ContentManagement = () => {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
       alert("İçerik kaydedilirken bir hata oluştu.");
     } finally {
-      // 🧹 Temizlik
+      //  Silme
       setIsUploading(false);
       setSelectedFile(null);
       setIsModalOpen(false);
