@@ -8,53 +8,34 @@ export default function SingleContentForm({
   currentContent,
   setCurrentContent,
   setContents,
+  handleTypeChange,
+  branchOptions = [],
+  handleDragLeave,
+  handleDragOver,
+  handleDrop,
+  handleFileChange,
+  selectedFile,
+  setSelectedFile,
 }) {
-  const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const branchOptions = [
-    { label: "Matematik", value: "MATEMATIK" },
-    { label: "Türkçe", value: "TURKCE" },
-    { label: "Fen Bilgisi", value: "FEN_BILGISI" },
-    { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
-    { label: "İngilizce", value: "INGILIZCE" },
-  ];
+  const uploadFileToR2 = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const handleTypeChange = () => {};
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.currentTarget.classList.add("border-indigo-500", "bg-indigo-50");
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setSelectedFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const postAPI = async (url, data) => {
-    const res = await fetch(url, {
+    const res = await fetch("/api/file/upload", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+      body: formData,
     });
-    return res.json();
+
+    if (!res.ok) throw new Error("Dosya yüklenemedi");
+
+    const data = await res.json();
+    const uploadedFile = data?.files?.[0];
+    if (!uploadedFile?.url) throw new Error("Yüklenen dosya URL'si alınamadı");
+
+    const fileUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${uploadedFile.url}`;
+    return { fileUrl };
   };
 
   const handleSubmit = async (e) => {
@@ -63,74 +44,69 @@ export default function SingleContentForm({
 
     const formData = new FormData(e.target);
 
-    const tagsString = formData.get("tags") || "";
-    const tagsArray = tagsString
-      .split(",")
+    const tags = formData
+      .get("tags")
+      ?.split(",")
       .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
+      .filter(Boolean) || [];
 
-    const contentData = {
+    let fileUrl = currentContent?.fileUrl || null;
+
+    if (selectedFile) {
+      try {
+        const uploadResult = await uploadFileToR2(selectedFile);
+        fileUrl = uploadResult.fileUrl;
+      } catch (err) {
+        alert("Dosya yüklenirken hata oluştu.");
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    const payload = {
       title: formData.get("title"),
       type: formData.get("type"),
       branch: formData.get("branch"),
       ageGroup: formData.get("ageGroup"),
-      publishDateStudent: formData.get("publishDateStudent") || null,
-      publishDateTeacher: formData.get("publishDateTeacher") || null,
+      publishDateStudent: formData.get("publishDateStudent"),
+      publishDateTeacher: formData.get("publishDateTeacher"),
       isWeeklyContent: formData.get("isWeeklyContent") === "on",
-      weeklyContentStartDate: formData.get("weeklyContentStartDate") || null,
-      weeklyContentEndDate: formData.get("weeklyContentEndDate") || null,
-      description: formData.get("description") || null,
-      tags: tagsArray,
+      weeklyContentStartDate: formData.get("weeklyContentStartDate"),
+      weeklyContentEndDate: formData.get("weeklyContentEndDate"),
+      description: formData.get("description") || "",
+      tags,
+      fileUrl,
     };
 
-    if (!contentData.branch || !contentData.ageGroup) {
-      alert("Lütfen branş ve yaş grubu alanlarını doldurunuz.");
-      setIsUploading(false);
-      return;
-    }
-
     try {
-      let response;
-
+      let res;
       if (currentContent) {
-        response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${currentContent.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(contentData),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("İçerik güncellenemedi");
-        }
+        res = await fetch(`/api/contents/${currentContent.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Güncelleme başarısız");
 
         setContents((prev) =>
-          prev.map((content) =>
-            content.id === currentContent.id
-              ? { ...content, ...contentData }
-              : content
-          )
+          prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c))
         );
-        console.log("İçerik güncellendi:", contentData);
       } else {
-        response = await postAPI("/api/contents", contentData);
-        if (response) {
-          setContents((prev) => [...prev, response]);
-          console.log("Yeni içerik eklendi:", response);
-        }
+        res = await fetch("/api/contents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const newContent = await res.json();
+        setContents((prev) => [...prev, newContent]);
       }
     } catch (error) {
-      console.error("İçerik işlemi sırasında hata oluştu:", error);
-      alert("İçerik kaydedilirken bir hata oluştu.");
+      alert("İçerik kaydedilemedi");
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
-      setIsModalOpen(false);
       setCurrentContent(null);
+      setIsModalOpen(false);
     }
   };
   

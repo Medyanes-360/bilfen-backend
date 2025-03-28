@@ -139,29 +139,28 @@ const ContentManagement = () => {
     console.log("Selected Items:", selectedItems);
     e.preventDefault();
     setIsBulkUpdating(true);
-  
+
     try {
       // ✅ Toplu Silme
       if (bulkAction === "delete") {
         const idsToDelete = selectedItems
-  .map((item) => (typeof item === "string" ? item : item?.id))
-  .filter((id) => typeof id === "string" && id.trim() !== "");
-  
-  const fileKeysToDelete = selectedItems
-  .map((item) => {
-    const url = typeof item === "string" ? null : item?.fileUrl;
-    if (!url) return null;
-    const parts = url.split("/");
-    return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
-  })
-  .filter((key) => typeof key === "string" && key.trim() !== "");
+          .map((item) => (typeof item === "string" ? item : item?.id))
+          .filter((id) => typeof id === "string" && id.trim() !== "");
 
-  
+        const fileKeysToDelete = selectedItems
+          .map((item) => {
+            const url = typeof item === "string" ? null : item?.fileUrl;
+            if (!url) return null;
+            const parts = url.split("/");
+            return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
+          })
+          .filter((key) => typeof key === "string" && key.trim() !== "");
+
         if (idsToDelete.length === 0) {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-  
+
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -172,37 +171,37 @@ const ContentManagement = () => {
             fileKeys: fileKeysToDelete,
           }),
         });
-  
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
-  
+
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
         alert("İçerikler başarıyla silindi.");
       }
-  
+
       // ✅ Toplu Güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
-  
+
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
           ageGroup: formData.get("bulkAgeGroup") || null,
           description: formData.get("bulkDescription") || null,
         };
-  
+
         // Boş olanları kaldır
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
-  
+
         if (Object.keys(updatedFields).length === 0) {
           alert("Güncelleme için en az bir alan doldurmalısınız.");
           return;
         }
-  
+
         const updatePromises = selectedItems.map((item) =>
           fetch(`/api/contents/${item.id}`, {
             method: "PUT",
@@ -212,13 +211,13 @@ const ContentManagement = () => {
             body: JSON.stringify(updatedFields),
           })
         );
-  
+
         const results = await Promise.all(updatePromises);
-  
+
         if (results.some((res) => !res.ok)) {
           throw new Error("Bazı içerikler güncellenemedi.");
         }
-  
+
         setContents((prev) =>
           prev.map((content) =>
             selectedItems.some((sel) => sel.id === content.id)
@@ -226,7 +225,7 @@ const ContentManagement = () => {
               : content
           )
         );
-  
+
         alert("İçerikler başarıyla güncellendi.");
       }
     } catch (error) {
@@ -237,10 +236,6 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
-  
-  
-  
-  
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
@@ -262,21 +257,23 @@ const ContentManagement = () => {
   useEffect(() => {
     const filtered = contents.filter((content) => {
       const title = (content.title || "").toLowerCase();
-      const matchesSearch = searchTerm === "" || title.includes(searchTerm.toLowerCase());
-  
+      const matchesSearch =
+        searchTerm === "" || title.includes(searchTerm.toLowerCase());
+
       const matchesType =
         activeType === "all" ||
         !activeType ||
         (content.type && content.type === activeType);
-  
+
       const matchesStatus =
         !advancedFilterOptions.status ||
         (content.status && content.status === advancedFilterOptions.status);
-  
+
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
-        (content.ageGroup && content.ageGroup === advancedFilterOptions.ageGroup);
-  
+        (content.ageGroup &&
+          content.ageGroup === advancedFilterOptions.ageGroup);
+
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
         : null;
@@ -287,7 +284,7 @@ const ContentManagement = () => {
         !studentDateFilter ||
         !contentStudentDate ||
         contentStudentDate.toDateString() === studentDateFilter.toDateString();
-  
+
       const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
@@ -298,7 +295,7 @@ const ContentManagement = () => {
         !teacherDateFilter ||
         !contentTeacherDate ||
         contentTeacherDate.toDateString() === teacherDateFilter.toDateString();
-  
+
       return (
         matchesSearch &&
         matchesType &&
@@ -308,13 +305,10 @@ const ContentManagement = () => {
         matchesTeacherDate
       );
     });
-  
+
     setFilteredContents(filtered);
     setCurrentPage(1); // sayfayı başa al
-
-
   }, [contents, searchTerm, activeType, advancedFilterOptions]);
-  
 
   // Filtreleme menüsü dışına tıklandığında kapatma
   useEffect(() => {
@@ -1374,18 +1368,23 @@ const ContentManagement = () => {
             </span>
 
             {bulkMode ? (
-        <BulkContentUpload
-          setIsModalOpen={setIsModalOpen}
-        />
-      ) : (
-        <SingleContentForm
-          setIsModalOpen={setIsModalOpen}
-          currentContent={currentContent}
-          setCurrentContent={setCurrentContent}
-          setContents={setContents}
-        />
-      )}
-            
+              <BulkContentUpload setIsModalOpen={setIsModalOpen} />
+            ) : (
+              <SingleContentForm
+                setIsModalOpen={setIsModalOpen}
+                currentContent={currentContent}
+                setCurrentContent={setCurrentContent}
+                setContents={setContents}
+                branchOptions={branchOptions}
+                handleFileChange={handleFileChange}
+                handleDragOver={handleDragOver}
+                handleDragLeave={handleDragLeave}
+                handleDrop={handleDrop}
+                getStatusColor={getStatusColor}
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+              />
+            )}
           </div>
         </div>
       )}
