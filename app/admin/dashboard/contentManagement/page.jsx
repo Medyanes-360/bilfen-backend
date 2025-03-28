@@ -136,32 +136,33 @@ const ContentManagement = () => {
 
   // Toplu işlem yapma
   const handleBulkAction = async (e) => {
-    console.log("Selected Items:", selectedItems);
     e.preventDefault();
     setIsBulkUpdating(true);
   
     try {
-      // Toplu Silme
+      //  Toplu silme
       if (bulkAction === "delete") {
-        const idsToDelete = selectedItems
-  .map((item) => (typeof item === "string" ? item : item?.id))
-  .filter((id) => typeof id === "string" && id.trim() !== "");
+        const idsToDelete = selectedItems.filter(
+          (id) => typeof id === "string" && id.trim() !== ""
+        );
   
-  const fileKeysToDelete = selectedItems
-  .map((item) => {
-    const url = typeof item === "string" ? null : item?.fileUrl;
-    if (!url) return null;
-    const parts = url.split("/");
-    return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
-  })
-  .filter((key) => typeof key === "string" && key.trim() !== "");
-
+        const fileKeysToDelete = contents
+          .filter((item) => selectedItems.includes(item.id))
+          .map((item) => {
+            const url = item?.fileUrl;
+            if (!url) return null;
+            const parts = url.split("/");
+            return parts.length >= 2
+              ? `${parts.at(-2)}/${parts.at(-1)}`
+              : null;
+          })
+          .filter((key) => typeof key === "string" && key.trim() !== "");
   
         if (idsToDelete.length === 0) {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-
+  
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -178,15 +179,17 @@ const ContentManagement = () => {
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
   
-        setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
+        setContents((prev) =>
+          prev.filter((c) => !idsToDelete.includes(c.id))
+        );
         alert("İçerikler başarıyla silindi.");
-        setSelectedItems([])
+        setSelectedItems([]);
       }
   
-      // ✅ Toplu Güncelleme
+      // Toplu güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
- 
+  
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
@@ -194,7 +197,7 @@ const ContentManagement = () => {
           description: formData.get("bulkDescription") || null,
         };
   
-        // Boş olanları kaldır
+        // Boş alanları çıkar
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
@@ -204,31 +207,37 @@ const ContentManagement = () => {
           return;
         }
   
-        const updatePromises = selectedItems.map((item) =>
-          fetch(`/api/contents/${item.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedFields),
+        const contentsToUpdate = selectedItems.map((id) => ({
+          id,
+          ...updatedFields,
+        }));
+  
+        console.log("Gönderilen veriler:", contentsToUpdate);
+  
+        const res = await fetch("/api/contents/bulk-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ contents: contentsToUpdate }),
+        });
+  
+        const result = await res.json();
+  
+        if (!res.ok) {
+          throw new Error(result?.error || "Toplu güncelleme başarısız.");
+        }
+  
+        // UI'daki içerikleri güncelle
+        setContents((prev) =>
+          prev.map((content) => {
+            const updated = contentsToUpdate.find((c) => c.id === content.id);
+            return updated ? { ...content, ...updatedFields } : content;
           })
         );
   
-        const results = await Promise.all(updatePromises);
-  
-        if (results.some((res) => !res.ok)) {
-          throw new Error("Bazı içerikler güncellenemedi.");
-        }
-  
-        setContents((prev) =>
-          prev.map((content) =>
-            selectedItems.some((sel) => sel.id === content.id)
-              ? { ...content, ...updatedFields }
-              : content
-          )
-        );
-       
         alert("İçerikler başarıyla güncellendi.");
+        setSelectedItems([]);
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
@@ -238,6 +247,7 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
+  
   
   
   
@@ -1391,7 +1401,7 @@ const ContentManagement = () => {
         </div>
       )}
 
-      {/* Toplu İşlem Modal */}
+      {/* Toplu İşlem Modal düzenleme */}
       {bulkActionModalOpen && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
