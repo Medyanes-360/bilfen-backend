@@ -13,6 +13,7 @@ enum Branch {
   FEN_BILGISI
   SOSYAL_BILGILER
   INGILIZCE
+  DRAFT
 }
 
 enum Role {

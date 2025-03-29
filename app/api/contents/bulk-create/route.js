@@ -104,8 +104,8 @@ export async function POST(req) {
         const newContent = await prisma.content.create({
           data: {
             title: safeName,             // Taslak başlık
-            type: "",              // İçerik türü henüz belli değil
-            branch: "INGILIZCE",        // Örnek olarak varsayılan bir branş
+            type: "",                   // İçerik türü henüz belli değil
+            branch: "DRAFT",            // Örnek olarak varsayılan bir branş
             ageGroup: "",               // Henüz yaş grubu belirlenmedi
             fileUrl: key,               // Yüklenen dosyanın R2 üzerindeki path’i
             description: "",            // Açıklama boş
