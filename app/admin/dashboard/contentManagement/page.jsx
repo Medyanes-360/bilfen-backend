@@ -138,35 +138,29 @@ const ContentManagement = () => {
   const handleBulkAction = async (e) => {
     e.preventDefault();
     setIsBulkUpdating(true);
-
+  
     try {
-      //  Toplu silme
+      // Toplu Silme
       if (bulkAction === "delete") {
-        
         const idsToDelete = selectedItems
-  .map((item) => (typeof item === "string" ? item : item?.id))
-  .filter((id) => typeof id === "string" && id.trim() !== "");
-
-const fileKeysToDelete = contents
-  .filter((item) => idsToDelete.includes(item.id))
-  .map((item) => {
-    const url = item?.fileUrl;
-    if (!url) return null;
-    const parts = url.split("/");
-    return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
-  })
-  .filter((key) => typeof key === "string" && key.trim() !== "");
-
-        
-
+          .map((item) => (typeof item === "string" ? item : item?.id))
+          .filter((id) => typeof id === "string" && id.trim() !== "");
+  
+        const fileKeysToDelete = contents
+          .filter((item) => idsToDelete.includes(item.id))
+          .map((item) => {
+            const url = item?.fileUrl;
+            if (!url) return null;
+            const parts = url.split("/");
+            return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
           })
           .filter((key) => typeof key === "string" && key.trim() !== "");
-
+  
         if (idsToDelete.length === 0) {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-
+  
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -177,54 +171,46 @@ const fileKeysToDelete = contents
             fileKeys: fileKeysToDelete,
           }),
         });
-
+  
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
-
-
-        setContents((prev) =>
-          prev.filter((c) => !idsToDelete.includes(c.id))
-        );
-
+  
+        setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
+  
         alert("İçerikler başarıyla silindi.");
         setSelectedItems([]);
       }
-
-
-      // ✅ Toplu Güncelleme
-
+  
+      // Toplu Güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
-
+  
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
           ageGroup: formData.get("bulkAgeGroup") || null,
           description: formData.get("bulkDescription") || null,
         };
-
-
-        // Boş olanları kaldır
-
+  
+        // Boş alanları kaldır
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
-
+  
         if (Object.keys(updatedFields).length === 0) {
           alert("Güncelleme için en az bir alan doldurmalısınız.");
           return;
         }
-
-
+  
         const contentsToUpdate = selectedItems.map((id) => ({
           id,
           ...updatedFields,
         }));
-
+  
         console.log("Gönderilen veriler:", contentsToUpdate);
-
+  
         const res = await fetch("/api/contents/bulk-update", {
           method: "POST",
           headers: {
@@ -232,22 +218,21 @@ const fileKeysToDelete = contents
           },
           body: JSON.stringify({ contents: contentsToUpdate }),
         });
-
+  
         const result = await res.json();
-
+  
         if (!res.ok) {
           throw new Error(result?.error || "Toplu güncelleme başarısız.");
         }
-
+  
         // UI'daki içerikleri güncelle
-
         setContents((prev) =>
           prev.map((content) => {
             const updated = contentsToUpdate.find((c) => c.id === content.id);
             return updated ? { ...content, ...updatedFields } : content;
           })
         );
-
+  
         alert("İçerikler başarıyla güncellendi.");
         setSelectedItems([]);
       }
@@ -259,7 +244,7 @@ const fileKeysToDelete = contents
       setBulkActionModalOpen(false);
     }
   };
-
+  
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
