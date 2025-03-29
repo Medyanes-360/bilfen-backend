@@ -142,19 +142,23 @@ const ContentManagement = () => {
     try {
       //  Toplu silme
       if (bulkAction === "delete") {
-        const idsToDelete = selectedItems.filter(
-          (id) => typeof id === "string" && id.trim() !== ""
-        );
+        
+        const idsToDelete = selectedItems
+  .map((item) => (typeof item === "string" ? item : item?.id))
+  .filter((id) => typeof id === "string" && id.trim() !== "");
 
-        const fileKeysToDelete = contents
-          .filter((item) => selectedItems.includes(item.id))
-          .map((item) => {
-            const url = item?.fileUrl;
-            if (!url) return null;
-            const parts = url.split("/");
-            return parts.length >= 2
-              ? `${parts.at(-2)}/${parts.at(-1)}`
-              : null;
+const fileKeysToDelete = contents
+  .filter((item) => idsToDelete.includes(item.id))
+  .map((item) => {
+    const url = item?.fileUrl;
+    if (!url) return null;
+    const parts = url.split("/");
+    return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
+  })
+  .filter((key) => typeof key === "string" && key.trim() !== "");
+
+        
+
           })
           .filter((key) => typeof key === "string" && key.trim() !== "");
 
@@ -179,14 +183,18 @@ const ContentManagement = () => {
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
 
+
         setContents((prev) =>
           prev.filter((c) => !idsToDelete.includes(c.id))
         );
+
         alert("İçerikler başarıyla silindi.");
         setSelectedItems([]);
       }
 
-      // Toplu güncelleme
+
+      // ✅ Toplu Güncelleme
+
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
 
@@ -197,7 +205,9 @@ const ContentManagement = () => {
           description: formData.get("bulkDescription") || null,
         };
 
-        // Boş alanları çıkar
+
+        // Boş olanları kaldır
+
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
@@ -206,6 +216,7 @@ const ContentManagement = () => {
           alert("Güncelleme için en az bir alan doldurmalısınız.");
           return;
         }
+
 
         const contentsToUpdate = selectedItems.map((id) => ({
           id,
@@ -229,6 +240,7 @@ const ContentManagement = () => {
         }
 
         // UI'daki içerikleri güncelle
+
         setContents((prev) =>
           prev.map((content) => {
             const updated = contentsToUpdate.find((c) => c.id === content.id);
@@ -247,15 +259,6 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
-
-
-
-
-
-
-
-
-
 
 
   // Toplu seçimi temizleme
@@ -278,7 +281,10 @@ const ContentManagement = () => {
   useEffect(() => {
     const filtered = contents.filter((content) => {
       const title = (content.title || "").toLowerCase();
-      const matchesSearch = searchTerm === "" || title.includes(searchTerm.toLowerCase());
+
+      const matchesSearch =
+        searchTerm === "" || title.includes(searchTerm.toLowerCase());
+
 
       const matchesType =
         activeType === "all" ||
@@ -291,7 +297,10 @@ const ContentManagement = () => {
 
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
-        (content.ageGroup && content.ageGroup === advancedFilterOptions.ageGroup);
+
+        (content.ageGroup &&
+          content.ageGroup === advancedFilterOptions.ageGroup);
+
 
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
@@ -327,8 +336,6 @@ const ContentManagement = () => {
 
     setFilteredContents(filtered);
     setCurrentPage(1); // sayfayı başa al
-
-
   }, [contents, searchTerm, activeType, advancedFilterOptions]);
 
   // Filtreleme menüsü dışına tıklandığında kapatma
@@ -1384,15 +1391,26 @@ const ContentManagement = () => {
             </span>
 
             {bulkMode ? (
+
               <BulkContentUpload
                 setIsModalOpen={setIsModalOpen}
               />
+
             ) : (
               <SingleContentForm
                 setIsModalOpen={setIsModalOpen}
                 currentContent={currentContent}
                 setCurrentContent={setCurrentContent}
                 setContents={setContents}
+
+                branchOptions={branchOptions}
+                handleFileChange={handleFileChange}
+                handleDragOver={handleDragOver}
+                handleDragLeave={handleDragLeave}
+                handleDrop={handleDrop}
+                getStatusColor={getStatusColor}
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
               />
             )}
 
