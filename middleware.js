@@ -19,33 +19,33 @@ const authMiddleware = withAuth(
 );
 
 export default async function mainMiddleware(req) {
-  const origin = req.headers.get('origin') || '';
-  const method = req.method;
+  // const origin = req.headers.get('origin') || '';
+  // const method = req.method;
 
-  // OPTIONS preflight isteği
-  if (method === 'OPTIONS') {
-    const res = new NextResponse(null, { status: 204 });
+  // // OPTIONS preflight isteği
+  // if (method === 'OPTIONS') {
+  //   const res = new NextResponse(null, { status: 204 });
 
-    if (allowedOrigins.includes(origin)) {
-      res.headers.set('Access-Control-Allow-Origin', origin);
-      res.headers.set('Access-Control-Allow-Credentials', 'true');
-      res.headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-      res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    }
+  //   if (allowedOrigins.includes(origin)) {
+  //     res.headers.set('Access-Control-Allow-Origin', origin);
+  //     res.headers.set('Access-Control-Allow-Credentials', 'true');
+  //     res.headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  //     res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  //   }
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  // Normal isteklerde auth middleware’i çalıştır
-  const response = await authMiddleware(req);
+  // // Normal isteklerde auth middleware’i çalıştır
+  // const response = await authMiddleware(req);
 
-  // CORS header'larını ekle
-  if (allowedOrigins.includes(origin)) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-  }
+  // // CORS header'larını ekle
+  // if (allowedOrigins.includes(origin)) {
+  //   response.headers.set('Access-Control-Allow-Origin', origin);
+  //   response.headers.set('Access-Control-Allow-Credentials', 'true');
+  // }
 
-  return response;
+  // return response;
 }
 
 export const config = {

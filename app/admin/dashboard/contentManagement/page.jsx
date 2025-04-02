@@ -1463,6 +1463,7 @@ const ContentManagement = () => {
 
               <BulkContentUpload
                 setIsModalOpen={setIsModalOpen}
+                setContents={setContents}
               />
 
             ) : (

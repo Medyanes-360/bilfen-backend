@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Upload } from 'lucide-react';
 
-export default function BulkContentUpload({ setIsModalOpen }) {
+export default function BulkContentUpload({ setIsModalOpen,setContents  }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -22,29 +22,46 @@ export default function BulkContentUpload({ setIsModalOpen }) {
   const handleDragOver = (e) => e.preventDefault();
 
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     setIsUploading(true);
-
+  
     const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append('files', file));
-
-    const res = await fetch('/api/contents/bulk-create', {
-      method: 'POST',
+    selectedFiles.forEach((file) => formData.append("files", file));
+  
+    const res = await fetch("/api/contents/bulk-create", {
+      method: "POST",
       body: formData,
     });
-
+  
     const result = await res.json();
-
-    if (res.ok) {
-      alert('Dosyalar başarıyla yüklendi');
+  
+    if (res.ok && result?.data?.length > 0) {
+      const uploadedContents = result.data.map((item) => ({
+        id: item.id, 
+        title: "", 
+        type: "document", 
+        branch: "",
+        ageGroup: "",
+        publishDateStudent: "",
+        publishDateTeacher: "",
+        isPublished: false,
+        fileUrl: item.fileUrl || item.url || "",
+        tags: [],
+        description: "",
+      }));
+  
+      setContents((prev) => [...uploadedContents, ...prev]);
+      alert("Dosyalar başarıyla yüklendi");
       setSelectedFiles([]);
       setIsModalOpen(false);
     } else {
-      alert('Hata: ' + (result.error || 'Bilinmeyen hata'));
+      alert("Hata: " + (result.error || "Bilinmeyen hata"));
     }
-
+  
     setIsUploading(false);
   };
+  
 
   return (
     <div className="inline-block  bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg w-full">
