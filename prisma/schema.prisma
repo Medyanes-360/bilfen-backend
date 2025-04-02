@@ -84,6 +84,7 @@ model Content {
   tags               String[] // Etiketler
   updatedAt          DateTime? // Güncellenme tarihi
   createdAt          DateTime? @default(now())
+  isPublished        Boolean?  @default(false)
 }
 
 // Adminin Todo listi
