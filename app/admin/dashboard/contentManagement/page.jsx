@@ -61,7 +61,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ConfirmModal from "@/components/ConfirmModal";
-import { deleteAPI, getAPI, postAPI } from "@/services/fetchAPI";
+import { deleteAPI, getAPI, postAPI, updateAPI } from "@/services/fetchAPI";
 import BulkContentUpload from "@/components/BulkContentUpload";
 import SingleContentForm from "@/components/SingleContentForm";
 import isValidDate from "@/components/dateValidation";
@@ -125,6 +125,49 @@ const ContentManagement = () => {
   const handleTypeChange = (e) => {
     setFormType(e.target.value);
   };
+  const handlePublish = async (id) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: true }),
+      });
+
+      if (!res.ok) throw new Error("Yayınlama başarısız");
+
+      setContents((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, isPublished: true } : item
+        )
+      );
+    } catch (err) {
+      console.error("Yayınlama hatası:", err);
+    }
+  };
+
+  const handleUnpublish = async (id) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: false }),
+      });
+
+      if (!res.ok) throw new Error("Yayından kaldırma başarısız");
+
+      setContents((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, isPublished: false } : item
+        )
+      );
+    } catch (err) {
+      console.error("Yayından kaldırma hatası:", err);
+    }
+  };
+
+
+
+
 
   const branchOptions = [
     { label: "Matematik", value: "MATEMATIK" },
@@ -138,14 +181,14 @@ const ContentManagement = () => {
   const handleBulkAction = async (e) => {
     e.preventDefault();
     setIsBulkUpdating(true);
-  
+
     try {
       // Toplu Silme
       if (bulkAction === "delete") {
         const idsToDelete = selectedItems
           .map((item) => (typeof item === "string" ? item : item?.id))
           .filter((id) => typeof id === "string" && id.trim() !== "");
-  
+
         const fileKeysToDelete = contents
           .filter((item) => idsToDelete.includes(item.id))
           .map((item) => {
@@ -155,12 +198,12 @@ const ContentManagement = () => {
             return parts.length >= 2 ? `${parts.at(-2)}/${parts.at(-1)}` : null;
           })
           .filter((key) => typeof key === "string" && key.trim() !== "");
-  
+
         if (idsToDelete.length === 0) {
           alert("Silinecek geçerli içerik bulunamadı.");
           return;
         }
-  
+
         const res = await fetch("/api/contents/bulk-delete", {
           method: "POST",
           headers: {
@@ -171,46 +214,46 @@ const ContentManagement = () => {
             fileKeys: fileKeysToDelete,
           }),
         });
-  
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
-  
+
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
-  
+
         alert("İçerikler başarıyla silindi.");
         setSelectedItems([]);
       }
-  
+
       // Toplu Güncelleme
       if (bulkAction === "update") {
         const formData = new FormData(e.target);
-  
+
         const updatedFields = {
           branch: formData.get("bulkBranch") || null,
           type: formData.get("bulkType") || null,
           ageGroup: formData.get("bulkAgeGroup") || null,
           description: formData.get("bulkDescription") || null,
         };
-  
+
         // Boş alanları kaldır
         Object.keys(updatedFields).forEach((key) => {
           if (!updatedFields[key]) delete updatedFields[key];
         });
-  
+
         if (Object.keys(updatedFields).length === 0) {
           alert("Güncelleme için en az bir alan doldurmalısınız.");
           return;
         }
-  
+
         const contentsToUpdate = selectedItems.map((id) => ({
           id,
           ...updatedFields,
         }));
-  
+
         console.log("Gönderilen veriler:", contentsToUpdate);
-  
+
         const res = await fetch("/api/contents/bulk-update", {
           method: "POST",
           headers: {
@@ -218,13 +261,13 @@ const ContentManagement = () => {
           },
           body: JSON.stringify({ contents: contentsToUpdate }),
         });
-  
+
         const result = await res.json();
-  
+
         if (!res.ok) {
           throw new Error(result?.error || "Toplu güncelleme başarısız.");
         }
-  
+
         // UI'daki içerikleri güncelle
         setContents((prev) =>
           prev.map((content) => {
@@ -232,7 +275,7 @@ const ContentManagement = () => {
             return updated ? { ...content, ...updatedFields } : content;
           })
         );
-  
+
         alert("İçerikler başarıyla güncellendi.");
         setSelectedItems([]);
       }
@@ -244,7 +287,7 @@ const ContentManagement = () => {
       setBulkActionModalOpen(false);
     }
   };
-  
+
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
@@ -1232,6 +1275,47 @@ const ContentManagement = () => {
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
+                        {(() => {
+                          const missingFields = [];
+                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
+                          if (!content.publishDateStudent) missingFields.push("Öğrenci Yayın Tarihi");
+                          if (!content.publishDateTeacher) missingFields.push("Öğretmen Yayın Tarihi");
+                          if (!content.branch) missingFields.push("Branş");
+
+                          const isPublishDisabled = missingFields.length > 0;
+                          const isPublished = content.isPublished === true;
+
+                          return (
+                            <button
+                              className={`px-2 py-1 text-xs rounded-lg shadow-sm transition-all
+        ${isPublished
+                                  ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                                  : isPublishDisabled
+                                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
+                                    : "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                                }`}
+                              disabled={!isPublished && isPublishDisabled}
+                              title={
+                                isPublished
+                                  ? "İçeriği yayından kaldır"
+                                  : isPublishDisabled
+                                    ? `Eksik Alanlar: ${missingFields.join(", ")}`
+                                    : "Yayınla"
+                              }
+                              onClick={() => {
+                                if (isPublished) {
+                                  handleUnpublish(content.id);
+                                } else if (!isPublishDisabled) {
+                                  handlePublish(content.id);
+                                }
+                              }}
+                            >
+                              {isPublished ? "Yayından Kaldır" : "Yayınla"}
+                            </button>
+                          );
+                        })()}
+
+
                       </div>
                     </td>
                   </tr>

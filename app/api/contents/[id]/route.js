@@ -24,39 +24,53 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const data = await request.json();
 
-    // Tarih formatlarını düzelt
-    const publishDateStudent = new Date(data.publishDateStudent);
-    const publishDateTeacher = new Date(data.publishDateTeacher);
+    // publishDateStudent varsa Date'e çevir, yoksa dokunma
+    const publishDateStudent = data.publishDateStudent
+      ? new Date(data.publishDateStudent)
+      : undefined;
+
+    const publishDateTeacher = data.publishDateTeacher
+      ? new Date(data.publishDateTeacher)
+      : undefined;
 
     // Etiketleri diziye dönüştür
     let tags = [];
     if (data.tags) {
-      // Eğer tags bir string ise split et, array ise olduğu gibi kullan
-      tags = Array.isArray(data.tags) ? data.tags : data.tags.split(",").map((tag) => tag.trim());
+      tags = Array.isArray(data.tags)
+        ? data.tags
+        : data.tags.split(",").map((tag) => tag.trim());
     }
+
+    // Güncellenecek alanları topluca yönet
+    const updateData = {
+      ...(data.title && { title: data.title }),
+      ...(data.type && { type: data.type }),
+      ...(data.branch && { branch: data.branch }),
+      ...(data.ageGroup && { ageGroup: data.ageGroup }),
+      ...(publishDateStudent && { publishDateStudent }),
+      ...(publishDateTeacher && { publishDateTeacher }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.fileUrl !== undefined && { fileUrl: data.fileUrl }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.tags && { tags }),
+      ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+    };
 
     await prisma.content.update({
       where: { id },
-      data: {
-        title: data.title,
-        type: data.type,
-        branch: data.branch,
-        ageGroup: data.ageGroup,
-        publishDateStudent,
-        publishDateTeacher,
-        isActive: data.isActive !== undefined ? data.isActive : true,
-        fileUrl: data.fileUrl || null,
-        description: data.description || "",
-        tags: tags,
-      },
+      data: updateData,
     });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("İçerik güncellenirken hata oluştu:", error);
-    return NextResponse.json({ error: "İçerik güncellenirken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json(
+      { error: "İçerik güncellenirken bir hata oluştu" },
+      { status: 500 }
+    );
   }
 }
+
 
 export async function DELETE(request, { params }) {
   try {
