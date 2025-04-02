@@ -1241,8 +1241,6 @@ const ContentManagement = () => {
                             missingFields.push("Yaş Grubu");
                           if (!content.publishDateStudent)
                             missingFields.push("Öğrenci Yayın Tarihi");
-                          if (!content.publishDateTeacher)
-                            missingFields.push("Öğretmen Yayın Tarihi");
                           if (!content.branch) missingFields.push("Branş");
                           return missingFields.length > 0 ? (
                             <span className="text-red-600">
@@ -1279,7 +1277,6 @@ const ContentManagement = () => {
                           const missingFields = [];
                           if (!content.ageGroup) missingFields.push("Yaş Grubu");
                           if (!content.publishDateStudent) missingFields.push("Öğrenci Yayın Tarihi");
-                          if (!content.publishDateTeacher) missingFields.push("Öğretmen Yayın Tarihi");
                           if (!content.branch) missingFields.push("Branş");
 
                           const isPublishDisabled = missingFields.length > 0;
