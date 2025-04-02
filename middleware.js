@@ -19,7 +19,7 @@ const authMiddleware = withAuth(
 );
 
 // Asıl middleware fonksiyonumuz
-export function middleware(req) {
+export function mainMiddleware(req) {
   const origin = req.headers.get('origin') || '';
   const method = req.method;
 
