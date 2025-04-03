@@ -65,6 +65,8 @@ import { deleteAPI, getAPI, postAPI, updateAPI } from "@/services/fetchAPI";
 import BulkContentUpload from "@/components/BulkContentUpload";
 import SingleContentForm from "@/components/SingleContentForm";
 import isValidDate from "@/components/dateValidation";
+import useToastStore from "@/lib/store/toast";
+import Toast from "@/components/toast";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -74,6 +76,8 @@ const contentTypes = [
   { id: "game", name: "Oyun" },
   { id: "audio", name: "Ses" },
 ];
+
+
 
 // Örnek içerik verileri
 // Örnek içerik verileri - komponent dışında tanımlayın
@@ -108,6 +112,7 @@ const ContentManagement = () => {
   const [bulkActionModalOpen, setBulkActionModalOpen] = useState(false); // Toplu işlem modalı açık mı?
   const [bulkAction, setBulkAction] = useState(""); // Hangi toplu işlem yapılacak: 'update' veya 'delete'
   const [isBulkUpdating, setIsBulkUpdating] = useState(false); // Toplu güncelleme işlemi devam ediyor mu?
+  const showToast = useToastStore((state) => state.showToast);
 
   const filterMenuRef = useRef(null);
   useEffect(() => {
@@ -200,7 +205,8 @@ const ContentManagement = () => {
           .filter((key) => typeof key === "string" && key.trim() !== "");
 
         if (idsToDelete.length === 0) {
-          alert("Silinecek geçerli içerik bulunamadı.");
+
+          showToast("Silinecek geçerli içerik bulunamadı", "success");
           return;
         }
 
@@ -222,7 +228,7 @@ const ContentManagement = () => {
 
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
 
-        alert("İçerikler başarıyla silindi.");
+        showToast("İçerikler başarıyla silindi.", "success");
         setSelectedItems([]);
       }
 
@@ -243,7 +249,7 @@ const ContentManagement = () => {
         });
 
         if (Object.keys(updatedFields).length === 0) {
-          alert("Güncelleme için en az bir alan doldurmalısınız.");
+          showToast("Güncelleme için en az bir alan doldurmalısınız.", "error");
           return;
         }
 
@@ -276,12 +282,12 @@ const ContentManagement = () => {
           })
         );
 
-        alert("İçerikler başarıyla güncellendi.");
+        showToast("İçerikler başarıyla güncellendi.", "success");
         setSelectedItems([]);
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
-      alert(error.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
+      showToast(error.message, "error");
     } finally {
       setIsBulkUpdating(false);
       setBulkActionModalOpen(false);
@@ -614,7 +620,7 @@ const ContentManagement = () => {
       }));
     } catch (err) {
       console.error("Silme hatası:", err);
-      alert("Dosya silinemedi. Lütfen tekrar deneyin.");
+      showToast("Dosya silinemedi. Lütfen tekrar deneyin.", "error");
     }
   };
 
@@ -674,7 +680,7 @@ const ContentManagement = () => {
         fileUrl = uploadJson.url || uploadJson.key;
       } catch (uploadErr) {
         console.error("Dosya yükleme hatası:", uploadErr);
-        alert("Dosya yüklenemedi. Lütfen tekrar deneyin.");
+        showToast("Dosya yüklenemedi. Lütfen tekrar deneyin.", "error");
         setIsUploading(false);
         return;
       }
@@ -747,7 +753,7 @@ const ContentManagement = () => {
       }
     } catch (error) {
       console.error("İçerik işlemi sırasında hata oluştu:", error);
-      alert("İçerik kaydedilirken bir hata oluştu.");
+      showToast("İçerik kaydedilirken bir hata oluştu.", "error");
     } finally {
       //  Silme
       setIsUploading(false);
@@ -786,7 +792,7 @@ const ContentManagement = () => {
       setPreviewUrl(fileURL);
     } catch (error) {
       console.error("Hata:", error);
-      alert("Dosya görüntülenirken hata oluştu: " + error.message);
+      showToast("Dosya görüntülenirken hata oluştu: ", error.message);
     }
   };
   // Sayfalama hesaplamaları
@@ -1710,6 +1716,7 @@ const ContentManagement = () => {
           </button>
         </div>
       )}
+      <Toast />
     </div>
   );
 };
