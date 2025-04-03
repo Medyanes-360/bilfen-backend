@@ -73,20 +73,24 @@ export default function SingleContentForm({
       publishDateStudent: formData.get("publishDateStudent"),
       publishDateTeacher: formData.get("publishDateTeacher"),
       isWeeklyContent: formData.get("isWeeklyContent") === "on",
-      
-      weeklyContentStartDate: formData.get("weeklyContentStartDate") || null,
-weeklyContentEndDate: formData.get("weeklyContentEndDate") || null,
-endDateStudent: formData.get("weeklyContentEndDate")?.trim()
-  ? new Date(formData.get("weeklyContentEndDate")).toISOString()
-  : null,
-endDateTeacher: formData.get("weeklyContentEndDate")?.trim()
-  ? new Date(formData.get("weeklyContentEndDate")).toISOString()
-  : null,
-description: formData.get("description") || "",
-tags: tags || tagsArray,
-fileUrl,
 
-      
+      weeklyContentStartDate: isWeeklyContent && formData.get("weeklyContentStartDate")
+        ? new Date(formData.get("weeklyContentStartDate")).toISOString()
+        : null,
+      weeklyContentEndDate: isWeeklyContent && formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
+      endDateStudent: isWeeklyContent && formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
+      endDateTeacher: isWeeklyContent && formData.get("weeklyContentEndDate")
+        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
+        : null,
+      description: formData.get("description") || "",
+      tags: tags || tagsArray,
+      fileUrl,
+
+
 
     };
 
@@ -291,9 +295,7 @@ fileUrl,
 
                       defaultChecked={
                         !!(
-                          currentContent?.isWeeklyContent ||
-                          isValidDate(currentContent?.endDateStudent) ||
-                          isValidDate(currentContent?.endDateTeacher)
+                          currentContent?.isWeeklyContent
                         )
                       }
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
@@ -318,9 +320,7 @@ fileUrl,
                 {/* Ek Materyal Tarih Aralığı */}
                 <div
                   id="weeklyContentDateContainer"
-                  className={`mt-2 ${currentContent?.isWeeklyContent ||
-                    isValidDate(currentContent?.endDateStudent) ||
-                    isValidDate(currentContent?.endDateTeacher)
+                  className={`mt-2 ${currentContent?.isWeeklyContent
                     ? ""
                     : "hidden"
                     }`}
@@ -338,8 +338,8 @@ fileUrl,
                         name="weeklyContentStartDate"
                         id="weeklyContentStartDate"
                         defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
+                          isValidDate(currentContent?.weeklyContentStartDate)
+                            ? new Date(currentContent.weeklyContentStartDate).toISOString().split("T")[0]
                             : ""
                         }
 
@@ -358,8 +358,8 @@ fileUrl,
                         name="weeklyContentEndDate"
                         id="weeklyContentEndDate"
                         defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
+                          isValidDate(currentContent?.weeklyContentEndDate)
+                            ? new Date(currentContent.weeklyContentEndDate).toISOString().split("T")[0]
                             : ""
                         }
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

@@ -12,8 +12,12 @@ export async function GET() {
     // Tarihleri formatla
     const formattedContents = contents.map((content) => ({
       ...content,
-      publishDateStudent: content.publishDateStudent?.toISOString().split("T")[0],
-      publishDateTeacher: content.publishDateTeacher?.toISOString().split("T")[0],
+      publishDateStudent: content.publishDateStudent
+        ?.toISOString()
+        .split("T")[0],
+      publishDateTeacher: content.publishDateTeacher
+        ?.toISOString()
+        .split("T")[0],
       endDateStudent: content.endDateStudent?.toISOString().split("T")[0],
       endDateTeacher: content.endDateTeacher?.toISOString().split("T")[0],
     }));
@@ -21,7 +25,10 @@ export async function GET() {
     return NextResponse.json(formattedContents);
   } catch (error) {
     console.error("İçerikler alınırken hata oluştu:", error);
-    return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json(
+      { error: "İçerikler alınırken bir hata oluştu" },
+      { status: 500 }
+    );
   }
 }
 
@@ -33,6 +40,9 @@ export async function POST(request) {
 
     const now = new Date();
     const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 gün milisaniye
+
+    // isWeeklyContent kontrolü
+    const isWeeklyContent = data.isWeeklyContent || false;
 
     // Yayın tarihlerini oluştur
     const publishDateStudent = new Date(data.publishDateStudent);
@@ -73,12 +83,18 @@ export async function POST(request) {
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
+        isWeeklyContent: data.isWeeklyContent,
+        weeklyContentStartDate: data.weeklyContentStartDate,
+        weeklyContentEndDate: data.weeklyContentEndDate,
       },
     });
 
     return NextResponse.json(content, { status: 201 });
   } catch (error) {
     console.error("İçerik eklenirken hata oluştu:", error);
-    return NextResponse.json({ error: "İçerik eklenirken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json(
+      { error: "İçerik eklenirken bir hata oluştu" },
+      { status: 500 }
+    );
   }
 }
