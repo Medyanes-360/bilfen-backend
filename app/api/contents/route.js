@@ -33,8 +33,6 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  //const session = await requireAdmin()
-  //if (session instanceof Response) return session;
   try {
     const data = await request.json();
 
@@ -44,18 +42,27 @@ export async function POST(request) {
     // isWeeklyContent kontrolü
     const isWeeklyContent = data.isWeeklyContent || false;
 
-    // Yayın tarihlerini oluştur
-    const publishDateStudent = new Date(data.publishDateStudent);
-    const publishDateTeacher = new Date(data.publishDateTeacher);
+    // tarih dönüşümü
+    const parseDate = (value) => {
+      if (!value) return null;
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? null : date;
+    };
 
-    // Bitiş tarihlerini oluştur
+    const publishDateStudent = parseDate(data.publishDateStudent);
+    const publishDateTeacher = parseDate(data.publishDateTeacher);
+
     const endDateStudent = data.endDateStudent
-      ? new Date(data.endDateStudent)
-      : new Date(publishDateStudent.getTime() + oneWeek);
+      ? parseDate(data.endDateStudent)
+      : publishDateStudent
+      ? new Date(publishDateStudent.getTime() + oneWeek)
+      : null;
 
     const endDateTeacher = data.endDateTeacher
-      ? new Date(data.endDateTeacher)
-      : new Date(publishDateTeacher.getTime() + oneWeek);
+      ? parseDate(data.endDateTeacher)
+      : publishDateTeacher
+      ? new Date(publishDateTeacher.getTime() + oneWeek)
+      : null;
 
     let tags = [];
     if (data.tags) {
@@ -68,10 +75,10 @@ export async function POST(request) {
 
     const content = await prisma.content.create({
       data: {
-        title: data.title,
-        type: data.type,
-        branch: data.branch,
-        ageGroup: data.ageGroup,
+        title: data.title || null,
+        type: data.type || null,
+        branch: data.branch || null,
+        ageGroup: data.ageGroup || null,
         publishDateStudent,
         publishDateTeacher,
         endDateStudent,
@@ -79,7 +86,9 @@ export async function POST(request) {
         isActive:
           data.isActive !== undefined
             ? data.isActive
-            : now >= publishDateStudent && now >= publishDateTeacher,
+            : publishDateStudent && publishDateTeacher
+            ? now >= publishDateStudent && now >= publishDateTeacher
+            : false,
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
@@ -91,7 +100,7 @@ export async function POST(request) {
 
     return NextResponse.json(content, { status: 201 });
   } catch (error) {
-    console.error("İçerik eklenirken hata oluştu:", error);
+    console.error("İçerik eklenirken hata oluştu:", error.message, error.stack);
     return NextResponse.json(
       { error: "İçerik eklenirken bir hata oluştu" },
       { status: 500 }

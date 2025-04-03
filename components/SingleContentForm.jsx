@@ -23,28 +23,42 @@ export default function SingleContentForm({
     const formData = new FormData();
     formData.append("file", file);
 
-
     const res = await fetch("/api/file/upload", {
       method: "POST",
       body: formData,
     });
 
-
+    console.log("Upload fetch status:", res.status);
     if (!res.ok) throw new Error("Dosya yüklenemedi");
 
-    const data = await res.json();
-    const uploadedFile = data?.files?.[0];
-    if (!uploadedFile?.url) throw new Error("Yüklenen dosya URL'si alınamadı");
+    const text = await res.text();
+    console.log("Upload response body (as text):", text);
 
-    const fileUrl = `${process.env.NEXT_PUBLIC_API_URL}/${uploadedFile.url}`;
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error("Geçersiz JSON:", err);
+      throw new Error("Sunucu geçersiz bir JSON döndürdü");
+    }
+    const uploadedFile = data?.file;
+
+    if (!uploadedFile?.url) {
+      console.error("URL yok:", uploadedFile);
+      throw new Error("Yüklenen dosya URL'si alınamadı");
+    }
+
+    const fileUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${uploadedFile.url}`;
     return { fileUrl };
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsUploading(true);
 
     const formData = new FormData(e.target);
+
 
     const tags = formData
       .get("tags")
@@ -56,43 +70,49 @@ export default function SingleContentForm({
 
     if (selectedFile) {
       try {
+        console.log("Dosya yükleniyor:", selectedFile);
         const uploadResult = await uploadFileToR2(selectedFile);
         fileUrl = uploadResult.fileUrl;
+        console.log("Dosya yüklendi, URL:", fileUrl);
       } catch (err) {
+        console.error("Dosya yüklenirken hata oluştu:", err);
         alert("Dosya yüklenirken hata oluştu.");
         setIsUploading(false);
         return;
       }
     }
 
-    const payload = {
-      title: formData.get("title"),
-      type: formData.get("type"),
-      branch: formData.get("branch"),
-      ageGroup: formData.get("ageGroup"),
-      publishDateStudent: formData.get("publishDateStudent"),
-      publishDateTeacher: formData.get("publishDateTeacher"),
-      isWeeklyContent: formData.get("isWeeklyContent") === "on",
+    if (!formData.get("title") || !fileUrl) {
+      alert("Lütfen başlık ve içerik dosyası ekleyin.");
+      setIsUploading(false);
+      return;
+    }
 
-      weeklyContentStartDate: isWeeklyContent && formData.get("weeklyContentStartDate")
-        ? new Date(formData.get("weeklyContentStartDate")).toISOString()
-        : null,
-      weeklyContentEndDate: isWeeklyContent && formData.get("weeklyContentEndDate")
-        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
-        : null,
-      endDateStudent: isWeeklyContent && formData.get("weeklyContentEndDate")
-        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
-        : null,
-      endDateTeacher: isWeeklyContent && formData.get("weeklyContentEndDate")
-        ? new Date(formData.get("weeklyContentEndDate")).toISOString()
-        : null,
-      description: formData.get("description") || "",
-      tags: tags || tagsArray,
-      fileUrl,
-
-
-
+    //  Güvenli tarih fonksiyonu
+    const safeDate = (raw) => {
+      if (!raw || typeof raw !== "string" || raw.trim() === "") return null;
+      const date = new Date(raw);
+      return isNaN(date.getTime()) ? null : date;
     };
+
+    const payload = {
+      title: formData.get("title") || null,
+      type: formData.get("type") || null,
+      branch: formData.get("branch") || null,
+      ageGroup: formData.get("ageGroup") || null,
+      publishDateStudent: safeDate(formData.get("publishDateStudent")),
+      publishDateTeacher: safeDate(formData.get("publishDateTeacher")),
+      isWeeklyContent: formData.get("isWeeklyContent") === "on",
+      weeklyContentStartDate: isWeeklyContent && formData.get("weeklyContentStartDate") ? safeDate(formData.get("weeklyContentStartDate")) : null,
+      weeklyContentEndDate: isWeeklyContent && formData.get("weeklyContentEndDate") ? safeDate(formData.get("weeklyContentEndDate")) : null,
+      endDateStudent: safeDate(formData.get("weeklyContentEndDate")),
+      endDateTeacher: safeDate(formData.get("weeklyContentEndDate")),
+      description: formData.get("description") || null,
+      tags,
+      fileUrl,
+    };
+
+    console.log("Gönderilen payload:", payload);
 
     try {
       let res;
@@ -113,10 +133,14 @@ export default function SingleContentForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+
+        console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
+        console.log("Yeni içerik:", newContent);
         setContents((prev) => [...prev, newContent]);
       }
     } catch (error) {
+      console.error("İçerik kaydedilemedi:", error);
       alert("İçerik kaydedilemedi");
     } finally {
       setIsUploading(false);
@@ -125,6 +149,12 @@ export default function SingleContentForm({
       setIsModalOpen(false);
     }
   };
+
+
+
+
+
+
 
 
   return (
