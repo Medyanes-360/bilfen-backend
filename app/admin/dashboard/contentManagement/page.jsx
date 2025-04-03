@@ -1223,13 +1223,16 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.publishDateTeacher
-                          ? new Date(
-                            content.publishDateTeacher
-                          ).toLocaleDateString("tr-TR")
-                          : "-"}
+                        {content.isWeeklyContent
+                          ? content.weeklyContentStartDate
+                            ? new Date(content.weeklyContentStartDate).toLocaleDateString("tr-TR")
+                            : "-"
+                          : content.publishDateTeacher
+                            ? new Date(content.publishDateTeacher).toLocaleDateString("tr-TR")
+                            : "-"}
                       </div>
                     </td>
+
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
                         {content.isWeeklyContent ? (
@@ -1243,20 +1246,29 @@ const ContentManagement = () => {
                       <div className="text-xs text-gray-900">
                         {(() => {
                           const missingFields = [];
-                          if (!content.ageGroup)
-                            missingFields.push("Yaş Grubu");
-                          if (!content.publishDateStudent)
-                            missingFields.push("Öğrenci Yayın Tarihi");
+                          const isWeekly = content.isWeeklyContent === true;
+
+                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
                           if (!content.branch) missingFields.push("Branş");
+
+                          if (isWeekly) {
+                            if (!content.weeklyContentStartDate) {
+                              missingFields.push("Yayın Tarihi");
+                            }
+                          } else {
+                            if (!content.publishDateStudent) {
+                              missingFields.push("Öğrenci Yayın Tarihi");
+                            }
+                          }
+
                           return missingFields.length > 0 ? (
-                            <span className="text-red-600">
-                              {missingFields.join(", ")}
-                            </span>
+                            <span className="text-red-600">{missingFields.join(", ")}</span>
                           ) : (
                             "-"
                           );
                         })()}
                       </div>
+
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center space-x-1">
@@ -1281,9 +1293,20 @@ const ContentManagement = () => {
                         </button>
                         {(() => {
                           const missingFields = [];
-                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
-                          if (!content.publishDateStudent) missingFields.push("Öğrenci Yayın Tarihi");
+                          const isWeekly = content.isWeeklyContent === true;
+
                           if (!content.branch) missingFields.push("Branş");
+                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
+
+                          if (isWeekly) {
+                            if (!content.weeklyContentStartDate) {
+                              missingFields.push("Haftalık Başlangıç Tarihi");
+                            }
+                          } else {
+                            if (!content.publishDateStudent) {
+                              missingFields.push("Öğrenci Yayın Tarihi");
+                            }
+                          }
 
                           const isPublishDisabled = missingFields.length > 0;
                           const isPublished = content.isPublished === true;
@@ -1317,6 +1340,7 @@ const ContentManagement = () => {
                             </button>
                           );
                         })()}
+
 
 
                       </div>
