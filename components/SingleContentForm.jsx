@@ -48,7 +48,7 @@ export default function SingleContentForm({
       throw new Error("Yüklenen dosya URL'si alınamadı");
     }
 
-    const fileUrl = `${process.env.NEXT_PUBLIC_API_URL}/${uploadedFile.url}`;
+    const fileUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${uploadedFile.url}`;
     return { fileUrl };
   };
 
