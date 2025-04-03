@@ -1281,9 +1281,20 @@ const ContentManagement = () => {
                         </button>
                         {(() => {
                           const missingFields = [];
-                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
-                          if (!content.publishDateStudent) missingFields.push("Öğrenci Yayın Tarihi");
+                          const isWeekly = content.isWeeklyContent === true;
+
                           if (!content.branch) missingFields.push("Branş");
+                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
+
+                          if (isWeekly) {
+                            if (!content.weeklyContentStartDate) {
+                              missingFields.push("Haftalık Başlangıç Tarihi");
+                            }
+                          } else {
+                            if (!content.publishDateStudent) {
+                              missingFields.push("Öğrenci Yayın Tarihi");
+                            }
+                          }
 
                           const isPublishDisabled = missingFields.length > 0;
                           const isPublished = content.isPublished === true;
@@ -1317,6 +1328,7 @@ const ContentManagement = () => {
                             </button>
                           );
                         })()}
+
 
 
                       </div>
