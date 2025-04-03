@@ -181,7 +181,7 @@ const ContentManagement = () => {
     { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
     { label: "İngilizce", value: "INGILIZCE" },
   ];
-
+ 
   // Toplu işlem yapma
   const handleBulkAction = async (e) => {
     e.preventDefault();
@@ -1203,10 +1203,11 @@ const ContentManagement = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.branch || "-"}
-                      </div>
-                    </td>
+  <div className="text-xs text-gray-900">
+    {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
+  </div>
+</td>
+
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
                         {content.ageGroup || "-"}
