@@ -12,8 +12,12 @@ export async function GET() {
     // Tarihleri formatla
     const formattedContents = contents.map((content) => ({
       ...content,
-      publishDateStudent: content.publishDateStudent?.toISOString().split("T")[0],
-      publishDateTeacher: content.publishDateTeacher?.toISOString().split("T")[0],
+      publishDateStudent: content.publishDateStudent
+        ?.toISOString()
+        .split("T")[0],
+      publishDateTeacher: content.publishDateTeacher
+        ?.toISOString()
+        .split("T")[0],
       endDateStudent: content.endDateStudent?.toISOString().split("T")[0],
       endDateTeacher: content.endDateTeacher?.toISOString().split("T")[0],
     }));
@@ -21,7 +25,10 @@ export async function GET() {
     return NextResponse.json(formattedContents);
   } catch (error) {
     console.error("İçerikler alınırken hata oluştu:", error);
-    return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json(
+      { error: "İçerikler alınırken bir hata oluştu" },
+      { status: 500 }
+    );
   }
 }
 
@@ -31,6 +38,9 @@ export async function POST(request) {
 
     const now = new Date();
     const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 gün milisaniye
+
+    // isWeeklyContent kontrolü
+    const isWeeklyContent = data.isWeeklyContent || false;
 
     // tarih dönüşümü
     const parseDate = (value) => {
@@ -45,15 +55,14 @@ export async function POST(request) {
     const endDateStudent = data.endDateStudent
       ? parseDate(data.endDateStudent)
       : publishDateStudent
-        ? new Date(publishDateStudent.getTime() + oneWeek)
-        : null;
+      ? new Date(publishDateStudent.getTime() + oneWeek)
+      : null;
 
     const endDateTeacher = data.endDateTeacher
       ? parseDate(data.endDateTeacher)
       : publishDateTeacher
-        ? new Date(publishDateTeacher.getTime() + oneWeek)
-        : null;
-
+      ? new Date(publishDateTeacher.getTime() + oneWeek)
+      : null;
 
     let tags = [];
     if (data.tags) {
@@ -78,18 +87,23 @@ export async function POST(request) {
           data.isActive !== undefined
             ? data.isActive
             : publishDateStudent && publishDateTeacher
-              ? now >= publishDateStudent && now >= publishDateTeacher
-              : false,
+            ? now >= publishDateStudent && now >= publishDateTeacher
+            : false,
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
+        isWeeklyContent: data.isWeeklyContent,
+        weeklyContentStartDate: data.weeklyContentStartDate,
+        weeklyContentEndDate: data.weeklyContentEndDate,
       },
     });
 
     return NextResponse.json(content, { status: 201 });
   } catch (error) {
     console.error("İçerik eklenirken hata oluştu:", error.message, error.stack);
-    return NextResponse.json({ error: "İçerik eklenirken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json(
+      { error: "İçerik eklenirken bir hata oluştu" },
+      { status: 500 }
+    );
   }
 }
-

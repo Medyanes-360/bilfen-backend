@@ -103,8 +103,8 @@ export default function SingleContentForm({
       publishDateStudent: safeDate(formData.get("publishDateStudent")),
       publishDateTeacher: safeDate(formData.get("publishDateTeacher")),
       isWeeklyContent: formData.get("isWeeklyContent") === "on",
-      weeklyContentStartDate: safeDate(formData.get("weeklyContentStartDate")),
-      weeklyContentEndDate: safeDate(formData.get("weeklyContentEndDate")),
+      weeklyContentStartDate: isWeeklyContent && formData.get("weeklyContentStartDate") ? safeDate(formData.get("weeklyContentStartDate")) : null,
+      weeklyContentEndDate: isWeeklyContent && formData.get("weeklyContentEndDate") ? safeDate(formData.get("weeklyContentEndDate")) : null,
       endDateStudent: safeDate(formData.get("weeklyContentEndDate")),
       endDateTeacher: safeDate(formData.get("weeklyContentEndDate")),
       description: formData.get("description") || null,
@@ -150,9 +150,12 @@ export default function SingleContentForm({
     }
   };
 
-  
-  
-  
+
+
+
+
+
+
 
   return (
     <div className="fixed inset-0 overflow-y-auto z-50">
@@ -322,9 +325,7 @@ export default function SingleContentForm({
 
                       defaultChecked={
                         !!(
-                          currentContent?.isWeeklyContent ||
-                          isValidDate(currentContent?.endDateStudent) ||
-                          isValidDate(currentContent?.endDateTeacher)
+                          currentContent?.isWeeklyContent
                         )
                       }
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
@@ -349,9 +350,7 @@ export default function SingleContentForm({
                 {/* Ek Materyal Tarih Aralığı */}
                 <div
                   id="weeklyContentDateContainer"
-                  className={`mt-2 ${currentContent?.isWeeklyContent ||
-                    isValidDate(currentContent?.endDateStudent) ||
-                    isValidDate(currentContent?.endDateTeacher)
+                  className={`mt-2 ${currentContent?.isWeeklyContent
                     ? ""
                     : "hidden"
                     }`}
@@ -369,8 +368,8 @@ export default function SingleContentForm({
                         name="weeklyContentStartDate"
                         id="weeklyContentStartDate"
                         defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
+                          isValidDate(currentContent?.weeklyContentStartDate)
+                            ? new Date(currentContent.weeklyContentStartDate).toISOString().split("T")[0]
                             : ""
                         }
 
@@ -389,8 +388,8 @@ export default function SingleContentForm({
                         name="weeklyContentEndDate"
                         id="weeklyContentEndDate"
                         defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
+                          isValidDate(currentContent?.weeklyContentEndDate)
+                            ? new Date(currentContent.weeklyContentEndDate).toISOString().split("T")[0]
                             : ""
                         }
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

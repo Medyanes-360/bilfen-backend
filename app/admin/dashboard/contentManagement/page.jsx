@@ -1226,7 +1226,7 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {isValidDate(content?.endDateStudent) || isValidDate(content?.endDateTeacher) ? (
+                        {content.isWeeklyContent ? (
                           <CheckSquare className="w-4 h-4 text-green-500" />
                         ) : (
                           "-"
