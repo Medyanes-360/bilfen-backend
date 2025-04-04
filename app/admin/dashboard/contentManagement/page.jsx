@@ -181,7 +181,7 @@ const ContentManagement = () => {
     { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
     { label: "İngilizce", value: "INGILIZCE" },
   ];
-
+ 
   // Toplu işlem yapma
   const handleBulkAction = async (e) => {
     e.preventDefault();
@@ -822,7 +822,7 @@ const ContentManagement = () => {
                 <button
                   key={type.id}
                   onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${activeType === type.id
+                  className={`px-3 py-1.5 cursor-pointer text-sm rounded-full whitespace-nowrap ${activeType === type.id
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}>
@@ -835,7 +835,7 @@ const ContentManagement = () => {
               {/* Yeni içerik ekleme butonu */}
               <button
                 onClick={() => openModal()}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
                   <>
@@ -856,7 +856,7 @@ const ContentManagement = () => {
                   setBulkMode(!bulkMode);
                   setSelectedItems([]);
                 }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
                   <>
@@ -895,7 +895,7 @@ const ContentManagement = () => {
             {/* Sıralama Butonu */}
             <div className="relative">
               <select
-                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
                 value={sortOption}
                 onChange={(e) => handleSort(e.target.value)}
               >
@@ -906,7 +906,7 @@ const ContentManagement = () => {
 
             {/* Filtreleme Butonu ve Popup Menüsü */}
             <div className="relative">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ">
                 <button
                   onClick={() => {
                     console.log(
@@ -918,9 +918,9 @@ const ContentManagement = () => {
                   className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {hasActiveFilters() ? (
-                    <FilterX className="w-5 h-5 mr-2 text-indigo-600" />
+                    <FilterX className="w-5 h-5 mr-2 text-indigo-600 cursor-pointer" />
                   ) : (
-                    <Filter className="w-5 h-5 mr-2 text-gray-400" />
+                    <Filter className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
                   )}
                   Filtreler
                 </button>
@@ -937,9 +937,9 @@ const ContentManagement = () => {
                       setActiveType("all");
                       setSearchTerm("");
                     }}
-                    className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
                   >
-                    <FilterX className="w-5 h-5 mr-2 text-gray-400" />
+                    <FilterX className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
                     Temizle
                   </button>
                 )}
@@ -962,7 +962,7 @@ const ContentManagement = () => {
                           Yaş Grubu
                         </label>
                         <select
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 cursor-pointer focus:ring-indigo-500 b"
                           value={advancedFilterOptions.ageGroup}
                           onChange={(e) =>
                             setAdvancedFilterOptions({
@@ -987,7 +987,7 @@ const ContentManagement = () => {
                         <div className="flex items-center gap-2">
                           <input
                             type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={advancedFilterOptions.publishDateStudent}
                             onChange={(e) =>
                               setAdvancedFilterOptions({
@@ -1007,7 +1007,7 @@ const ContentManagement = () => {
                         <div className="flex items-center gap-2">
                           <input
                             type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={advancedFilterOptions.publishDateTeacher}
                             onChange={(e) =>
                               setAdvancedFilterOptions({
@@ -1021,7 +1021,7 @@ const ContentManagement = () => {
 
                       <div className="flex justify-end space-x-2 pt-2">
                         <button
-                          className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                          className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
                           onClick={() => {
                             setAdvancedFilterOptions({
                               ageGroup: "",
@@ -1034,7 +1034,7 @@ const ContentManagement = () => {
                           Temizle
                         </button>
                         <button
-                          className="px-3 py-2 text-indigo-600 hover:bg-indigo-100 rounded"
+                          className="px-3 py-2 text-indigo-600 hover:bg-indigo-100 rounded cursor-pointer"
                           onClick={applyAdvancedFilters}
                         >
                           Uygula
@@ -1203,10 +1203,11 @@ const ContentManagement = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.branch || "-"}
-                      </div>
-                    </td>
+  <div className="text-xs text-gray-900">
+    {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
+  </div>
+</td>
+
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
                         {content.ageGroup || "-"}
@@ -1276,16 +1277,16 @@ const ContentManagement = () => {
                           onClick={() => viewContent(content.id)}
                           className="text-indigo-600 hover:text-indigo-900"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4 cursor-pointer" />
                         </button>
                         <button
                           onClick={() => openModal(content)}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-4 h-4 cursor-pointer" />
                         </button>
                         <button
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
+                          className="text-red-600 hover:text-red-900 cursor-pointer "
                           title="Sil"
                           onClick={() => handleDeleteContent(content.id)}
                         >
@@ -1372,7 +1373,7 @@ const ContentManagement = () => {
                   setBulkAction("update");
                   setBulkActionModalOpen(true);
                 }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 <Edit className="w-4 h-4 mr-1" />
                 Güncelle
@@ -1398,7 +1399,7 @@ const ContentManagement = () => {
               <button
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
               >
                 <span className="sr-only">Önceki</span>
                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -1458,7 +1459,7 @@ const ContentManagement = () => {
               <button
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
               >
                 <span className="sr-only">Sonraki</span>
                 <ChevronRight className="h-5 w-5" aria-hidden="true" />
