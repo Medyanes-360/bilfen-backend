@@ -1,4 +1,5 @@
-// components/BulkUpdateForm.jsx
+import { contentTypes, ageGroups } from '../app/constants/mockData';
+import LoadingSpinner from './icons/LoadingSpinner';
 export default function BulkUpdateForm({
     currentContent,
     branchOptions,
@@ -52,11 +53,11 @@ export default function BulkUpdateForm({
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             >
                                 <option value="">Seçiniz</option>
-                                <option value="video">Video</option>
-                                <option value="audio">Ses</option>
-                                <option value="document">Döküman</option>
-                                <option value="interactive">Etkileşimli</option>
-                                <option value="game">Oyun</option>
+                                {contentTypes.map((type) => (
+                                    <option key={type.value} value={type.value}>
+                                        {type.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -74,11 +75,11 @@ export default function BulkUpdateForm({
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             >
                                 <option value="">Seçiniz</option>
-                                <option value="3-4 yaş">3-4 yaş</option>
-                                <option value="4-5 yaş">4-5 yaş</option>
-                                <option value="5-6 yaş">5-6 yaş</option>
-                                <option value="6-7 yaş">6-7 yaş</option>
-                                <option value="7-8 yaş">7-8 yaş</option>
+                                {ageGroups.map((age) => (
+                                    <option key={age.value} value={age.value}>
+                                        {age.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -109,26 +110,7 @@ export default function BulkUpdateForm({
                     >
                         {isBulkUpdating ? (
                             <>
-                                <svg
-                                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
+                                <LoadingSpinner />
                                 İşleniyor...
                             </>
                         ) : (

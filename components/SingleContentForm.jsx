@@ -1,5 +1,5 @@
 "use client";
-
+import { contentTypes, ageGroups } from '../app/constants/mockData';
 import { useState } from "react";
 import { Upload, Tag } from "lucide-react";
 import isValidDate from "@/components/dateValidation"
@@ -217,11 +217,11 @@ export default function SingleContentForm({
                     onChange={handleTypeChange}
                   >
                     <option value="">Seçiniz</option>
-                    <option value="video">Video</option>
-                    <option value="audio">Ses</option>
-                    <option value="document">Döküman</option>
-                    <option value="interactive">Etkileşimli</option>
-                    <option value="game">Oyun</option>
+                    {contentTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -263,11 +263,11 @@ export default function SingleContentForm({
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   >
                     <option value="">Seçiniz</option>
-                    <option value="3-4 yaş">3-4 yaş</option>
-                    <option value="4-5 yaş">4-5 yaş</option>
-                    <option value="5-6 yaş">5-6 yaş</option>
-                    <option value="6-7 yaş">6-7 yaş</option>
-                    <option value="7-8 yaş">7-8 yaş</option>
+                    {ageGroups.map((age) => (
+                      <option key={age.value} value={age.value}>
+                        {age.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
