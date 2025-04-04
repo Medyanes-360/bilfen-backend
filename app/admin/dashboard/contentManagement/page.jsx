@@ -10,7 +10,7 @@
 // 3. State Tanımlamaları
 // - İçerik listesi, filtreleme, sayfalama, modal durumu vb.
 
-// 4. Yardımcı Fonksiyonlar
+// 4. Yardımcı Fonksiyonlar 
 // - İçerik ikonu belirleme
 // - Durum rengi belirleme
 // - Dosya işlemleri
@@ -67,6 +67,8 @@ import SingleContentForm from "@/components/SingleContentForm";
 import isValidDate from "@/components/dateValidation";
 import useToastStore from "@/lib/store/toast";
 import Toast from "@/components/toast";
+import BulkUpdateForm from "@/components/BulkUpdateForm";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -76,7 +78,6 @@ const contentTypes = [
   { id: "game", name: "Oyun" },
   { id: "audio", name: "Ses" },
 ];
-
 
 
 // Örnek içerik verileri
@@ -170,10 +171,6 @@ const ContentManagement = () => {
     }
   };
 
-
-
-
-
   const branchOptions = [
     { label: "Matematik", value: "MATEMATIK" },
     { label: "Türkçe", value: "TURKCE" },
@@ -181,12 +178,11 @@ const ContentManagement = () => {
     { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
     { label: "İngilizce", value: "INGILIZCE" },
   ];
- 
+
   // Toplu işlem yapma
   const handleBulkAction = async (e) => {
     e.preventDefault();
     setIsBulkUpdating(true);
-
     try {
       // Toplu Silme
       if (bulkAction === "delete") {
@@ -205,7 +201,6 @@ const ContentManagement = () => {
           .filter((key) => typeof key === "string" && key.trim() !== "");
 
         if (idsToDelete.length === 0) {
-
           showToast("Silinecek geçerli içerik bulunamadı", "success");
           return;
         }
@@ -221,15 +216,24 @@ const ContentManagement = () => {
           }),
         });
 
+
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
 
+        // İçerikleri state'den kaldır
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
 
+        // State'leri temizle
+        setSelectedItems([]); // Seçimleri temizle
+        setBulkMode(false); // Bulk mode'u kapat
+        setBulkActionModalOpen(false); // Modalı kapat
+        setBulkAction(null); // Bulk action'ı sıfırla
+        setConfirmOpen(false); // Confirm modalı kapat
+
         showToast("İçerikler başarıyla silindi.", "success");
-        setSelectedItems([]);
       }
 
       // Toplu Güncelleme
@@ -284,13 +288,21 @@ const ContentManagement = () => {
 
         showToast("İçerikler başarıyla güncellendi.", "success");
         setSelectedItems([]);
+        setBulkMode(false);
+        setIsModalOpen(false);
+
+        // Modalı kapat
+        setBulkActionModalOpen(false);
+
+        // Bulk action'ı sıfırla
+        setBulkAction(null);
+
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
       showToast(error.message, "error");
     } finally {
       setIsBulkUpdating(false);
-      setBulkActionModalOpen(false);
     }
   };
 
@@ -574,6 +586,11 @@ const ContentManagement = () => {
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
       setSelectedId(null);
+
+      setSelectedItems([]); // selectedItems'ı temizle
+      setBulkMode(false); // bulk mode'u kapat
+      setBulkActionModalOpen(false); // bulk action modalını kapat
+      setBulkAction(null); // bulk action'ı sıfırla
     } catch (error) {
       console.error("Silme işlemi başarısız:", error);
     }
@@ -1203,10 +1220,10 @@ const ContentManagement = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-  <div className="text-xs text-gray-900">
-    {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
-  </div>
-</td>
+                      <div className="text-xs text-gray-900">
+                        {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
+                      </div>
+                    </td>
 
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
@@ -1286,9 +1303,17 @@ const ContentManagement = () => {
                           <Edit className="w-4 h-4 cursor-pointer" />
                         </button>
                         <button
-                          className="text-red-600 hover:text-red-900 cursor-pointer "
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
                           title="Sil"
-                          onClick={() => handleDeleteContent(content.id)}
+                          onClick={() => {
+                            if (bulkMode && selectedItems.length > 1) {
+                              setBulkAction("delete");
+                              setBulkActionModalOpen(true);
+                            } else {
+                              setSelectedId(content.id);
+                              setConfirmOpen(true);
+                            }
+                          }}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -1341,9 +1366,6 @@ const ContentManagement = () => {
                             </button>
                           );
                         })()}
-
-
-
                       </div>
                     </td>
                   </tr>
@@ -1486,12 +1508,17 @@ const ContentManagement = () => {
             >
               &#8203;
             </span>
-
-            {bulkMode ? (
-
-              <BulkContentUpload
-                setIsModalOpen={setIsModalOpen}
-                setContents={setContents}
+            {bulkMode && selectedItems.length > 1 ? (
+              <BulkUpdateForm
+                currentContent={currentContent}
+                branchOptions={branchOptions}
+                isBulkUpdating={isBulkUpdating}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setBulkAction("update");
+                  handleBulkAction(e);
+                }}
+                onCancel={() => setIsModalOpen(false)}
               />
 
             ) : (
@@ -1517,196 +1544,70 @@ const ContentManagement = () => {
       )}
 
       {/* Toplu İşlem Modal düzenleme */}
-      {bulkActionModalOpen && (
+
+      {bulkActionModalOpen && bulkAction === "update" && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
               &#8203;
             </span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleBulkAction}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    {bulkAction === "update"
-                      ? "Toplu Güncelleme"
-                      : "Toplu Silme"}
-                  </h3>
-
-                  {bulkAction === "update" && (
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Branş */}
-                      <div>
-                        <label
-                          htmlFor="bulkBranch"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Branş
-                        </label>
-                        <select
-                          id="bulkBranch"
-                          name="bulkBranch"
-                          defaultValue={currentContent?.branch || ""}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          {branchOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* İçerik Türü */}
-                      <div>
-                        <label
-                          htmlFor="bulkType"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          İçerik Türü
-                        </label>
-                        <select
-                          id="bulkType"
-                          name="bulkType"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          <option value="video">Video</option>
-                          <option value="audio">Ses</option>
-                          <option value="document">Döküman</option>
-                          <option value="interactive">Etkileşimli</option>
-                          <option value="game">Oyun</option>
-                        </select>
-                      </div>
-
-                      {/* Yaş Grubu */}
-                      <div>
-                        <label
-                          htmlFor="bulkAgeGroup"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Yaş Grubu
-                        </label>
-                        <select
-                          id="bulkAgeGroup"
-                          name="bulkAgeGroup"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          <option value="3-4 yaş">3-4 yaş</option>
-                          <option value="4-5 yaş">4-5 yaş</option>
-                          <option value="5-6 yaş">5-6 yaş</option>
-                          <option value="6-7 yaş">6-7 yaş</option>
-                          <option value="7-8 yaş">7-8 yaş</option>
-                        </select>
-                      </div>
-
-                      {/* Açıklama */}
-                      <div>
-                        <label
-                          htmlFor="bulkDescription"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Açıklama
-                        </label>
-                        <textarea
-                          id="bulkDescription"
-                          name="bulkDescription"
-                          rows="3"
-                          placeholder="Açıklamayı güncellemek için doldurun"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        ></textarea>
-                      </div>
-                    </div>
-                  )}
-
-                  {bulkAction === "delete" && (
-                    <div className="text-sm text-gray-500">
-                      <p className="mb-2">
-                        Seçilen{" "}
-                        <span className="font-bold">
-                          {selectedItems.length}
-                        </span>{" "}
-                        içeriği silmek istediğinize emin misiniz?
-                      </p>
-                      <p className="text-red-500">Bu işlem geri alınamaz!</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${bulkAction === "delete"
-                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                      : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                      } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
-                    disabled={isBulkUpdating}
-                  >
-                    {isBulkUpdating ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        İşleniyor...
-                      </>
-                    ) : bulkAction === "delete" ? (
-                      "Sil"
-                    ) : (
-                      "Güncelle"
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => setBulkActionModalOpen(false)}
-                    disabled={isBulkUpdating}
-                  >
-                    İptal
-                  </button>
-                </div>
-              </form>
-            </div>
+            <BulkUpdateForm
+              currentContent={currentContent}
+              branchOptions={branchOptions}
+              isBulkUpdating={isBulkUpdating}
+              onSubmit={handleBulkAction}
+              onCancel={() => setBulkActionModalOpen(false)}
+            />
           </div>
         </div>
       )}
+
       {/* silmek için açılan modal */}
-      <ConfirmModal
-        isOpen={confirmOpen}
-        title="İçeriği silmek istediğinize emin misiniz?"
-        description="Bu işlem geri alınamaz."
-        onCancel={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
-      {/* seçilen checkbox sayısı 10'u geçince açılan modal */}
+      {(confirmOpen || (bulkActionModalOpen && bulkAction === "delete")) && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <DeleteConfirmationModal
+              selectedCount={
+                bulkMode
+                  ? selectedItems
+                    .filter(item => typeof item === "string" && item.trim() !== "")
+                    .length
+                  : 1
+              }
+              isBulkDeleting={isBulkUpdating}
+              onConfirm={() => {
+                if (bulkMode) {
+                  setBulkAction("delete");
+                  handleBulkAction({ preventDefault: () => { } });
+                } else {
+                  handleConfirmDelete();
+                }
+              }}
+              onCancel={() => {
+                if (bulkMode && selectedItems.length > 1) {
+                  setBulkActionModalOpen(false);
+                } else {
+                  handleCancelDelete();
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
