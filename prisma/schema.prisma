@@ -85,6 +85,8 @@ model Content {
   updatedAt          DateTime? // Güncellenme tarihi
   createdAt          DateTime? @default(now())
   isPublished        Boolean?  @default(false)
+  isExtra            Boolean?  @default(false)
+  isCompleted        Boolean?  @default(false)
 }
 
 // Adminin Todo listi
