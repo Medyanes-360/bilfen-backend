@@ -2,45 +2,47 @@
 
 import { useState } from 'react';
 import { Upload } from 'lucide-react';
+import useToastStore from '@/lib/store/toast';
 
-export default function BulkContentUpload({ setIsModalOpen,setContents  }) {
+export default function BulkContentUpload({ setIsModalOpen, setContents }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const showToast = useToastStore((s) => s.showToast);
 
   const handleFileChange = (e) => {
     if (e.target.files) {
-      setSelectedFiles(Array.from(e.target.files));
+      const newFiles = Array.from(e.target.files);
+      setSelectedFiles((prev) => [...prev, ...newFiles]);
     }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedFiles = Array.from(e.dataTransfer.files);
-    setSelectedFiles(droppedFiles);
+    setSelectedFiles((prev) => [...prev, ...droppedFiles]);
   };
 
   const handleDragOver = (e) => e.preventDefault();
 
   const handleSubmit = async (e) => {
-    
     e.preventDefault();
     setIsUploading(true);
-  
+
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append("files", file));
-  
+
     const res = await fetch("/api/contents/bulk-create", {
       method: "POST",
       body: formData,
     });
-  
+
     const result = await res.json();
-  
+
     if (res.ok && result?.data?.length > 0) {
       const uploadedContents = result.data.map((item) => ({
-        id: item.id, 
-        title: "", 
-        type: "document", 
+        id: item.id,
+        title: "",
+        type: "document",
         branch: "",
         ageGroup: "",
         publishDateStudent: "",
@@ -50,21 +52,20 @@ export default function BulkContentUpload({ setIsModalOpen,setContents  }) {
         tags: [],
         description: "",
       }));
-  
+
       setContents((prev) => [...uploadedContents, ...prev]);
-      alert("Dosyalar başarıyla yüklendi");
+      showToast("Dosyalar başarıyla yüklendi", "success");
       setSelectedFiles([]);
       setIsModalOpen(false);
     } else {
-      alert("Hata: " + (result.error || "Bilinmeyen hata"));
+      showToast("Hata: " + (result.error || "Bilinmeyen hata"), "error");
     }
-  
+
     setIsUploading(false);
   };
-  
 
   return (
-    <div className="inline-block  bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg w-full">
+    <div className="inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg w-full">
       <form onSubmit={handleSubmit}>
         <div className="bg-white p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Toplu İçerik Yükle</h3>
@@ -76,29 +77,32 @@ export default function BulkContentUpload({ setIsModalOpen,setContents  }) {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <div className="space-y-1 text-center">
+            <div className="space-y-2 text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="text-sm text-gray-600">
-                <label htmlFor="file-upload" className="cursor-pointer text-indigo-600 hover:text-indigo-500">
-                  <span>Dosya seçin</span>
-                  <input
-                    id="file-upload"
-                    name="file-upload"
-                    type="file"
-                    className="sr-only"
-                    multiple
-                    accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
-                    onChange={handleFileChange}
-                  />
+              <div className="flex flex-col items-center space-y-1">
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer text-indigo-600 hover:text-indigo-500 font-medium"
+                >
+                  Dosya seçin
                 </label>
-                <p className="pl-1 inline">veya sürükleyip bırakın</p>
+                <input
+                  id="file-upload"
+                  name="file-upload"
+                  type="file"
+                  multiple
+                  accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <p className="text-sm text-gray-500">veya sürükleyip bırakın</p>
               </div>
               <p className="text-xs text-gray-500">Maks. 50MB, birden fazla dosya yüklenebilir</p>
 
               {selectedFiles.length > 0 && (
-                <ul className="mt-2 text-green-600 text-sm font-medium space-y-1">
+                <ul className="mt-2 text-green-700 text-sm font-medium space-y-1 text-left">
                   {selectedFiles.map((file, i) => (
-                    <li key={i}>• {file.name}</li>
+                    <li key={i}>📄 {file.name}</li>
                   ))}
                 </ul>
               )}

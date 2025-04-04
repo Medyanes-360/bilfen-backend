@@ -18,6 +18,10 @@ export default function SingleContentForm({
   setSelectedFile,
 }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isWeeklyContentChecked, setIsWeeklyContentChecked] = useState(
+    !!currentContent?.isWeeklyContent
+  );
+
 
   const uploadFileToR2 = async (file) => {
     const formData = new FormData();
@@ -103,8 +107,8 @@ export default function SingleContentForm({
       publishDateStudent: safeDate(formData.get("publishDateStudent")),
       publishDateTeacher: safeDate(formData.get("publishDateTeacher")),
       isWeeklyContent: formData.get("isWeeklyContent") === "on",
-      weeklyContentStartDate: safeDate(formData.get("weeklyContentStartDate")),
-      weeklyContentEndDate: safeDate(formData.get("weeklyContentEndDate")),
+      weeklyContentStartDate: isWeeklyContent && formData.get("weeklyContentStartDate") ? safeDate(formData.get("weeklyContentStartDate")) : null,
+      weeklyContentEndDate: isWeeklyContent && formData.get("weeklyContentEndDate") ? safeDate(formData.get("weeklyContentEndDate")) : null,
       endDateStudent: safeDate(formData.get("weeklyContentEndDate")),
       endDateTeacher: safeDate(formData.get("weeklyContentEndDate")),
       description: formData.get("description") || null,
@@ -150,9 +154,12 @@ export default function SingleContentForm({
     }
   };
 
-  
-  
-  
+
+
+
+
+
+
 
   return (
     <div className="fixed inset-0 overflow-y-auto z-50">
@@ -265,52 +272,46 @@ export default function SingleContentForm({
                 </div>
 
                 {/* Yayın Tarihleri */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Öğrenci Yayın Tarihi */}
-                  <div>
-                    <label
-                      htmlFor="publishDateStudent"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Öğrenci Yayın Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      name="publishDateStudent"
-                      id="publishDateStudent"
-                      defaultValue={
-                        currentContent?.publishDateStudent
-                          ? new Date(currentContent.publishDateStudent)
-                            .toISOString()
-                            .split("T")[0]
-                          : ""
-                      }
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
+                {!isWeeklyContentChecked && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Öğrenci Yayın Tarihi */}
+                    <div>
+                      <label htmlFor="publishDateStudent" className="block text-sm font-medium text-gray-700">
+                        Öğrenci Yayın Tarihi
+                      </label>
+                      <input
+                        type="date"
+                        name="publishDateStudent"
+                        id="publishDateStudent"
+                        defaultValue={
+                          currentContent?.publishDateStudent
+                            ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+                            : ""
+                        }
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                      />
+                    </div>
+
+                    {/* Öğretmen Yayın Tarihi */}
+                    <div>
+                      <label htmlFor="publishDateTeacher" className="block text-sm font-medium text-gray-700">
+                        Öğretmen Yayın Tarihi
+                      </label>
+                      <input
+                        type="date"
+                        name="publishDateTeacher"
+                        id="publishDateTeacher"
+                        defaultValue={
+                          currentContent?.publishDateTeacher
+                            ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+                            : ""
+                        }
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                      />
+                    </div>
                   </div>
-                  {/* Öğretmen Yayın Tarihi */}
-                  <div>
-                    <label
-                      htmlFor="publishDateTeacher"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Öğretmen Yayın Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      name="publishDateTeacher"
-                      id="publishDateTeacher"
-                      defaultValue={
-                        currentContent?.publishDateTeacher
-                          ? new Date(currentContent.publishDateTeacher)
-                            .toISOString()
-                            .split("T")[0]
-                          : ""
-                      }
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                </div>
+                )}
+
 
                 {/* Ek Materyal Seçeneği */}
                 <div className="mt-2">
@@ -319,27 +320,13 @@ export default function SingleContentForm({
                       type="checkbox"
                       name="isWeeklyContent"
                       id="isWeeklyContent"
-
-                      defaultChecked={
-                        !!(
-                          currentContent?.isWeeklyContent ||
-                          isValidDate(currentContent?.endDateStudent) ||
-                          isValidDate(currentContent?.endDateTeacher)
-                        )
-                      }
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      checked={isWeeklyContentChecked}
                       onChange={(e) => {
-                        const dateContainer = document.getElementById(
-                          "weeklyContentDateContainer"
-                        );
-                        if (dateContainer) {
-                          dateContainer.classList.toggle(
-                            "hidden",
-                            !e.target.checked
-                          );
-                        }
+                        setIsWeeklyContentChecked(e.target.checked);
                       }}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
+
                     <span className="text-sm font-medium text-gray-700">
                       Ek Materyal
                     </span>
@@ -347,57 +334,58 @@ export default function SingleContentForm({
                 </div>
 
                 {/* Ek Materyal Tarih Aralığı */}
-                <div
-                  id="weeklyContentDateContainer"
-                  className={`mt-2 ${currentContent?.isWeeklyContent ||
-                    isValidDate(currentContent?.endDateStudent) ||
-                    isValidDate(currentContent?.endDateTeacher)
-                    ? ""
-                    : "hidden"
-                    }`}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="weeklyContentStartDate"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Başlangıç Tarihi
-                      </label>
-                      <input
-                        type="date"
-                        name="weeklyContentStartDate"
-                        id="weeklyContentStartDate"
-                        defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
-                            : ""
-                        }
+                {isWeeklyContentChecked && (
+                  <div className="mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Başlangıç Tarihi */}
+                      <div>
+                        <label
+                          htmlFor="weeklyContentStartDate"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Başlangıç Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="weeklyContentStartDate"
+                          id="weeklyContentStartDate"
+                          defaultValue={
+                            isValidDate(currentContent?.weeklyContentStartDate)
+                              ? new Date(currentContent.weeklyContentStartDate)
+                                .toISOString()
+                                .split("T")[0]
+                              : ""
+                          }
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
 
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="weeklyContentEndDate"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Bitiş Tarihi
-                      </label>
-                      <input
-                        type="date"
-                        name="weeklyContentEndDate"
-                        id="weeklyContentEndDate"
-                        defaultValue={
-                          isValidDate(currentContent?.endDateStudent)
-                            ? new Date(currentContent.endDateStudent).toISOString().split("T")[0]
-                            : ""
-                        }
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
+                      {/* Bitiş Tarihi */}
+                      <div>
+                        <label
+                          htmlFor="weeklyContentEndDate"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Bitiş Tarihi
+                        </label>
+                        <input
+                          type="date"
+                          name="weeklyContentEndDate"
+                          id="weeklyContentEndDate"
+                          defaultValue={
+                            isValidDate(currentContent?.weeklyContentEndDate)
+                              ? new Date(currentContent.weeklyContentEndDate)
+                                .toISOString()
+                                .split("T")[0]
+                              : ""
+                          }
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
                 {/* Dosya Yükleme */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
