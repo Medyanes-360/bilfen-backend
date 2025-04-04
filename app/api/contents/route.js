@@ -1,36 +1,84 @@
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request) {
+  const url = new URL(request.url)
+  const params = Object.fromEntries(url.searchParams.entries())
+
+  const where = {}
+
+  // String içinde arama
+  if (params.title) {
+    where.title = {
+      contains: params.title,
+      mode: 'insensitive',
+    }
+  }
+
+  // Direkt eşleşen string alanlar
+  const stringFields = ['type', 'ageGroup']
+  stringFields.forEach((field) => {
+    if (params[field]) {
+      where[field] = params[field]
+    }
+  })
+
+  // Boolean alanlar (ekstra olarak isExtra ve isCompleted eklendi)
+  const booleanFields = ['isActive', 'isPublished', 'isWeeklyContent', 'isExtra', 'isCompleted']
+  booleanFields.forEach((field) => {
+    if (params[field] !== undefined) {
+      where[field] = params[field] === 'true'
+    }
+  })
+
+  // Tarih aralığı filtreleme
+  if (params.startDate && params.endDate) {
+    where.createdAt = {
+      gte: new Date(params.startDate),
+      lte: new Date(params.endDate),
+    }
+  }
+
+  // Tek tag filtreleme
+  if (params.tag) {
+    where.tags = {
+      has: params.tag,
+    }
+  }
+
+  // Branch filtresi
+  if (params.branch) {
+    where.branch = params.branch
+  }
+
   try {
     const contents = await prisma.content.findMany({
+      where,
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
-    });
+    })
 
-    // Tarihleri formatla
     const formattedContents = contents.map((content) => ({
       ...content,
-      publishDateStudent: content.publishDateStudent
-        ?.toISOString()
-        .split("T")[0],
-      publishDateTeacher: content.publishDateTeacher
-        ?.toISOString()
-        .split("T")[0],
-      endDateStudent: content.endDateStudent?.toISOString().split("T")[0],
-      endDateTeacher: content.endDateTeacher?.toISOString().split("T")[0],
-    }));
+      publishDateStudent: content.publishDateStudent?.toISOString().split('T')[0],
+      publishDateTeacher: content.publishDateTeacher?.toISOString().split('T')[0],
+      endDateStudent: content.endDateStudent?.toISOString().split('T')[0],
+      endDateTeacher: content.endDateTeacher?.toISOString().split('T')[0],
+      createdAt: content.createdAt?.toISOString().split('T')[0],
+      updatedAt: content.updatedAt?.toISOString().split('T')[0],
+    }))
 
-    return NextResponse.json(formattedContents);
+    return NextResponse.json(formattedContents)
   } catch (error) {
-    console.error("İçerikler alınırken hata oluştu:", error);
+    console.error('İçerikler alınırken hata oluştu:', error)
     return NextResponse.json(
-      { error: "İçerikler alınırken bir hata oluştu" },
+      { error: 'İçerikler alınırken bir hata oluştu' },
       { status: 500 }
-    );
+    )
   }
 }
+
 
 export async function POST(request) {
   try {
