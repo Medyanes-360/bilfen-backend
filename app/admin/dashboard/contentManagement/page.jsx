@@ -1118,50 +1118,50 @@ const ContentManagement = () => {
                   )}
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs  text-gray-500 uppercase tracking-wide font-bold"
                   >
                     İçerik
                   </th>
 
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wide font-bold"
                   >
                     Branş
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Yaş
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Öğrenci Yayın Tarihi
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Öğretmen Yayın Tarihi
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Ek Materyal
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Yayın Kriterleri
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     İşlem
                   </th>
@@ -1280,14 +1280,24 @@ const ContentManagement = () => {
                           }
 
                           return missingFields.length > 0 ? (
-                            <span className="text-red-600">{missingFields.join(", ")}</span>
+                            <div className="flex flex-wrap gap-1">
+                              {missingFields.map((field, index) => (
+                                <span
+                                  key={index}
+                                  className="bg-red-400 text-white text-[11px] px-2 py-[5px] rounded-full shadow-md"
+                                >
+                                  {field}
+                                </span>
+                              ))}
+                            </div>
                           ) : (
-                            "-"
+                            <span className="text-gray-500">-</span>
                           );
                         })()}
                       </div>
-
                     </td>
+
+
                     <td className="px-3 py-2">
                       <div className="flex items-center space-x-1">
                         {(() => {
@@ -1314,7 +1324,7 @@ const ContentManagement = () => {
                             <button
                             className={`w-[110px] h-[28px] px-2 py-1 text-xs rounded-lg shadow-sm transition-all
                               ${isPublished
-                                ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                                ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
                                 : isPublishDisabled
                                   ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
                                   : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
