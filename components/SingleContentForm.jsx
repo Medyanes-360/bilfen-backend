@@ -294,7 +294,22 @@ export default function SingleContentForm({
                         id="publishDateStudent"
                         min={new Date().toISOString().split("T")[0]} 
                         value={studentDate}
-                        onChange={(e) => setStudentDate(e.target.value)}
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                      
+                          if (teacherDate) {
+                            const student = new Date(selectedDate);
+                            const teacher = new Date(teacherDate);
+                      
+                            if (student < teacher) {
+                              showToast("Öğrenci yayın tarihi, öğretmen tarihinden önce olamaz!", "error");
+                              setStudentDate("");
+                              return;
+                            }
+                          }
+                      
+                          setStudentDate(selectedDate);
+                        }}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
