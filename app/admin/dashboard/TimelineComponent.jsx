@@ -237,6 +237,11 @@ const TimelineComponent = () => {
 
   const [currentContent, setCurrentContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const filteredDailyContent = dailyContent?.filter(
+    item => item.isPublished && !item.isWeeklyContent
+  ) || [];
+  
+
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
     setCurrentContent(content);
@@ -319,13 +324,25 @@ const TimelineComponent = () => {
           >
             <ChevronLeft size={20} className="text-gray-700" />
           </button>
-          <button
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-            onClick={goToToday}
-          >
-            <Calendar size={16} className="mr-2 text-orange-500" />
-            Bugün
-          </button>
+          <div className="relative items-center">
+
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                const newDate = new Date(e.target.value);
+                const formatted = newDate.toISOString().split("T")[0];
+
+                setSelectedDate(formatted);
+                setDays(createTimelineData(newDate));
+              }}
+              className="pl-3 pr-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-orange-500 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+            />
+          </div>
+
+
+
+
           <button
             className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
             onClick={goToNextWeek}
@@ -396,9 +413,11 @@ const TimelineComponent = () => {
       <div className="p-4 md:p-6">
 
 
-        {dailyContent && dailyContent.length > 0 ? (
+        {filteredDailyContent.length > 0
+
+? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {dailyContent.map((content, index) => (
+            {filteredDailyContent.map((content, index) => (
               <div
                 key={content.id}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
