@@ -141,7 +141,7 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [...prev, newContent]);
+        setContents((prev) => [newContent,...prev]);
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
