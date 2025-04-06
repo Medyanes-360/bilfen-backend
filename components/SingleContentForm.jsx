@@ -316,8 +316,8 @@ export default function SingleContentForm({
                           if (studentDate) {
                             const student = new Date(studentDate);
                             const teacher = new Date(selectedDate);
-                            if (teacher < student) {
-                              showToast("Öğretmen yayın tarihi, öğrenci tarihinden önce olamaz!", "error");
+                            if (teacher > student) {
+                              showToast("Öğretmen yayın tarihi, öğrenci tarihinden sonra olamaz!", "error");
                               setTeacherDate("");
                               return;
                             }
