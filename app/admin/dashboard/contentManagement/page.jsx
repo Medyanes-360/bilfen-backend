@@ -57,6 +57,7 @@ import {
   Upload,
   Video,
   X,
+  ArrowLeft
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -69,6 +70,7 @@ import useToastStore from "@/lib/store/toast";
 import Toast from "@/components/toast";
 import BulkUpdateForm from "@/components/BulkUpdateForm";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import Link from "next/link";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -106,6 +108,7 @@ const ContentManagement = () => {
     status: "",
     publishDateStudent: "",
     publishDateTeacher: "",
+    weeklyContent: false,
   });
   const [sortOption, setSortOption] = useState("newest");
   const [bulkMode, setBulkMode] = useState(false); // Toplu mod aktif mi?
@@ -318,6 +321,7 @@ const ContentManagement = () => {
       advancedFilterOptions.status !== "" ||
       advancedFilterOptions.publishDateStudent !== "" ||
       advancedFilterOptions.publishDateTeacher !== "" ||
+      advancedFilterOptions.weeklyContent ||
       activeType !== "all" ||
       searchTerm !== ""
     );
@@ -354,29 +358,57 @@ const ContentManagement = () => {
       const contentStudentDate = content.publishDateStudent
         ? new Date(content.publishDateStudent)
         : null;
-      const matchesStudentDate =
-        !studentDateFilter ||
-        !contentStudentDate ||
-        contentStudentDate.toDateString() === studentDateFilter.toDateString();
+        const matchesStudentDate = (() => {
+          if (!studentDateFilter) return true;
+        
+          // weekly content'ler student tarihine göre filtrelenemez
+          if (content.isWeeklyContent) return false;
+        
+          if (!contentStudentDate) return false;
+        
+          return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+        })();
+        
 
-      const teacherDateFilter = advancedFilterOptions.publishDateTeacher
+        const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
-      const contentTeacherDate = content.publishDateTeacher
-        ? new Date(content.publishDateTeacher)
-        : null;
-      const matchesTeacherDate =
-        !teacherDateFilter ||
-        !contentTeacherDate ||
-        contentTeacherDate.toDateString() === teacherDateFilter.toDateString();
+        const matchesWeeklyContent =
+  !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
 
+      
+      const matchesTeacherDate = (() => {
+        if (!teacherDateFilter) return true;
+      
+        if (advancedFilterOptions.weeklyContent) {
+          const weeklyDate = content.weeklyContentStartDate
+            ? new Date(content.weeklyContentStartDate)
+            : null;
+      
+          return (
+            weeklyDate &&
+            weeklyDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        } else {
+          const teacherDate = content.publishDateTeacher
+            ? new Date(content.publishDateTeacher)
+            : null;
+      
+          return (
+            teacherDate &&
+            teacherDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        }
+      })();
+      
       return (
         matchesSearch &&
         matchesType &&
         matchesStatus &&
         matchesAgeGroup &&
         matchesStudentDate &&
-        matchesTeacherDate
+        matchesTeacherDate &&
+        matchesWeeklyContent
       );
     });
 
@@ -824,7 +856,7 @@ const ContentManagement = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full max-w-7xl mx-auto mt-3 px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-lg shadow">
         {/* Başlık ve Ana İşlemler */}
         <div className="border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1035,6 +1067,25 @@ const ContentManagement = () => {
                           />
                         </div>
                       </div>
+                      {/* Weekly Content (Ek Materyal) Checkbox */}
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="weeklyContent"
+                          checked={advancedFilterOptions.weeklyContent}
+                          onChange={(e) =>
+                            setAdvancedFilterOptions({
+                              ...advancedFilterOptions,
+                              weeklyContent: e.target.checked,
+                            })
+                          }
+                          className="cursor-pointer"
+                        />
+                        <label htmlFor="weeklyContent" className="text-sm text-gray-700">
+                          Ek Materyal
+                        </label>
+                      </div>
+
 
                       <div className="flex justify-end space-x-2 pt-2">
                         <button
@@ -1045,6 +1096,7 @@ const ContentManagement = () => {
                               status: "",
                               publishDateStudent: "",
                               publishDateTeacher: "",
+                              weeklyContent: false,
                             });
                           }}
                         >
@@ -1322,13 +1374,13 @@ const ContentManagement = () => {
 
                           return (
                             <button
-                            className={`w-[110px] h-[28px] px-2 py-1 text-xs rounded-lg shadow-sm transition-all
+                              className={`w-[110px] h-[28px] px-2 py-1 text-xs rounded-lg shadow-sm transition-all
                               ${isPublished
-                                ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
-                                : isPublishDisabled
-                                  ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
-                                  : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
-                              }`}
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
+                                  : isPublishDisabled
+                                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
+                                    : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
+                                }`}
                               disabled={!isPublished && isPublishDisabled}
                               title={
                                 isPublished
@@ -1349,7 +1401,7 @@ const ContentManagement = () => {
                             </button>
                           );
                         })()}
-                          <button
+                        <button
                           onClick={() => viewContent(content.id)}
                           className="text-blue-600 hover:text-blue-900"
                         >
@@ -1361,7 +1413,7 @@ const ContentManagement = () => {
                         >
                           <Edit className="w-4 h-4 cursor-pointer" />
                         </button>
-                           <button
+                        <button
                           className="text-red-600 hover:text-red-900 cursor-pointer"
                           title="Sil"
                           onClick={() => {
@@ -1653,6 +1705,10 @@ const ContentManagement = () => {
         </div>
       )}
       <Toast />
+      <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
+        <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
+      </Link>
+
     </div>
   );
 };
