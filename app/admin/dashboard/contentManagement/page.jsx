@@ -57,7 +57,8 @@ import {
   Upload,
   Video,
   X,
-  ArrowLeft
+  ArrowLeft,
+  HelpCircle 
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -450,7 +451,7 @@ const ContentManagement = () => {
       case "game":
         return <Image className="w-5 h-5 text-purple-500" />;
       default:
-        return <FileText className="w-5 h-5 text-gray-500" />;
+        return <HelpCircle   className="w-5 h-5 text-red-500" />;
     }
   };
 
