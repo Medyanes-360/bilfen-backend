@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 // SearchParams için ayrı bir bileşen oluşturalım
 function RegisterForm() {
@@ -143,12 +144,13 @@ function RegisterForm() {
 
   return (
     <div className="relative">
-      <Link
+     <Link
         href="/"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition">
-        Geri
+        className="absolute top-2 left-2  text-gray-700  ">
+        <ArrowLeft/>
       </Link>
-      <div className="max-w-4xl mx-auto p-6  rounded-lg shadow-md h-screen bg-white flex flex-col justify-center">
+      <div className="max-w-4xl mx-auto px-6 py-10 rounded-lg shadow-md min-h-screen bg-white flex flex-col justify-start overflow-y-auto">
+
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Yeni Kullanıcı Kaydı</h1>
 
         {message.text && (
