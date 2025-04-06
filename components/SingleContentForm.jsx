@@ -89,14 +89,15 @@ export default function SingleContentForm({
         console.log("Dosya yüklendi, URL:", fileUrl);
       } catch (err) {
         console.error("Dosya yüklenirken hata oluştu:", err);
-        alert("Dosya yüklenirken hata oluştu.");
+        showToast("Dosya yüklenirken hata oluştu.", "error");
+
         setIsUploading(false);
         return;
       }
     }
 
-    if (!formData.get("title") || !fileUrl) {
-      alert("Lütfen başlık ve içerik dosyası ekleyin.");
+    if ( !fileUrl) {
+      showToast("Lütfen içerik dosyası ekleyin.", "error");
       setIsUploading(false);
       return;
     }
@@ -154,7 +155,8 @@ export default function SingleContentForm({
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
-      alert("İçerik kaydedilemedi");
+      showToast("İçerik kaydedilemedi", "error");
+
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
