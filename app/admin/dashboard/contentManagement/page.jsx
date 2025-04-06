@@ -116,6 +116,7 @@ const ContentManagement = () => {
   const [bulkActionModalOpen, setBulkActionModalOpen] = useState(false); // Toplu işlem modalı açık mı?
   const [bulkAction, setBulkAction] = useState(""); // Hangi toplu işlem yapılacak: 'update' veya 'delete'
   const [isBulkUpdating, setIsBulkUpdating] = useState(false); // Toplu güncelleme işlemi devam ediyor mu?
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false); // Toplu içerik yükleme modalı açık mı?
   const showToast = useToastStore((state) => state.showToast);
 
   const filterMenuRef = useRef(null);
@@ -358,33 +359,33 @@ const ContentManagement = () => {
       const contentStudentDate = content.publishDateStudent
         ? new Date(content.publishDateStudent)
         : null;
-        const matchesStudentDate = (() => {
-          if (!studentDateFilter) return true;
-        
-          // weekly content'ler student tarihine göre filtrelenemez
-          if (content.isWeeklyContent) return false;
-        
-          if (!contentStudentDate) return false;
-        
-          return contentStudentDate.toDateString() === studentDateFilter.toDateString();
-        })();
-        
+      const matchesStudentDate = (() => {
+        if (!studentDateFilter) return true;
 
-        const teacherDateFilter = advancedFilterOptions.publishDateTeacher
+        // weekly content'ler student tarihine göre filtrelenemez
+        if (content.isWeeklyContent) return false;
+
+        if (!contentStudentDate) return false;
+
+        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+      })();
+
+
+      const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
-        const matchesWeeklyContent =
-  !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
+      const matchesWeeklyContent =
+        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
 
-      
+
       const matchesTeacherDate = (() => {
         if (!teacherDateFilter) return true;
-      
+
         if (advancedFilterOptions.weeklyContent) {
           const weeklyDate = content.weeklyContentStartDate
             ? new Date(content.weeklyContentStartDate)
             : null;
-      
+
           return (
             weeklyDate &&
             weeklyDate.toDateString() === teacherDateFilter.toDateString()
@@ -393,14 +394,14 @@ const ContentManagement = () => {
           const teacherDate = content.publishDateTeacher
             ? new Date(content.publishDateTeacher)
             : null;
-      
+
           return (
             teacherDate &&
             teacherDate.toDateString() === teacherDateFilter.toDateString()
           );
         }
       })();
-      
+
       return (
         matchesSearch &&
         matchesType &&
@@ -883,7 +884,13 @@ const ContentManagement = () => {
             <div className="ml-auto sm:ml-0 flex items-center gap-2">
               {/* Yeni içerik ekleme butonu */}
               <button
-                onClick={() => openModal()}
+                onClick={() => {
+                  if (bulkMode) {
+                    setIsBulkUploadModalOpen(true);
+                  } else {
+                    openModal();
+                  }
+                }}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
@@ -1665,6 +1672,26 @@ const ContentManagement = () => {
                   handleCancelDelete();
                 }
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Toplu İçerik Yükleme Modal */}
+      {isBulkUploadModalOpen && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <BulkContentUpload
+              setIsModalOpen={setIsBulkUploadModalOpen}
+              setContents={setContents}
             />
           </div>
         </div>
