@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
@@ -87,8 +88,8 @@ export default function TeachersPage() {
     <div className="relative">
       <Link
         href="/"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition">
-        Geri
+        className="absolute top-2 left-2  text-gray-700  ">
+        <ArrowLeft/>
       </Link>
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">

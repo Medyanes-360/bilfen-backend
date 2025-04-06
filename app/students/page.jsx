@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -67,12 +68,8 @@ export default function StudentsPage() {
 
   return (
     <div className="relative">
-      <Link
-        href="/"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition">
-        Geri
-      </Link>
-      <div className="container mx-auto px-4 py-8">
+    
+      <div className="container mx-auto  px-4 py-10">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Öğrenci Listesi</h1>
           <Link
@@ -188,6 +185,11 @@ export default function StudentsPage() {
           </div>
         </div>
       </div>
+      <Link
+        href="/"
+        className="absolute top-2 left-2  text-gray-700  ">
+        <ArrowLeft/>
+      </Link>
     </div>
   );
 }
