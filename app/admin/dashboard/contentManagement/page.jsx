@@ -57,6 +57,7 @@ import {
   Upload,
   Video,
   X,
+  ArrowLeft
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -69,6 +70,7 @@ import useToastStore from "@/lib/store/toast";
 import Toast from "@/components/toast";
 import BulkUpdateForm from "@/components/BulkUpdateForm";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import Link from "next/link";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -854,7 +856,7 @@ const ContentManagement = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full max-w-7xl mx-auto mt-3 px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-lg shadow">
         {/* Başlık ve Ana İşlemler */}
         <div className="border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1703,6 +1705,10 @@ const ContentManagement = () => {
         </div>
       )}
       <Toast />
+      <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
+        <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
+      </Link>
+
     </div>
   );
 };
