@@ -3,6 +3,7 @@ import { contentTypes, ageGroups } from '../app/constants/mockData';
 import { useState } from "react";
 import { Upload, Tag } from "lucide-react";
 import isValidDate from "@/components/dateValidation"
+import useToastStore from '@/lib/store/toast';
 export default function SingleContentForm({
   setIsModalOpen,
   currentContent,
@@ -21,6 +22,14 @@ export default function SingleContentForm({
   const [isWeeklyContentChecked, setIsWeeklyContentChecked] = useState(
     !!currentContent?.isWeeklyContent
   );
+    const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
+      ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+      : "");
+    
+    const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
+      ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+      : "");
+      const { showToast } = useToastStore();
 
 
   const uploadFileToR2 = async (file) => {
@@ -141,7 +150,7 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [newContent,...prev]);
+        setContents((prev) => [newContent, ...prev]);
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
@@ -283,11 +292,9 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateStudent"
                         id="publishDateStudent"
-                        defaultValue={
-                          currentContent?.publishDateStudent
-                            ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
-                            : ""
-                        }
+                        min={new Date().toISOString().split("T")[0]} 
+                        value={studentDate}
+                        onChange={(e) => setStudentDate(e.target.value)}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
@@ -301,14 +308,28 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateTeacher"
                         id="publishDateTeacher"
-                        defaultValue={
-                          currentContent?.publishDateTeacher
-                            ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
-                            : ""
-                        }
+                        min={new Date().toISOString().split("T")[0]} 
+                        value={teacherDate}
+                     
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                          if (studentDate) {
+                            const student = new Date(studentDate);
+                            const teacher = new Date(selectedDate);
+                            if (teacher < student) {
+                              showToast("Öğretmen yayın tarihi, öğrenci tarihinden önce olamaz!", "error");
+                              setTeacherDate("");
+                              return;
+                            }
+                          }
+                        
+                          setTeacherDate(selectedDate);
+                        }}
+                        
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
+
                   </div>
                 )}
 
@@ -349,6 +370,7 @@ export default function SingleContentForm({
                           type="date"
                           name="weeklyContentStartDate"
                           id="weeklyContentStartDate"
+                          min={new Date().toISOString().split("T")[0]} 
                           defaultValue={
                             isValidDate(currentContent?.weeklyContentStartDate)
                               ? new Date(currentContent.weeklyContentStartDate)
