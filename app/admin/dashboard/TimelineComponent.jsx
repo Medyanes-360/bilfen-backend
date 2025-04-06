@@ -237,6 +237,11 @@ const TimelineComponent = () => {
 
   const [currentContent, setCurrentContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const filteredDailyContent = dailyContent?.filter(
+    item => item.isPublished && !item.isWeeklyContent
+  ) || [];
+  
+
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
     setCurrentContent(content);
@@ -408,9 +413,11 @@ const TimelineComponent = () => {
       <div className="p-4 md:p-6">
 
 
-        {dailyContent && dailyContent.length > 0 ? (
+        {filteredDailyContent.length > 0
+
+? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {dailyContent.map((content, index) => (
+            {filteredDailyContent.map((content, index) => (
               <div
                 key={content.id}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
