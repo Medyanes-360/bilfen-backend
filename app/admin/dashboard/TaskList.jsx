@@ -157,17 +157,16 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-
-    if (!showCompleted) {
-      filtered = filtered.filter((task) => task.status !== "Tamamlandı");
+  
+    if (showCompleted) {
+      filtered = filtered.filter((task) => task.status === "Tamamlandı");
     }
-
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
-
     return filtered;
   };
+  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
