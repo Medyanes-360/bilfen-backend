@@ -39,24 +39,15 @@
 // components/ContentManagement.jsx
 import {
   Book,
-  CheckSquare,
-  ChevronLeft,
-  ChevronRight,
   Edit,
-  Eye,
   FileText,
   Filter,
   FilterX,
   Image,
-  List,
   Music,
-  Plus,
   Search,
-  Tag,
   Trash2,
-  Upload,
   Video,
-  X,
   ArrowLeft,
   HelpCircle
 } from "lucide-react";
@@ -74,6 +65,7 @@ import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import Link from "next/link";
 import ContentTable from "@/components/Dashboard/ContentTable";
 import Pagination from "@/components/Dashboard/Pagination";
+import HeaderActions from "@/components/Dashboard/HeaderActions";
 
 // İçerik türleri
 const contentTypes = [
@@ -84,7 +76,6 @@ const contentTypes = [
   { id: "game", name: "Oyun" },
   { id: "audio", name: "Ses" },
 ];
-
 
 // Örnek içerik verileri
 // Örnek içerik verileri - komponent dışında tanımlayın
@@ -864,75 +855,16 @@ const ContentManagement = () => {
     <div className="w-full max-w-7xl mx-auto mt-3 px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-lg shadow">
         {/* Başlık ve Ana İşlemler */}
-        <div className="border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Son Eklenen İçerikler
-          </h1>
-
-          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
-            {/* İçerik türleri */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-              {contentTypes.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 cursor-pointer text-sm rounded-full whitespace-nowrap ${activeType === type.id
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}>
-                  {type.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="ml-auto sm:ml-0 flex items-center gap-2">
-              {/* Yeni içerik ekleme butonu */}
-              <button
-                onClick={() => {
-                  if (bulkMode) {
-                    setIsBulkUploadModalOpen(true);
-                  } else {
-                    openModal();
-                  }
-                }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                {bulkMode ? (
-                  <>
-                    <List className="w-5 h-5 mr-1" />
-                    Toplu İçerik
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-5 h-5 mr-1" />
-                    Yeni İçerik
-                  </>
-                )}
-              </button>
-
-              {/* Toplu İşlemler Butonu */}
-              <button
-                onClick={() => {
-                  setBulkMode(!bulkMode);
-                  setSelectedItems([]);
-                }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                {bulkMode ? (
-                  <>
-                    <X className="w-5 h-5 mr-1" />
-                    İptal
-                  </>
-                ) : (
-                  <>
-                    <List className="w-5 h-5 mr-1" />
-                    Toplu İşlemler
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <HeaderActions
+          contentTypes={contentTypes}
+          activeType={activeType}
+          setActiveType={setActiveType}
+          bulkMode={bulkMode}
+          setBulkMode={setBulkMode}
+          openModal={openModal}
+          setIsBulkUploadModalOpen={setIsBulkUploadModalOpen}
+          setSelectedItems={setSelectedItems}
+        />
 
         {/* Arama ve Filtreler */}
         <div className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center border-b border-gray-200">
