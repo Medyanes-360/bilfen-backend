@@ -66,6 +66,7 @@ import Link from "next/link";
 import ContentTable from "@/components/Dashboard/ContentTable";
 import Pagination from "@/components/Dashboard/Pagination";
 import HeaderActions from "@/components/Dashboard/HeaderActions";
+import BulkActionsBar from "@/components/Dashboard/BulkActionsBar";
 
 // İçerik türleri
 const contentTypes = [
@@ -1079,42 +1080,20 @@ const ContentManagement = () => {
 
         {/* Toplu İşlem Butonları */}
         {bulkMode && selectedItems.length > 0 && (
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">
-                {selectedItems.length} içerik seçildi
-              </span>
-              <button
-                onClick={clearBulkSelection}
-                className="text-sm text-indigo-600 hover:text-indigo-900"
-              >
-                Seçimi Temizle
-              </button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  setBulkAction("update");
-                  setBulkActionModalOpen(true);
-                }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                Güncelle
-              </button>
-              <button
-                onClick={() => {
-                  setBulkAction("delete");
-                  setBulkActionModalOpen(true);
-                }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Sil
-              </button>
-            </div>
-          </div>
+          <BulkActionsBar
+            selectedItems={selectedItems}
+            clearBulkSelection={clearBulkSelection}
+            onBulkUpdate={() => {
+              setBulkAction("update");
+              setBulkActionModalOpen(true);
+            }}
+            onBulkDelete={() => {
+              setBulkAction("delete");
+              setBulkActionModalOpen(true);
+            }}
+          />
         )}
+
 
         {/* Sayfalama */}
         <div className="p-4 sm:p-6">
