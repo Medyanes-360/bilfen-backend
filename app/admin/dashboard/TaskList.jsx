@@ -157,7 +157,7 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-  
+
     if (showCompleted) {
       filtered = filtered.filter((task) => task.status === "Tamamlandı");
     }
@@ -166,7 +166,7 @@ const TaskList = () => {
     }
     return filtered;
   };
-  
+
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -236,17 +236,16 @@ const TaskList = () => {
       </div>
 
       <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 min-h-[48px]">
           <div className="flex flex-wrap gap-2">
             {filterButtons.map((button) => (
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md ${
-                  activeFilter === button.value
+                className={`px-3 py-1.5 text-xs font-medium rounded-md ${activeFilter === button.value
                     ? "bg-indigo-100 text-indigo-700"
                     : "text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {button.label}
               </button>
@@ -270,7 +269,9 @@ const TaskList = () => {
         </div>
       </div>
 
-      <ul className="divide-y divide-gray-200">
+      <ul
+        className="divide-y divide-gray-200 overflow-y-auto"
+        style={{ maxHeight: "400px", minHeight: "400px" }}>
         {filteredTasks?.length > 0 ? (
           filteredTasks?.map((task) => (
             <li key={task.id} className="px-6 py-4 hover:bg-gray-50">
@@ -278,11 +279,10 @@ const TaskList = () => {
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                      task?.status === "Tamamlandı"
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${task?.status === "Tamamlandı"
                         ? "bg-green-500 border-green-500 text-white"
                         : "border-gray-400"
-                    }`}
+                      }`}
                   >
                     {task?.status === "Tamamlandı" && <Check size={12} />}
                   </button>
@@ -294,11 +294,10 @@ const TaskList = () => {
                       className="flex items-center cursor-pointer"
                     >
                       <h4
-                        className={`text-sm font-medium ${
-                          task.status === "Tamamlandı"
+                        className={`text-sm font-medium ${task.status === "Tamamlandı"
                             ? "text-gray-500 line-through"
                             : "text-gray-900"
-                        }`}
+                          }`}
                       >
                         {task?.title}
                       </h4>
