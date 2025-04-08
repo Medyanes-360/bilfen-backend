@@ -366,22 +366,22 @@ const TaskList = () => {
         )}
       </ul>
 
-      <div className="ml-4 pb-2 flex gap-1 text-sm text-gray-500">
-        <div className="p-1 rounded-full bg-green-100 text-green-800">
-          <span className="font-medium w-fit px-2">
+      <div className="ml-4 pb-2 flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-green-100 text-green-800">
+          <span className="font-medium w-fit">
             {Array.isArray(tasks)
               ? tasks.filter((t) => t.status === "Tamamlandı").length
               : 0}
-          </span>{" "}
-          tamamlandı{" "}
+          </span>
+          <span>tamamlandı</span>
         </div>
-        <div className="p-1 rounded-full bg-blue-100 text-blue-800">
-          <span className="font-medium w-fit px-2">
+        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-blue-100 text-blue-800">
+          <span className="font-medium w-fit">
             {Array.isArray(tasks)
               ? tasks.filter((t) => t.status !== "Tamamlandı").length
               : 0}
-          </span>{" "}
-          devam ediyor
+          </span>
+          <span>devam ediyor</span>
         </div>
       </div>
       {/* Görev Ekleme/Düzenleme Modal */}
