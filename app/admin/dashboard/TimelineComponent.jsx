@@ -241,10 +241,13 @@ const TimelineComponent = () => {
         return 'bg-blue-100 text-blue-800';
       case '5-6 yaş':
         return 'bg-green-100 text-green-800';
+      case '6-7 yaş':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+  
   const [modalType, setModalType] = useState(null);
 
 
@@ -483,7 +486,7 @@ const TimelineComponent = () => {
                       </span>
                       <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
                         <BookOpen size={12} className="mr-1" />
-                        {content.branch}
+                        {getBranchLabel(content.branch)}
                       </span>
                     </div>
                   </div>
