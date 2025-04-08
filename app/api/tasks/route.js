@@ -52,6 +52,7 @@ export async function POST(request) {
       ...data,
       priority: data.priority || "Orta",
       status: data.status || "Beklemede",
+      isCompleted: typeof data.isCompleted === "boolean" ? data.isCompleted : false,
     };
 
     const task = await prisma.task.create({

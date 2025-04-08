@@ -44,6 +44,7 @@ const TaskList = () => {
     dueDate: new Date().toISOString().split("T")[0],
     priority: "Orta",
     status: "Beklemede",
+    isCompleted: false,
   });
 
   // Görevi genişlet/daralt
@@ -59,18 +60,27 @@ const TaskList = () => {
   };
 
   // Görev durumunu değiştir
-  const toggleTaskStatus = (id) => {
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === id) {
-          return {
-            ...task,
-            status: task.status === "Tamamlandı" ? "Beklemede" : "Tamamlandı",
-          };
-        }
-        return task;
-      })
-    );
+  const toggleTaskStatus = async (id) => {
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === id) {
+        return {
+          ...task,
+          isCompleted: !task.isCompleted,
+          status: task.isCompleted ? "Beklemede" : "Tamamlandı",
+        };
+      }
+      return task;
+    });
+
+    setTasks(updatedTasks);
+
+    const updatedTask = updatedTasks.find((t) => t.id === id);
+
+    // Veritabanına da gönder
+    await patchAPI(`/api/tasks/${id}`, {
+      isCompleted: updatedTask.isCompleted,
+      status: updatedTask.status,
+    });
   };
 
   // Görevi düzenle
@@ -82,6 +92,7 @@ const TaskList = () => {
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      isCompleted: task.isCompleted,
     });
     setShowTaskModal(true);
   };
@@ -111,11 +122,11 @@ const TaskList = () => {
 
   // Form input değişimi
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setTaskForm({
-      ...taskForm,
-      [name]: value,
-    });
+    const { name, value, type, checked } = e.target;
+    setTaskForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   // Form gönderimi
@@ -157,9 +168,11 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-  
-    if (showCompleted) {
-      filtered = filtered.filter((task) => task.status === "Tamamlandı");
+
+
+    if (!showCompleted) {
+      filtered = filtered.filter((task) => !task.isCompleted);
+
     }
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
@@ -255,10 +268,13 @@ const TaskList = () => {
           <div className="flex items-center">
             <input
               id="showCompleted"
+              name="showCompleted"
               type="checkbox"
               checked={showCompleted}
               onChange={() => setShowCompleted(!showCompleted)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+
             />
             <label
               htmlFor="showCompleted"
@@ -365,24 +381,19 @@ const TaskList = () => {
         )}
       </ul>
 
-      <div className="ml-4 pb-2 flex gap-1 text-sm text-gray-500">
-        <div className="p-1 rounded-full bg-green-100 text-green-800">
-          <span className="font-medium w-fit px-2">
-            {Array.isArray(tasks)
-              ? tasks.filter((t) => t.status === "Tamamlandı").length
-              : 0}
-          </span>{" "}
-          tamamlandı{" "}
+
+      <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
+          <Check size={16} />
+          <span>{tasks.filter((t) => t.isCompleted).length} tamamlandı</span>
         </div>
-        <div className="p-1 rounded-full bg-blue-100 text-blue-800">
-          <span className="font-medium w-fit px-2">
-            {Array.isArray(tasks)
-              ? tasks.filter((t) => t.status !== "Tamamlandı").length
-              : 0}
-          </span>{" "}
-          devam ediyor
+        <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-2 rounded-full">
+          <Clock size={16} />
+          <span>{tasks.filter((t) => !t.isCompleted).length} devam ediyor</span>
+
         </div>
       </div>
+
       {/* Görev Ekleme/Düzenleme Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-0 flex items-center justify-center z-50">
