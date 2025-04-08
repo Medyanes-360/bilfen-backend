@@ -240,6 +240,32 @@ const TimelineComponent = () => {
   const filteredDailyContent = dailyContent?.filter(
     item => item.isPublished && !item.isWeeklyContent
   ) || [];
+  const contentTypes = [
+    { id: "all", name: "Tümü" },
+    { id: "video", name: "Video" },
+    { id: "document", name: "Döküman" },
+    { id: "interactive", name: "Etkileşimli" },
+    { id: "game", name: "Oyun" },
+    { id: "audio", name: "Ses" },
+  ];
+  const getContentTypeName = (typeId) => {
+    const matched = contentTypes.find((t) => t.id === typeId);
+    return matched ? matched.name : typeId;
+  };
+  const branchOptions = [
+    { label: "Matematik", value: "MATEMATIK" },
+    { label: "Türkçe", value: "TURKCE" },
+    { label: "Fen Bilgisi", value: "FEN_BILGISI" },
+    { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
+    { label: "İngilizce", value: "INGILIZCE" },
+  ];
+  const getBranchLabel = (value) => {
+    const matched = branchOptions.find((b) => b.value === value);
+    return matched ? matched.label : value;
+  };
+    
+  
+
 
 
   // İçerik detaylarını görüntüleme
@@ -763,14 +789,14 @@ const TimelineComponent = () => {
             </button>
 
             {/* Başlık */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center mb-6">{currentContent.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">{currentContent.title}</h2>
             <div className="w-16 h-1 bg-orange-400 mx-auto rounded-full mb-6" />
             <div className="divide-y divide-gray-200 space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
               {/* İçerik Bilgileri */}
               {[
-                ['Tür', currentContent.type],
+                ['Tür', getContentTypeName(currentContent.type)],
                 ['Yaş Grubu', currentContent.ageGroup],
-                ['Branş', currentContent.branch],
+                ['Branş', getBranchLabel(currentContent.branch)],
                 ['Açıklama', currentContent.description || 'Açıklama bulunmuyor.'],
               ].map(([label, value], i) => (
                 <div key={i} className="pt-4 first:pt-0 flex items-start">
