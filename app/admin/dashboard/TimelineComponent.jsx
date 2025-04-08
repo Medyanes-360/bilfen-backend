@@ -240,7 +240,7 @@ const TimelineComponent = () => {
   const filteredDailyContent = dailyContent?.filter(
     item => item.isPublished && !item.isWeeklyContent
   ) || [];
-  
+
 
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
@@ -415,79 +415,79 @@ const TimelineComponent = () => {
 
         {filteredDailyContent.length > 0
 
-? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredDailyContent.map((content, index) => (
-              <div
-                key={content.id}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
-              >
-                {/* İçerik Başlığı */}
-                <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
-                  <div className="flex items-center">
-                    {getContentTypeIcon(content.type)}
-                    <span className="ml-2 font-semibold">{content.type}</span>
-                  </div>
-                  <div className="flex items-center">
+          ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredDailyContent.map((content, index) => (
+                <div
+                  key={content.id}
+                  className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+                >
+                  {/* İçerik Başlığı */}
+                  <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
+                    <div className="flex items-center">
+                      {getContentTypeIcon(content.type)}
+                      <span className="ml-2 font-semibold">{content.type}</span>
+                    </div>
+                    {/* <div className="flex items-center">
                     <Clock size={14} className="mr-1" />
                     <span className="text-xs font-medium">{content.duration}</span>
+                  </div> */}
+                  </div>
+
+                  {/* İçerik Bilgileri */}
+                  <div className="p-4">
+                    <h4 className="text-base font-semibold text-gray-900 mb-2">{content.title}</h4>
+
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(content.ageGroup)}`}>
+                        <Users size={12} className="mr-1" />
+                        {content.ageGroup}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                        <BookOpen size={12} className="mr-1" />
+                        {content.branch}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Butonlar */}
+                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
+                    <button
+                      onClick={() => viewContent(content.id)}
+                      className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                    >
+                      <Play size={14} className="mr-1" />
+                      İzle
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(content)}
+                      className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
+                    >
+                      <FileText size={14} className="mr-1" />
+                      Detaylar
+                    </button>
                   </div>
                 </div>
-
-                {/* İçerik Bilgileri */}
-                <div className="p-4">
-                  <h4 className="text-base font-semibold text-gray-900 mb-2">{content.title}</h4>
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(content.ageGroup)}`}>
-                      <Users size={12} className="mr-1" />
-                      {content.ageGroup}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
-                      <BookOpen size={12} className="mr-1" />
-                      {content.branch}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Butonlar */}
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
-                  <button
-                    onClick={() => viewContent(content.id)}
-                    className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
-                  >
-                    <Play size={14} className="mr-1" />
-                    İzle
-                  </button>
-                  <button
-                    onClick={() => handleViewDetails(content)}
-                    className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
-                  >
-                    <FileText size={14} className="mr-1" />
-                    Detaylar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="w-full py-8 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <Calendar size={24} className="text-gray-400" />
+              ))}
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">İçerik Bulunamadı</h3>
-            <p className="text-sm text-gray-500 max-w-md mb-4">
-              Bu tarihe ait planlanmış içerik bulunmamaktadır.
-            </p>
-            {/* <button
+          ) : (
+            <div className="w-full py-8 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Calendar size={24} className="text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">İçerik Bulunamadı</h3>
+              <p className="text-sm text-gray-500 max-w-md mb-4">
+                Bu tarihe ait planlanmış içerik bulunmamaktadır.
+              </p>
+              {/* <button
               onClick={openAddContentModal}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
             >
               <Plus size={16} className="mr-2" />
               İçerik Planla
             </button> */}
-          </div>
-        )}
+            </div>
+          )}
       </div>
 
       {/* Alt Bilgi */}
@@ -753,7 +753,7 @@ const TimelineComponent = () => {
 
       {isModalOpen && currentContent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 px-4">
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8">
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xl h-[60vh] overflow-y-auto p-6 sm:p-8">
             {/* X Butonu */}
             <button
               onClick={() => setIsModalOpen(false)}
@@ -763,27 +763,22 @@ const TimelineComponent = () => {
             </button>
 
             {/* Başlık */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentContent.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center mb-6">{currentContent.title}</h2>
+            <div className="w-16 h-1 bg-orange-400 mx-auto rounded-full mb-6" />
+            <div className="divide-y divide-gray-200 space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
+              {/* İçerik Bilgileri */}
+              {[
+                ['Tür', currentContent.type],
+                ['Yaş Grubu', currentContent.ageGroup],
+                ['Branş', currentContent.branch],
+                ['Açıklama', currentContent.description || 'Açıklama bulunmuyor.'],
+              ].map(([label, value], i) => (
+                <div key={i} className="pt-4 first:pt-0 flex items-start">
+                  <span className="w-32 font-semibold text-gray-900 shrink-0">{label}:</span>
+                  <span className="text-gray-700">{value}</span>
+                </div>
+              ))}
 
-            {/* İçerik Bilgileri */}
-
-            <div className="text-sm text-gray-800 space-y-2">
-              <p>
-                <span className="text-gray-900 font-semibold mr-2">Tür:</span>
-                {currentContent.type}
-              </p>
-              <p>
-                <span className="text-gray-900 font-semibold mr-2">Yaş Grubu:</span>
-                {currentContent.ageGroup}
-              </p>
-              <p>
-                <span className="text-gray-900 font-semibold mr-2">Branş:</span>
-                {currentContent.branch}
-              </p>
-              <p>
-                <span className="text-gray-900 font-semibold mr-2">Açıklama:</span>
-                {currentContent.description || 'Açıklama bulunmuyor.'}
-              </p>
             </div>
           </div>
         </div>
