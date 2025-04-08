@@ -99,6 +99,7 @@ model Task {
   dueDate     String
   priority    String
   status      String
+  isCompleted Boolean   @default(false)
   createdAt   DateTime  @default(now()) // Opsiyonel olarak değiştirildi
   updatedAt   DateTime? @updatedAt // Opsiyonel olarak değiştirildi
 }
