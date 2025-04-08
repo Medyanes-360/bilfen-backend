@@ -67,6 +67,7 @@ import ContentTable from "@/components/Dashboard/ContentTable";
 import Pagination from "@/components/Dashboard/Pagination";
 import HeaderActions from "@/components/Dashboard/HeaderActions";
 import BulkActionsBar from "@/components/Dashboard/BulkActionsBar";
+import PreviewModal from "@/components/Dashboard/PreviewModal";
 
 // İçerik türleri
 const contentTypes = [
@@ -1261,21 +1262,11 @@ const ContentManagement = () => {
         </div>
       )}
       {/* içeriği ön izleme */}
-      {previewUrl && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50">
-          <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
-          <iframe
-            src={previewUrl}
-            className="w-full h-96 border border-gray-300 rounded-lg"
-          />
-          <button
-            onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600"
-          >
-            Kapat
-          </button>
-        </div>
-      )}
+      <PreviewModal
+        previewUrl={previewUrl}
+        onClose={() => setPreviewUrl("")}
+      />
+
       <Toast />
       <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
         <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
