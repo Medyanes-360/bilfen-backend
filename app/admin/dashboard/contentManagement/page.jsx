@@ -58,7 +58,7 @@ import {
   Video,
   X,
   ArrowLeft,
-  HelpCircle 
+  HelpCircle
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -96,6 +96,7 @@ const ContentManagement = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [currentContent, setCurrentContent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -359,33 +360,33 @@ const ContentManagement = () => {
       const contentStudentDate = content.publishDateStudent
         ? new Date(content.publishDateStudent)
         : null;
-        const matchesStudentDate = (() => {
-          if (!studentDateFilter) return true;
-        
-          // weekly content'ler student tarihine göre filtrelenemez
-          if (content.isWeeklyContent) return false;
-        
-          if (!contentStudentDate) return false;
-        
-          return contentStudentDate.toDateString() === studentDateFilter.toDateString();
-        })();
-        
+      const matchesStudentDate = (() => {
+        if (!studentDateFilter) return true;
 
-        const teacherDateFilter = advancedFilterOptions.publishDateTeacher
+        // weekly content'ler student tarihine göre filtrelenemez
+        if (content.isWeeklyContent) return false;
+
+        if (!contentStudentDate) return false;
+
+        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+      })();
+
+
+      const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
-        const matchesWeeklyContent =
-  !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
+      const matchesWeeklyContent =
+        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
 
-      
+
       const matchesTeacherDate = (() => {
         if (!teacherDateFilter) return true;
-      
+
         if (advancedFilterOptions.weeklyContent) {
           const weeklyDate = content.weeklyContentStartDate
             ? new Date(content.weeklyContentStartDate)
             : null;
-      
+
           return (
             weeklyDate &&
             weeklyDate.toDateString() === teacherDateFilter.toDateString()
@@ -394,14 +395,14 @@ const ContentManagement = () => {
           const teacherDate = content.publishDateTeacher
             ? new Date(content.publishDateTeacher)
             : null;
-      
+
           return (
             teacherDate &&
             teacherDate.toDateString() === teacherDateFilter.toDateString()
           );
         }
       })();
-      
+
       return (
         matchesSearch &&
         matchesType &&
@@ -451,7 +452,7 @@ const ContentManagement = () => {
       case "game":
         return <Image className="w-5 h-5 text-purple-500" />;
       default:
-        return <HelpCircle   className="w-5 h-5 text-red-500" />;
+        return <HelpCircle className="w-5 h-5 text-red-500" />;
     }
   };
 
@@ -884,7 +885,13 @@ const ContentManagement = () => {
             <div className="ml-auto sm:ml-0 flex items-center gap-2">
               {/* Yeni içerik ekleme butonu */}
               <button
-                onClick={() => openModal()}
+                onClick={() => {
+                  if (bulkMode) {
+                    setIsBulkUploadModalOpen(true);
+                  } else {
+                    openModal();
+                  }
+                }}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
@@ -1666,6 +1673,26 @@ const ContentManagement = () => {
                   handleCancelDelete();
                 }
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Toplu İçerik Yükleme Modal */}
+      {isBulkUploadModalOpen && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <BulkContentUpload
+              setIsModalOpen={setIsBulkUploadModalOpen}
+              setContents={setContents}
             />
           </div>
         </div>
