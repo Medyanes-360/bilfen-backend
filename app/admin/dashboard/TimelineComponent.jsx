@@ -39,6 +39,7 @@ const TimelineComponent = () => {
 
     return result;
   };
+  
   const [contents, setContents] = useState([]);
   useEffect(() => {
     const fetchContents = async () => {
@@ -189,35 +190,47 @@ const TimelineComponent = () => {
 
   // İçerik türü ikonları
   const getContentTypeIcon = (type) => {
-    switch (type) {
+    const label = getContentTypeName(type); 
+  
+    switch (label) {
       case 'Video':
         return <MonitorPlay size={20} />;
-      case 'Doküman':
+      case 'Döküman':
         return <FileText size={20} />;
       case 'Oyun':
         return <Gamepad2 size={20} />;
+      case 'Etkileşimli':
       case 'Etkileşimli İçerik':
         return <Layers size={20} />;
+      case 'Ses':
+        return <Volume2 size={20} />;
       default:
         return <Calendar size={20} />;
     }
   };
+  
 
   // İçerik türü sınıfları
   const getTypeClass = (type) => {
-    switch (type) {
+    const label = getContentTypeName(type); // "document" -> "Döküman"
+  
+    switch (label) {
       case 'Video':
         return 'bg-blue-100 text-blue-700';
-      case 'Doküman':
+      case 'Döküman':
         return 'bg-orange-100 text-orange-700';
       case 'Oyun':
         return 'bg-purple-100 text-purple-700';
-      case 'Etkileşimli İçerik':
+      case 'Etkileşimli':
+      case 'Etkileşimli İçerik': // opsiyonel olarak eklenebilir
         return 'bg-green-100 text-green-700';
+      case 'Ses':
+        return 'bg-pink-100 text-pink-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
+  
 
   // Yaş grubu renkleri
   const getAgeGroupColor = (ageGroup) => {
@@ -228,10 +241,13 @@ const TimelineComponent = () => {
         return 'bg-blue-100 text-blue-800';
       case '5-6 yaş':
         return 'bg-green-100 text-green-800';
+      case '6-7 yaş':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+  
   const [modalType, setModalType] = useState(null);
 
 
@@ -240,6 +256,32 @@ const TimelineComponent = () => {
   const filteredDailyContent = dailyContent?.filter(
     item => item.isPublished && !item.isWeeklyContent
   ) || [];
+  const contentTypes = [
+    { id: "all", name: "Tümü" },
+    { id: "video", name: "Video" },
+    { id: "document", name: "Döküman" },
+    { id: "interactive", name: "Etkileşimli" },
+    { id: "game", name: "Oyun" },
+    { id: "audio", name: "Ses" },
+  ];
+  const getContentTypeName = (typeId) => {
+    const matched = contentTypes.find((t) => t.id === typeId);
+    return matched ? matched.name : typeId;
+  };
+  const branchOptions = [
+    { label: "Matematik", value: "MATEMATIK" },
+    { label: "Türkçe", value: "TURKCE" },
+    { label: "Fen Bilgisi", value: "FEN_BILGISI" },
+    { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
+    { label: "İngilizce", value: "INGILIZCE" },
+  ];
+  const getBranchLabel = (value) => {
+    const matched = branchOptions.find((b) => b.value === value);
+    return matched ? matched.label : value;
+  };
+    
+  
+
 
 
   // İçerik detaylarını görüntüleme
@@ -311,6 +353,8 @@ const TimelineComponent = () => {
     setDailyContent([...dailyContent, newContent]);
     setShowAddContentModal(false);
   };
+
+  
 
   return (
     <div className="w-full bg-white shadow rounded-xl overflow-hidden">
@@ -424,15 +468,12 @@ const TimelineComponent = () => {
                 >
                   {/* İçerik Başlığı */}
                   <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
-                    <div className="flex items-center">
-                      {getContentTypeIcon(content.type)}
-                      <span className="ml-2 font-semibold">{content.type}</span>
-                    </div>
-                    {/* <div className="flex items-center">
-                    <Clock size={14} className="mr-1" />
-                    <span className="text-xs font-medium">{content.duration}</span>
-                  </div> */}
-                  </div>
+  <div className="flex items-center">
+    {getContentTypeIcon(content.type)}
+    <span className="ml-2 font-semibold">{getContentTypeName(content.type)}</span>
+  </div>
+</div>
+
 
                   {/* İçerik Bilgileri */}
                   <div className="p-4">
@@ -445,7 +486,7 @@ const TimelineComponent = () => {
                       </span>
                       <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
                         <BookOpen size={12} className="mr-1" />
-                        {content.branch}
+                        {getBranchLabel(content.branch)}
                       </span>
                     </div>
                   </div>
@@ -763,14 +804,14 @@ const TimelineComponent = () => {
             </button>
 
             {/* Başlık */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center mb-6">{currentContent.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">{currentContent.title}</h2>
             <div className="w-16 h-1 bg-orange-400 mx-auto rounded-full mb-6" />
             <div className="divide-y divide-gray-200 space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
               {/* İçerik Bilgileri */}
               {[
-                ['Tür', currentContent.type],
+                ['Tür', getContentTypeName(currentContent.type)],
                 ['Yaş Grubu', currentContent.ageGroup],
-                ['Branş', currentContent.branch],
+                ['Branş', getBranchLabel(currentContent.branch)],
                 ['Açıklama', currentContent.description || 'Açıklama bulunmuyor.'],
               ].map(([label, value], i) => (
                 <div key={i} className="pt-4 first:pt-0 flex items-start">
