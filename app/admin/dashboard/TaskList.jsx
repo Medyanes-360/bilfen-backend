@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -157,17 +157,16 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-
-    if (!showCompleted) {
-      filtered = filtered.filter((task) => task.status !== "Tamamlandı");
+  
+    if (showCompleted) {
+      filtered = filtered.filter((task) => task.status === "Tamamlandı");
     }
-
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
-
     return filtered;
   };
+  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -259,7 +258,7 @@ const TaskList = () => {
               type="checkbox"
               checked={showCompleted}
               onChange={() => setShowCompleted(!showCompleted)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
             />
             <label
               htmlFor="showCompleted"
