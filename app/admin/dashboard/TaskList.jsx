@@ -381,16 +381,22 @@ const TaskList = () => {
         )}
       </ul>
 
-
-      <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
-          <Check size={16} />
-          <span>{tasks.filter((t) => t.isCompleted).length} tamamlandı</span>
+      <div className="ml-5 pb-2 flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-green-100 text-green-800">
+          <span className="font-medium w-fit ">
+            {Array.isArray(tasks)
+              ? tasks.filter((t) => t.status === "Tamamlandı").length
+              : 0}
+          </span>
+          <span>tamamlandı</span>
         </div>
-        <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-2 rounded-full">
-          <Clock size={16} />
-          <span>{tasks.filter((t) => !t.isCompleted).length} devam ediyor</span>
-
+        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-blue-100 text-blue-800">
+          <span className="font-medium w-fit">
+            {Array.isArray(tasks)
+              ? tasks.filter((t) => t.status !== "Tamamlandı").length
+              : 0}
+          </span>
+          <span>devam ediyor</span>
         </div>
       </div>
 
