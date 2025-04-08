@@ -39,6 +39,7 @@ const TimelineComponent = () => {
 
     return result;
   };
+  
   const [contents, setContents] = useState([]);
   useEffect(() => {
     const fetchContents = async () => {
@@ -189,35 +190,47 @@ const TimelineComponent = () => {
 
   // İçerik türü ikonları
   const getContentTypeIcon = (type) => {
-    switch (type) {
+    const label = getContentTypeName(type); 
+  
+    switch (label) {
       case 'Video':
         return <MonitorPlay size={20} />;
-      case 'Doküman':
+      case 'Döküman':
         return <FileText size={20} />;
       case 'Oyun':
         return <Gamepad2 size={20} />;
+      case 'Etkileşimli':
       case 'Etkileşimli İçerik':
         return <Layers size={20} />;
+      case 'Ses':
+        return <Volume2 size={20} />;
       default:
         return <Calendar size={20} />;
     }
   };
+  
 
   // İçerik türü sınıfları
   const getTypeClass = (type) => {
-    switch (type) {
+    const label = getContentTypeName(type); // "document" -> "Döküman"
+  
+    switch (label) {
       case 'Video':
         return 'bg-blue-100 text-blue-700';
-      case 'Doküman':
+      case 'Döküman':
         return 'bg-orange-100 text-orange-700';
       case 'Oyun':
         return 'bg-purple-100 text-purple-700';
-      case 'Etkileşimli İçerik':
+      case 'Etkileşimli':
+      case 'Etkileşimli İçerik': // opsiyonel olarak eklenebilir
         return 'bg-green-100 text-green-700';
+      case 'Ses':
+        return 'bg-pink-100 text-pink-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
+  
 
   // Yaş grubu renkleri
   const getAgeGroupColor = (ageGroup) => {
@@ -338,6 +351,8 @@ const TimelineComponent = () => {
     setShowAddContentModal(false);
   };
 
+  
+
   return (
     <div className="w-full bg-white shadow rounded-xl overflow-hidden">
       {/* Başlık ve Kontroller */}
@@ -450,15 +465,12 @@ const TimelineComponent = () => {
                 >
                   {/* İçerik Başlığı */}
                   <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
-                    <div className="flex items-center">
-                      {getContentTypeIcon(content.type)}
-                      <span className="ml-2 font-semibold">{content.type}</span>
-                    </div>
-                    {/* <div className="flex items-center">
-                    <Clock size={14} className="mr-1" />
-                    <span className="text-xs font-medium">{content.duration}</span>
-                  </div> */}
-                  </div>
+  <div className="flex items-center">
+    {getContentTypeIcon(content.type)}
+    <span className="ml-2 font-semibold">{getContentTypeName(content.type)}</span>
+  </div>
+</div>
+
 
                   {/* İçerik Bilgileri */}
                   <div className="p-4">
