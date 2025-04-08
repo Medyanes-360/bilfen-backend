@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -44,6 +44,7 @@ const TaskList = () => {
     dueDate: new Date().toISOString().split("T")[0],
     priority: "Orta",
     status: "Beklemede",
+    isCompleted: false,
   });
 
   // Görevi genişlet/daralt
@@ -59,18 +60,27 @@ const TaskList = () => {
   };
 
   // Görev durumunu değiştir
-  const toggleTaskStatus = (id) => {
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === id) {
-          return {
-            ...task,
-            status: task.status === "Tamamlandı" ? "Beklemede" : "Tamamlandı",
-          };
-        }
-        return task;
-      })
-    );
+  const toggleTaskStatus = async (id) => {
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === id) {
+        return {
+          ...task,
+          isCompleted: !task.isCompleted,
+          status: task.isCompleted ? "Beklemede" : "Tamamlandı",
+        };
+      }
+      return task;
+    });
+
+    setTasks(updatedTasks);
+
+    const updatedTask = updatedTasks.find((t) => t.id === id);
+
+    // Veritabanına da gönder
+    await patchAPI(`/api/tasks/${id}`, {
+      isCompleted: updatedTask.isCompleted,
+      status: updatedTask.status,
+    });
   };
 
   // Görevi düzenle
@@ -82,6 +92,7 @@ const TaskList = () => {
       dueDate: task.dueDate,
       priority: task.priority,
       status: task.status,
+      isCompleted: task.isCompleted,
     });
     setShowTaskModal(true);
   };
@@ -111,11 +122,11 @@ const TaskList = () => {
 
   // Form input değişimi
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setTaskForm({
-      ...taskForm,
-      [name]: value,
-    });
+    const { name, value, type, checked } = e.target;
+    setTaskForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   // Form gönderimi
@@ -158,16 +169,17 @@ const TaskList = () => {
   const getFilteredTasks = () => {
     let filtered = tasks;
 
-    if (!showCompleted) {
-      filtered = filtered.filter((task) => task.status !== "Tamamlandı");
-    }
 
+    if (!showCompleted) {
+      filtered = filtered.filter((task) => !task.isCompleted);
+
+    }
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
-
     return filtered;
   };
+  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -256,10 +268,13 @@ const TaskList = () => {
           <div className="flex items-center">
             <input
               id="showCompleted"
+              name="showCompleted"
               type="checkbox"
               checked={showCompleted}
               onChange={() => setShowCompleted(!showCompleted)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+
             />
             <label
               htmlFor="showCompleted"
@@ -384,6 +399,7 @@ const TaskList = () => {
           <span>devam ediyor</span>
         </div>
       </div>
+
       {/* Görev Ekleme/Düzenleme Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-0 flex items-center justify-center z-50">
