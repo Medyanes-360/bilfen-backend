@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -169,16 +169,17 @@ const TaskList = () => {
   const getFilteredTasks = () => {
     let filtered = tasks;
 
+
     if (!showCompleted) {
       filtered = filtered.filter((task) => !task.isCompleted);
-    }
 
+    }
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
-
     return filtered;
   };
+  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -271,7 +272,9 @@ const TaskList = () => {
               type="checkbox"
               checked={showCompleted}
               onChange={() => setShowCompleted(!showCompleted)}
+
               className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+
             />
             <label
               htmlFor="showCompleted"
@@ -378,6 +381,7 @@ const TaskList = () => {
         )}
       </ul>
 
+
       <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
           <Check size={16} />
@@ -386,6 +390,7 @@ const TaskList = () => {
         <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-2 rounded-full">
           <Clock size={16} />
           <span>{tasks.filter((t) => !t.isCompleted).length} devam ediyor</span>
+
         </div>
       </div>
 

@@ -10,7 +10,7 @@
 // 3. State Tanımlamaları
 // - İçerik listesi, filtreleme, sayfalama, modal durumu vb.
 
-// 4. Yardımcı Fonksiyonlar
+// 4. Yardımcı Fonksiyonlar 
 // - İçerik ikonu belirleme
 // - Durum rengi belirleme
 // - Dosya işlemleri
@@ -57,6 +57,8 @@ import {
   Upload,
   Video,
   X,
+  ArrowLeft,
+  HelpCircle
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -67,6 +69,9 @@ import SingleContentForm from "@/components/SingleContentForm";
 import isValidDate from "@/components/dateValidation";
 import useToastStore from "@/lib/store/toast";
 import Toast from "@/components/toast";
+import BulkUpdateForm from "@/components/BulkUpdateForm";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import Link from "next/link";
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -76,7 +81,6 @@ const contentTypes = [
   { id: "game", name: "Oyun" },
   { id: "audio", name: "Ses" },
 ];
-
 
 
 // Örnek içerik verileri
@@ -92,6 +96,7 @@ const ContentManagement = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [currentContent, setCurrentContent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,6 +110,7 @@ const ContentManagement = () => {
     status: "",
     publishDateStudent: "",
     publishDateTeacher: "",
+    weeklyContent: false,
   });
   const [sortOption, setSortOption] = useState("newest");
   const [bulkMode, setBulkMode] = useState(false); // Toplu mod aktif mi?
@@ -170,10 +176,6 @@ const ContentManagement = () => {
     }
   };
 
-
-
-
-
   const branchOptions = [
     { label: "Matematik", value: "MATEMATIK" },
     { label: "Türkçe", value: "TURKCE" },
@@ -186,7 +188,6 @@ const ContentManagement = () => {
   const handleBulkAction = async (e) => {
     e.preventDefault();
     setIsBulkUpdating(true);
-
     try {
       // Toplu Silme
       if (bulkAction === "delete") {
@@ -205,7 +206,6 @@ const ContentManagement = () => {
           .filter((key) => typeof key === "string" && key.trim() !== "");
 
         if (idsToDelete.length === 0) {
-
           showToast("Silinecek geçerli içerik bulunamadı", "success");
           return;
         }
@@ -221,15 +221,24 @@ const ContentManagement = () => {
           }),
         });
 
+
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
 
+        // İçerikleri state'den kaldır
         setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
 
+        // State'leri temizle
+        setSelectedItems([]); // Seçimleri temizle
+        setBulkMode(false); // Bulk mode'u kapat
+        setBulkActionModalOpen(false); // Modalı kapat
+        setBulkAction(null); // Bulk action'ı sıfırla
+        setConfirmOpen(false); // Confirm modalı kapat
+
         showToast("İçerikler başarıyla silindi.", "success");
-        setSelectedItems([]);
       }
 
       // Toplu Güncelleme
@@ -284,13 +293,21 @@ const ContentManagement = () => {
 
         showToast("İçerikler başarıyla güncellendi.", "success");
         setSelectedItems([]);
+        setBulkMode(false);
+        setIsModalOpen(false);
+
+        // Modalı kapat
+        setBulkActionModalOpen(false);
+
+        // Bulk action'ı sıfırla
+        setBulkAction(null);
+
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
       showToast(error.message, "error");
     } finally {
       setIsBulkUpdating(false);
-      setBulkActionModalOpen(false);
     }
   };
 
@@ -306,6 +323,7 @@ const ContentManagement = () => {
       advancedFilterOptions.status !== "" ||
       advancedFilterOptions.publishDateStudent !== "" ||
       advancedFilterOptions.publishDateTeacher !== "" ||
+      advancedFilterOptions.weeklyContent ||
       activeType !== "all" ||
       searchTerm !== ""
     );
@@ -342,21 +360,48 @@ const ContentManagement = () => {
       const contentStudentDate = content.publishDateStudent
         ? new Date(content.publishDateStudent)
         : null;
-      const matchesStudentDate =
-        !studentDateFilter ||
-        !contentStudentDate ||
-        contentStudentDate.toDateString() === studentDateFilter.toDateString();
+      const matchesStudentDate = (() => {
+        if (!studentDateFilter) return true;
+
+        // weekly content'ler student tarihine göre filtrelenemez
+        if (content.isWeeklyContent) return false;
+
+        if (!contentStudentDate) return false;
+
+        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+      })();
+
 
       const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
-      const contentTeacherDate = content.publishDateTeacher
-        ? new Date(content.publishDateTeacher)
-        : null;
-      const matchesTeacherDate =
-        !teacherDateFilter ||
-        !contentTeacherDate ||
-        contentTeacherDate.toDateString() === teacherDateFilter.toDateString();
+      const matchesWeeklyContent =
+        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
+
+
+      const matchesTeacherDate = (() => {
+        if (!teacherDateFilter) return true;
+
+        if (advancedFilterOptions.weeklyContent) {
+          const weeklyDate = content.weeklyContentStartDate
+            ? new Date(content.weeklyContentStartDate)
+            : null;
+
+          return (
+            weeklyDate &&
+            weeklyDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        } else {
+          const teacherDate = content.publishDateTeacher
+            ? new Date(content.publishDateTeacher)
+            : null;
+
+          return (
+            teacherDate &&
+            teacherDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        }
+      })();
 
       return (
         matchesSearch &&
@@ -364,7 +409,8 @@ const ContentManagement = () => {
         matchesStatus &&
         matchesAgeGroup &&
         matchesStudentDate &&
-        matchesTeacherDate
+        matchesTeacherDate &&
+        matchesWeeklyContent
       );
     });
 
@@ -406,7 +452,7 @@ const ContentManagement = () => {
       case "game":
         return <Image className="w-5 h-5 text-purple-500" />;
       default:
-        return <FileText className="w-5 h-5 text-gray-500" />;
+        return <HelpCircle className="w-5 h-5 text-red-500" />;
     }
   };
 
@@ -574,6 +620,11 @@ const ContentManagement = () => {
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
       setSelectedId(null);
+
+      setSelectedItems([]); // selectedItems'ı temizle
+      setBulkMode(false); // bulk mode'u kapat
+      setBulkActionModalOpen(false); // bulk action modalını kapat
+      setBulkAction(null); // bulk action'ı sıfırla
     } catch (error) {
       console.error("Silme işlemi başarısız:", error);
     }
@@ -807,7 +858,7 @@ const ContentManagement = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full max-w-7xl mx-auto mt-3 px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-lg shadow">
         {/* Başlık ve Ana İşlemler */}
         <div className="border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -822,7 +873,7 @@ const ContentManagement = () => {
                 <button
                   key={type.id}
                   onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap ${activeType === type.id
+                  className={`px-3 py-1.5 cursor-pointer text-sm rounded-full whitespace-nowrap ${activeType === type.id
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}>
@@ -834,8 +885,14 @@ const ContentManagement = () => {
             <div className="ml-auto sm:ml-0 flex items-center gap-2">
               {/* Yeni içerik ekleme butonu */}
               <button
-                onClick={() => openModal()}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onClick={() => {
+                  if (bulkMode) {
+                    setIsBulkUploadModalOpen(true);
+                  } else {
+                    openModal();
+                  }
+                }}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
                   <>
@@ -856,7 +913,7 @@ const ContentManagement = () => {
                   setBulkMode(!bulkMode);
                   setSelectedItems([]);
                 }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {bulkMode ? (
                   <>
@@ -895,7 +952,7 @@ const ContentManagement = () => {
             {/* Sıralama Butonu */}
             <div className="relative">
               <select
-                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
                 value={sortOption}
                 onChange={(e) => handleSort(e.target.value)}
               >
@@ -906,7 +963,7 @@ const ContentManagement = () => {
 
             {/* Filtreleme Butonu ve Popup Menüsü */}
             <div className="relative">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ">
                 <button
                   onClick={() => {
                     console.log(
@@ -918,9 +975,9 @@ const ContentManagement = () => {
                   className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {hasActiveFilters() ? (
-                    <FilterX className="w-5 h-5 mr-2 text-indigo-600" />
+                    <FilterX className="w-5 h-5 mr-2 text-indigo-600 cursor-pointer" />
                   ) : (
-                    <Filter className="w-5 h-5 mr-2 text-gray-400" />
+                    <Filter className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
                   )}
                   Filtreler
                 </button>
@@ -937,9 +994,9 @@ const ContentManagement = () => {
                       setActiveType("all");
                       setSearchTerm("");
                     }}
-                    className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
                   >
-                    <FilterX className="w-5 h-5 mr-2 text-gray-400" />
+                    <FilterX className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
                     Temizle
                   </button>
                 )}
@@ -962,7 +1019,7 @@ const ContentManagement = () => {
                           Yaş Grubu
                         </label>
                         <select
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 cursor-pointer focus:ring-indigo-500 b"
                           value={advancedFilterOptions.ageGroup}
                           onChange={(e) =>
                             setAdvancedFilterOptions({
@@ -987,7 +1044,7 @@ const ContentManagement = () => {
                         <div className="flex items-center gap-2">
                           <input
                             type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={advancedFilterOptions.publishDateStudent}
                             onChange={(e) =>
                               setAdvancedFilterOptions({
@@ -1007,7 +1064,7 @@ const ContentManagement = () => {
                         <div className="flex items-center gap-2">
                           <input
                             type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                             value={advancedFilterOptions.publishDateTeacher}
                             onChange={(e) =>
                               setAdvancedFilterOptions({
@@ -1018,23 +1075,43 @@ const ContentManagement = () => {
                           />
                         </div>
                       </div>
+                      {/* Weekly Content (Ek Materyal) Checkbox */}
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="weeklyContent"
+                          checked={advancedFilterOptions.weeklyContent}
+                          onChange={(e) =>
+                            setAdvancedFilterOptions({
+                              ...advancedFilterOptions,
+                              weeklyContent: e.target.checked,
+                            })
+                          }
+                          className="cursor-pointer"
+                        />
+                        <label htmlFor="weeklyContent" className="text-sm text-gray-700">
+                          Ek Materyal
+                        </label>
+                      </div>
+
 
                       <div className="flex justify-end space-x-2 pt-2">
                         <button
-                          className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                          className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
                           onClick={() => {
                             setAdvancedFilterOptions({
                               ageGroup: "",
                               status: "",
                               publishDateStudent: "",
                               publishDateTeacher: "",
+                              weeklyContent: false,
                             });
                           }}
                         >
                           Temizle
                         </button>
                         <button
-                          className="px-3 py-2 text-indigo-600 hover:bg-indigo-100 rounded"
+                          className="px-3 py-2 text-indigo-600 hover:bg-indigo-100 rounded cursor-pointer"
                           onClick={applyAdvancedFilters}
                         >
                           Uygula
@@ -1101,50 +1178,50 @@ const ContentManagement = () => {
                   )}
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs  text-gray-500 uppercase tracking-wide font-bold"
                   >
                     İçerik
                   </th>
 
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wide font-bold"
                   >
                     Branş
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Yaş
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Öğrenci Yayın Tarihi
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Öğretmen Yayın Tarihi
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Ek Materyal
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     Yayın Kriterleri
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
                   >
                     İşlem
                   </th>
@@ -1204,9 +1281,10 @@ const ContentManagement = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
-                        {content.branch || "-"}
+                        {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
                       </div>
                     </td>
+
                     <td className="px-3 py-2">
                       <div className="text-xs text-gray-900">
                         {content.ageGroup || "-"}
@@ -1262,35 +1340,26 @@ const ContentManagement = () => {
                           }
 
                           return missingFields.length > 0 ? (
-                            <span className="text-red-600">{missingFields.join(", ")}</span>
+                            <div className="flex flex-wrap gap-1">
+                              {missingFields.map((field, index) => (
+                                <span
+                                  key={index}
+                                  className="bg-red-400 text-white text-[11px] px-2 py-[5px] rounded-full shadow-md"
+                                >
+                                  {field}
+                                </span>
+                              ))}
+                            </div>
                           ) : (
-                            "-"
+                            <span className="text-gray-500">-</span>
                           );
                         })()}
                       </div>
-
                     </td>
+
+
                     <td className="px-3 py-2">
                       <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => viewContent(content.id)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openModal(content)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
-                          title="Sil"
-                          onClick={() => handleDeleteContent(content.id)}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
                         {(() => {
                           const missingFields = [];
                           const isWeekly = content.isWeeklyContent === true;
@@ -1313,12 +1382,12 @@ const ContentManagement = () => {
 
                           return (
                             <button
-                              className={`px-2 py-1 text-xs rounded-lg shadow-sm transition-all
-        ${isPublished
-                                  ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                              className={`w-[110px] h-[28px] px-2 py-1 text-xs rounded-lg shadow-sm transition-all
+                              ${isPublished
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
                                   : isPublishDisabled
                                     ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
-                                    : "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                                    : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
                                 }`}
                               disabled={!isPublished && isPublishDisabled}
                               title={
@@ -1340,9 +1409,33 @@ const ContentManagement = () => {
                             </button>
                           );
                         })()}
-
-
-
+                        <button
+                          onClick={() => viewContent(content.id)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Eye className="w-4 h-4 cursor-pointer" />
+                        </button>
+                        <button
+                          onClick={() => openModal(content)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Edit className="w-4 h-4 cursor-pointer" />
+                        </button>
+                        <button
+                          className="text-red-600 hover:text-red-900 cursor-pointer"
+                          title="Sil"
+                          onClick={() => {
+                            if (bulkMode && selectedItems.length > 1) {
+                              setBulkAction("delete");
+                              setBulkActionModalOpen(true);
+                            } else {
+                              setSelectedId(content.id);
+                              setConfirmOpen(true);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1372,7 +1465,7 @@ const ContentManagement = () => {
                   setBulkAction("update");
                   setBulkActionModalOpen(true);
                 }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
               >
                 <Edit className="w-4 h-4 mr-1" />
                 Güncelle
@@ -1398,7 +1491,7 @@ const ContentManagement = () => {
               <button
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
               >
                 <span className="sr-only">Önceki</span>
                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -1458,7 +1551,7 @@ const ContentManagement = () => {
               <button
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
               >
                 <span className="sr-only">Sonraki</span>
                 <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -1485,12 +1578,17 @@ const ContentManagement = () => {
             >
               &#8203;
             </span>
-
-            {bulkMode ? (
-
-              <BulkContentUpload
-                setIsModalOpen={setIsModalOpen}
-                setContents={setContents}
+            {bulkMode && selectedItems.length > 1 ? (
+              <BulkUpdateForm
+                currentContent={currentContent}
+                branchOptions={branchOptions}
+                isBulkUpdating={isBulkUpdating}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setBulkAction("update");
+                  handleBulkAction(e);
+                }}
+                onCancel={() => setIsModalOpen(false)}
               />
 
             ) : (
@@ -1516,196 +1614,90 @@ const ContentManagement = () => {
       )}
 
       {/* Toplu İşlem Modal düzenleme */}
-      {bulkActionModalOpen && (
+
+      {bulkActionModalOpen && bulkAction === "update" && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
               &#8203;
             </span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleBulkAction}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    {bulkAction === "update"
-                      ? "Toplu Güncelleme"
-                      : "Toplu Silme"}
-                  </h3>
-
-                  {bulkAction === "update" && (
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Branş */}
-                      <div>
-                        <label
-                          htmlFor="bulkBranch"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Branş
-                        </label>
-                        <select
-                          id="bulkBranch"
-                          name="bulkBranch"
-                          defaultValue={currentContent?.branch || ""}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          {branchOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* İçerik Türü */}
-                      <div>
-                        <label
-                          htmlFor="bulkType"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          İçerik Türü
-                        </label>
-                        <select
-                          id="bulkType"
-                          name="bulkType"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          <option value="video">Video</option>
-                          <option value="audio">Ses</option>
-                          <option value="document">Döküman</option>
-                          <option value="interactive">Etkileşimli</option>
-                          <option value="game">Oyun</option>
-                        </select>
-                      </div>
-
-                      {/* Yaş Grubu */}
-                      <div>
-                        <label
-                          htmlFor="bulkAgeGroup"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Yaş Grubu
-                        </label>
-                        <select
-                          id="bulkAgeGroup"
-                          name="bulkAgeGroup"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Seçiniz</option>
-                          <option value="3-4 yaş">3-4 yaş</option>
-                          <option value="4-5 yaş">4-5 yaş</option>
-                          <option value="5-6 yaş">5-6 yaş</option>
-                          <option value="6-7 yaş">6-7 yaş</option>
-                          <option value="7-8 yaş">7-8 yaş</option>
-                        </select>
-                      </div>
-
-                      {/* Açıklama */}
-                      <div>
-                        <label
-                          htmlFor="bulkDescription"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Açıklama
-                        </label>
-                        <textarea
-                          id="bulkDescription"
-                          name="bulkDescription"
-                          rows="3"
-                          placeholder="Açıklamayı güncellemek için doldurun"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        ></textarea>
-                      </div>
-                    </div>
-                  )}
-
-                  {bulkAction === "delete" && (
-                    <div className="text-sm text-gray-500">
-                      <p className="mb-2">
-                        Seçilen{" "}
-                        <span className="font-bold">
-                          {selectedItems.length}
-                        </span>{" "}
-                        içeriği silmek istediğinize emin misiniz?
-                      </p>
-                      <p className="text-red-500">Bu işlem geri alınamaz!</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${bulkAction === "delete"
-                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                      : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                      } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
-                    disabled={isBulkUpdating}
-                  >
-                    {isBulkUpdating ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        İşleniyor...
-                      </>
-                    ) : bulkAction === "delete" ? (
-                      "Sil"
-                    ) : (
-                      "Güncelle"
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => setBulkActionModalOpen(false)}
-                    disabled={isBulkUpdating}
-                  >
-                    İptal
-                  </button>
-                </div>
-              </form>
-            </div>
+            <BulkUpdateForm
+              currentContent={currentContent}
+              branchOptions={branchOptions}
+              isBulkUpdating={isBulkUpdating}
+              onSubmit={handleBulkAction}
+              onCancel={() => setBulkActionModalOpen(false)}
+            />
           </div>
         </div>
       )}
+
       {/* silmek için açılan modal */}
-      <ConfirmModal
-        isOpen={confirmOpen}
-        title="İçeriği silmek istediğinize emin misiniz?"
-        description="Bu işlem geri alınamaz."
-        onCancel={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
-      {/* seçilen checkbox sayısı 10'u geçince açılan modal */}
+      {(confirmOpen || (bulkActionModalOpen && bulkAction === "delete")) && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <DeleteConfirmationModal
+              selectedCount={
+                bulkMode
+                  ? selectedItems
+                    .filter(item => typeof item === "string" && item.trim() !== "")
+                    .length
+                  : 1
+              }
+              isBulkDeleting={isBulkUpdating}
+              onConfirm={() => {
+                if (bulkMode) {
+                  setBulkAction("delete");
+                  handleBulkAction({ preventDefault: () => { } });
+                } else {
+                  handleConfirmDelete();
+                }
+              }}
+              onCancel={() => {
+                if (bulkMode && selectedItems.length > 1) {
+                  setBulkActionModalOpen(false);
+                } else {
+                  handleCancelDelete();
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Toplu İçerik Yükleme Modal */}
+      {isBulkUploadModalOpen && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <BulkContentUpload
+              setIsModalOpen={setIsBulkUploadModalOpen}
+              setContents={setContents}
+            />
+          </div>
+        </div>
+      )}
+
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
@@ -1741,6 +1733,10 @@ const ContentManagement = () => {
         </div>
       )}
       <Toast />
+      <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
+        <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
+      </Link>
+
     </div>
   );
 };

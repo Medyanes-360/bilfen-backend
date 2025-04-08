@@ -1,8 +1,9 @@
 "use client";
-
+import { contentTypes, ageGroups } from '../app/constants/mockData';
 import { useState } from "react";
 import { Upload, Tag } from "lucide-react";
 import isValidDate from "@/components/dateValidation"
+import useToastStore from '@/lib/store/toast';
 export default function SingleContentForm({
   setIsModalOpen,
   currentContent,
@@ -21,6 +22,14 @@ export default function SingleContentForm({
   const [isWeeklyContentChecked, setIsWeeklyContentChecked] = useState(
     !!currentContent?.isWeeklyContent
   );
+    const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
+      ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+      : "");
+    
+    const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
+      ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+      : "");
+      const { showToast } = useToastStore();
 
 
   const uploadFileToR2 = async (file) => {
@@ -80,14 +89,15 @@ export default function SingleContentForm({
         console.log("Dosya yüklendi, URL:", fileUrl);
       } catch (err) {
         console.error("Dosya yüklenirken hata oluştu:", err);
-        alert("Dosya yüklenirken hata oluştu.");
+        showToast("Dosya yüklenirken hata oluştu.", "error");
+
         setIsUploading(false);
         return;
       }
     }
 
-    if (!formData.get("title") || !fileUrl) {
-      alert("Lütfen başlık ve içerik dosyası ekleyin.");
+    if ( !fileUrl) {
+      showToast("Lütfen içerik dosyası ekleyin.", "error");
       setIsUploading(false);
       return;
     }
@@ -141,11 +151,12 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [...prev, newContent]);
+        setContents((prev) => [newContent, ...prev]);
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
-      alert("İçerik kaydedilemedi");
+      showToast("İçerik kaydedilemedi", "error");
+
     } finally {
       setIsUploading(false);
       setSelectedFile(null);
@@ -217,11 +228,11 @@ export default function SingleContentForm({
                     onChange={handleTypeChange}
                   >
                     <option value="">Seçiniz</option>
-                    <option value="video">Video</option>
-                    <option value="audio">Ses</option>
-                    <option value="document">Döküman</option>
-                    <option value="interactive">Etkileşimli</option>
-                    <option value="game">Oyun</option>
+                    {contentTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -263,11 +274,11 @@ export default function SingleContentForm({
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   >
                     <option value="">Seçiniz</option>
-                    <option value="3-4 yaş">3-4 yaş</option>
-                    <option value="4-5 yaş">4-5 yaş</option>
-                    <option value="5-6 yaş">5-6 yaş</option>
-                    <option value="6-7 yaş">6-7 yaş</option>
-                    <option value="7-8 yaş">7-8 yaş</option>
+                    {ageGroups.map((age) => (
+                      <option key={age.value} value={age.value}>
+                        {age.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -283,11 +294,24 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateStudent"
                         id="publishDateStudent"
-                        defaultValue={
-                          currentContent?.publishDateStudent
-                            ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
-                            : ""
-                        }
+                        min={new Date().toISOString().split("T")[0]} 
+                        value={studentDate}
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                      
+                          if (teacherDate) {
+                            const student = new Date(selectedDate);
+                            const teacher = new Date(teacherDate);
+                      
+                            if (student < teacher) {
+                              showToast("Öğrenci yayın tarihi, öğretmen tarihinden önce olamaz!", "error");
+                              setStudentDate("");
+                              return;
+                            }
+                          }
+                      
+                          setStudentDate(selectedDate);
+                        }}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
@@ -301,14 +325,28 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateTeacher"
                         id="publishDateTeacher"
-                        defaultValue={
-                          currentContent?.publishDateTeacher
-                            ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
-                            : ""
-                        }
+                        min={new Date().toISOString().split("T")[0]} 
+                        value={teacherDate}
+                     
+                        onChange={(e) => {
+                          const selectedDate = e.target.value;
+                          if (studentDate) {
+                            const student = new Date(studentDate);
+                            const teacher = new Date(selectedDate);
+                            if (teacher > student) {
+                              showToast("Öğretmen yayın tarihi, öğrenci tarihinden sonra olamaz!", "error");
+                              setTeacherDate("");
+                              return;
+                            }
+                          }
+                        
+                          setTeacherDate(selectedDate);
+                        }}
+                        
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
+
                   </div>
                 )}
 
@@ -349,6 +387,7 @@ export default function SingleContentForm({
                           type="date"
                           name="weeklyContentStartDate"
                           id="weeklyContentStartDate"
+                          min={new Date().toISOString().split("T")[0]} 
                           defaultValue={
                             isValidDate(currentContent?.weeklyContentStartDate)
                               ? new Date(currentContent.weeklyContentStartDate)
