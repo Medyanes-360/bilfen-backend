@@ -193,13 +193,17 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-
-    if (!showCompleted) {
-      filtered = filtered.filter((task) => !task.isCompleted);
+  
+    // ✅ Eğer "tamamlananları göster" işaretliyse → sadece tamamlanmış görevleri göster
+    if (showCompleted) {
+      filtered = filtered.filter((task) => task.isCompleted === true);
     }
+  
+    // ✅ Eğer aktif öncelik filtresi seçiliyse uygula
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
+  
     return filtered;
   };
 
