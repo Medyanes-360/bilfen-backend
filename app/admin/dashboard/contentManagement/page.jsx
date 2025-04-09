@@ -1340,11 +1340,11 @@ const ContentManagement = () => {
                           }
 
                           return missingFields.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1 max-w-full sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
                               {missingFields.map((field, index) => (
                                 <span
                                   key={index}
-                                  className="bg-red-400 text-white text-[11px] px-2 py-[5px] rounded-full shadow-md"
+                                  className="bg-red-400 text-white text-xs px-2 py-1 rounded-md shadow-sm inline-flex items-center whitespace-nowrap"
                                 >
                                   {field}
                                 </span>
