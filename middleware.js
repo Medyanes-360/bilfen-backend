@@ -1,10 +1,11 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
+  "https://bilfen-frontend.vercel.app",
+  "https://bilfen-backend.vercel.app",
 ];
 
 // export default withAuth(
@@ -51,9 +52,32 @@ const allowedOrigins = [
 // );
 
 export default function middleware(req) {
-  console.log('devam')
-  NextResponse.next();
+  const origin = req.headers.get("origin") || "";
+  const method = req.method;
+
+  // Preflight (OPTIONS) isteği için CORS
+  if (method === "OPTIONS") {
+    const res = new NextResponse(null, { status: 204 });
+    if (allowedOrigins.includes(origin)) {
+      res.headers.set("Access-Control-Allow-Origin", origin);
+      res.headers.set("Access-Control-Allow-Credentials", "true");
+      res.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+      res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+    return res;
+  }
+
+  // Normal isteklerde auth başarılıysa devam et
+  const response = NextResponse.next();
+
+  if (allowedOrigins.includes(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+  }
+
+  return response;
 }
+
 export const config = {
   matcher: ["/admin/:path*", "/api/:path*"],
 };
