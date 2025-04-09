@@ -1,5 +1,6 @@
 "use client";
 
+import useTaskFilterStore from "@/lib/store/useTaskFilterStore";
 // TaskList.jsx - İşlevsel Görev Listesi bileşeni
 import { deleteAPI, getAPI, patchAPI, postAPI } from "@/services/fetchAPI";
 import {
@@ -18,7 +19,7 @@ import { useEffect, useState } from "react";
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
-  const [showCompleted, setShowCompleted] = useState(false);
+  const { showCompleted, setShowCompleted } = useTaskFilterStore();
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -63,10 +64,11 @@ const TaskList = () => {
   const toggleTaskStatus = async (id) => {
     const updatedTasks = tasks.map((task) => {
       if (task.id === id) {
+        const newIsCompleted = !task.isCompleted;
         return {
           ...task,
-          isCompleted: !task.isCompleted,
-          status: task.isCompleted ? "Beklemede" : "Tamamlandı",
+          isCompleted: newIsCompleted,
+          status: newIsCompleted ? "Tamamlandı" : "Beklemede", // ✅ bağ kurduk
         };
       }
       return task;
@@ -76,7 +78,6 @@ const TaskList = () => {
 
     const updatedTask = updatedTasks.find((t) => t.id === id);
 
-    // Veritabanına da gönder
     await patchAPI(`/api/tasks/${id}`, {
       isCompleted: updatedTask.isCompleted,
       status: updatedTask.status,
@@ -123,10 +124,29 @@ const TaskList = () => {
   // Form input değişimi
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setTaskForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    setTaskForm((prev) => {
+      let updated = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+
+      // ✅ status değiştiyse, isCompleted'ı senkronize et
+      if (name === "status") {
+        updated.isCompleted = value === "Tamamlandı";
+      }
+
+      // ✅ isCompleted değiştiyse, status'u senkronize et
+      if (name === "isCompleted") {
+        updated.status = checked
+          ? "Tamamlandı"
+          : prev.status === "Tamamlandı"
+          ? "Beklemede"
+          : prev.status;
+      }
+
+      return updated;
+    });
   };
 
   // Form gönderimi
@@ -134,32 +154,37 @@ const TaskList = () => {
     e.preventDefault();
 
     try {
-      const { expanded, ...taskData } = taskForm; // Exclude 'expanded' from the task data
+      const { expanded, ...rawData } = taskForm;
+
+      // ✅ Durum ve isCompleted birbirini etkilesin:
+      const taskData = {
+        ...rawData,
+        isCompleted:
+          rawData.status === "Tamamlandı" ? true : rawData.isCompleted,
+        status: rawData.isCompleted ? "Tamamlandı" : rawData.status,
+      };
 
       if (editingTask) {
-        // If editing, send a PATCH request
         const updatedTask = await patchAPI(
           `/api/tasks/${editingTask.id}`,
           taskData
         );
+
         if (updatedTask !== null) {
-          // Check if updatedTask is not null
           setTasks((prevTasks) =>
             prevTasks.map((task) =>
               task.id === updatedTask.id ? updatedTask : task
             )
           );
         } else {
-          // If updatedTask is null, refetch tasks to ensure the list is updated
           fetchTasks();
         }
       } else {
-        // If adding a new task, send a POST request
         const addedTask = await postAPI("/api/tasks", taskData);
         setTasks((prevTasks) => [addedTask, ...prevTasks]);
       }
 
-      setShowTaskModal(false); // Close the modal after successful submission
+      setShowTaskModal(false);
     } catch (error) {
       console.error("Error submitting task:", error);
     }
@@ -169,17 +194,14 @@ const TaskList = () => {
   const getFilteredTasks = () => {
     let filtered = tasks;
 
-
     if (!showCompleted) {
       filtered = filtered.filter((task) => !task.isCompleted);
-
     }
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
     return filtered;
   };
-  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -271,10 +293,8 @@ const TaskList = () => {
               name="showCompleted"
               type="checkbox"
               checked={showCompleted}
-              onChange={() => setShowCompleted(!showCompleted)}
-
+              onChange={(e) => setShowCompleted(e.target.checked)}
               className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-
             />
             <label
               htmlFor="showCompleted"
@@ -381,22 +401,14 @@ const TaskList = () => {
         )}
       </ul>
 
-      <div className="ml-5 pb-2 flex items-center gap-2 text-sm text-gray-500">
-        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-green-100 text-green-800">
-          <span className="font-medium w-fit ">
-            {Array.isArray(tasks)
-              ? tasks.filter((t) => t.status === "Tamamlandı").length
-              : 0}
-          </span>
-          <span>tamamlandı</span>
+      <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
+          <Check size={16} />
+          <span>{tasks.filter((t) => t.isCompleted).length} tamamlandı</span>
         </div>
-        <div className="flex justify-center items-center gap-1 p-1 px-3 rounded-full bg-blue-100 text-blue-800">
-          <span className="font-medium w-fit">
-            {Array.isArray(tasks)
-              ? tasks.filter((t) => t.status !== "Tamamlandı").length
-              : 0}
-          </span>
-          <span>devam ediyor</span>
+        <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-2 rounded-full">
+          <Clock size={16} />
+          <span>{tasks.filter((t) => !t.isCompleted).length} devam ediyor</span>
         </div>
       </div>
 
