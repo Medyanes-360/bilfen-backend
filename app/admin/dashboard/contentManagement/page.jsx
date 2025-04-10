@@ -39,24 +39,15 @@
 // components/ContentManagement.jsx
 import {
   Book,
-  CheckSquare,
-  ChevronLeft,
-  ChevronRight,
   Edit,
-  Eye,
   FileText,
   Filter,
   FilterX,
   Image,
-  List,
   Music,
-  Plus,
   Search,
-  Tag,
   Trash2,
-  Upload,
   Video,
-  X,
   ArrowLeft,
   HelpCircle
 } from "lucide-react";
@@ -72,6 +63,12 @@ import Toast from "@/components/toast";
 import BulkUpdateForm from "@/components/BulkUpdateForm";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import Link from "next/link";
+import ContentTable from "@/components/Dashboard/ContentTable";
+import Pagination from "@/components/Dashboard/Pagination";
+import HeaderActions from "@/components/Dashboard/HeaderActions";
+import BulkActionsBar from "@/components/Dashboard/BulkActionsBar";
+import PreviewModal from "@/components/Dashboard/PreviewModal";
+
 // İçerik türleri
 const contentTypes = [
   { id: "all", name: "Tümü" },
@@ -81,7 +78,6 @@ const contentTypes = [
   { id: "game", name: "Oyun" },
   { id: "audio", name: "Ses" },
 ];
-
 
 // Örnek içerik verileri
 // Örnek içerik verileri - komponent dışında tanımlayın
@@ -861,75 +857,16 @@ const ContentManagement = () => {
     <div className="w-full max-w-7xl mx-auto mt-3 px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-lg shadow">
         {/* Başlık ve Ana İşlemler */}
-        <div className="border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Son Eklenen İçerikler
-          </h1>
-
-          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
-            {/* İçerik türleri */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-              {contentTypes.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setActiveType(type.id)}
-                  className={`px-3 py-1.5 cursor-pointer text-sm rounded-full whitespace-nowrap ${activeType === type.id
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}>
-                  {type.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="ml-auto sm:ml-0 flex items-center gap-2">
-              {/* Yeni içerik ekleme butonu */}
-              <button
-                onClick={() => {
-                  if (bulkMode) {
-                    setIsBulkUploadModalOpen(true);
-                  } else {
-                    openModal();
-                  }
-                }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                {bulkMode ? (
-                  <>
-                    <List className="w-5 h-5 mr-1" />
-                    Toplu İçerik
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-5 h-5 mr-1" />
-                    Yeni İçerik
-                  </>
-                )}
-              </button>
-
-              {/* Toplu İşlemler Butonu */}
-              <button
-                onClick={() => {
-                  setBulkMode(!bulkMode);
-                  setSelectedItems([]);
-                }}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                {bulkMode ? (
-                  <>
-                    <X className="w-5 h-5 mr-1" />
-                    İptal
-                  </>
-                ) : (
-                  <>
-                    <List className="w-5 h-5 mr-1" />
-                    Toplu İşlemler
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <HeaderActions
+          contentTypes={contentTypes}
+          activeType={activeType}
+          setActiveType={setActiveType}
+          bulkMode={bulkMode}
+          setBulkMode={setBulkMode}
+          openModal={openModal}
+          setIsBulkUploadModalOpen={setIsBulkUploadModalOpen}
+          setSelectedItems={setSelectedItems}
+        />
 
         {/* Arama ve Filtreler */}
         <div className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center border-b border-gray-200">
@@ -1127,437 +1064,45 @@ const ContentManagement = () => {
 
         {/* İçerik Tablosu */}
         <div className="p-4 sm:p-6">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {bulkMode && (
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 text-indigo-600 rounded border-gray-300 cursor-pointer focus:ring-indigo-500"
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              const newSelections = [
-                                ...new Set([
-                                  ...selectedItems,
-                                  ...currentItems.map((item) => item.id),
-                                ]),
-                              ];
-
-                              if (newSelections.length > 10) {
-                                setShowLimitModal(true); // modal aç
-                                return;
-                              }
-
-                              setSelectedItems(newSelections);
-                            } else {
-                              // Seçim kaldırılıyorsa sadece currentItems'ları çıkar
-                              setSelectedItems(
-                                selectedItems.filter(
-                                  (id) =>
-                                    !currentItems
-                                      .map((item) => item.id)
-                                      .includes(id)
-                                )
-                              );
-                            }
-                          }}
-                          checked={
-                            currentItems.every((item) =>
-                              selectedItems.includes(item.id)
-                            ) && currentItems.length > 0
-                          }
-                        />
-                      </div>
-                    </th>
-                  )}
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs  text-gray-500 uppercase tracking-wide font-bold"
-                  >
-                    İçerik
-                  </th>
-
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wide font-bold"
-                  >
-                    Branş
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Yaş
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Öğrenci Yayın Tarihi
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Öğretmen Yayın Tarihi
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Ek Materyal
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    Yayın Kriterleri
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wide"
-                  >
-                    İşlem
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentItems.map((content) => (
-                  <tr key={content.id}>
-                    {bulkMode && (
-                      <td className="px-3 py-2">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            className={`h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ${selectedItems.length >= 10 &&
-                              !selectedItems.includes(content.id)
-                              ? "cursor-not-allowed opacity-50"
-                              : "cursor-pointer"
-                              }`}
-                            checked={selectedItems.includes(content.id)}
-                            disabled={
-                              selectedItems.length >= 10 &&
-                              !selectedItems.includes(content.id)
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                if (selectedItems.length >= 10) {
-                                  setShowLimitModal(true);
-                                  return;
-                                }
-                                setSelectedItems([
-                                  ...selectedItems,
-                                  content.id,
-                                ]);
-                              } else {
-                                setSelectedItems(
-                                  selectedItems.filter(
-                                    (id) => id !== content.id
-                                  )
-                                );
-                              }
-                            }}
-                          />
-                        </div>
-                      </td>
-                    )}
-                    <td className="px-3 py-2">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          {getContentIcon(content.type)}
-                        </div>
-                        <div className="ml-2">
-                          <div className="text-xs font-medium text-gray-900 truncate max-w-[200px]">
-                            {content.title}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {branchOptions.find((opt) => opt.value === content.branch)?.label || "-"}
-                      </div>
-                    </td>
-
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.ageGroup || "-"}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.publishDateStudent
-                          ? new Date(
-                            content.publishDateStudent
-                          ).toLocaleDateString("tr-TR")
-                          : "-"}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.isWeeklyContent
-                          ? content.weeklyContentStartDate
-                            ? new Date(content.weeklyContentStartDate).toLocaleDateString("tr-TR")
-                            : "-"
-                          : content.publishDateTeacher
-                            ? new Date(content.publishDateTeacher).toLocaleDateString("tr-TR")
-                            : "-"}
-                      </div>
-                    </td>
-
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {content.isWeeklyContent ? (
-                          <CheckSquare className="w-4 h-4 text-green-500" />
-                        ) : (
-                          "-"
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-900">
-                        {(() => {
-                          const missingFields = [];
-                          const isWeekly = content.isWeeklyContent === true;
-
-                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
-                          if (!content.branch) missingFields.push("Branş");
-
-                          if (isWeekly) {
-                            if (!content.weeklyContentStartDate) {
-                              missingFields.push("Yayın Tarihi");
-                            }
-                          } else {
-                            if (!content.publishDateStudent) {
-                              missingFields.push("Öğrenci Yayın Tarihi");
-                            }
-                          }
-
-                          return missingFields.length > 0 ? (
-                            <div className="flex flex-wrap gap-1 max-w-full sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
-                              {missingFields.map((field, index) => (
-                                <span
-                                  key={index}
-                                  className="bg-red-400 text-white text-xs px-2 py-1 rounded-md shadow-sm inline-flex items-center whitespace-nowrap"
-                                >
-                                  {field}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-gray-500">-</span>
-                          );
-                        })()}
-                      </div>
-                    </td>
-
-
-                    <td className="px-3 py-2">
-                      <div className="flex items-center space-x-1">
-                        {(() => {
-                          const missingFields = [];
-                          const isWeekly = content.isWeeklyContent === true;
-
-                          if (!content.branch) missingFields.push("Branş");
-                          if (!content.ageGroup) missingFields.push("Yaş Grubu");
-
-                          if (isWeekly) {
-                            if (!content.weeklyContentStartDate) {
-                              missingFields.push("Haftalık Başlangıç Tarihi");
-                            }
-                          } else {
-                            if (!content.publishDateStudent) {
-                              missingFields.push("Öğrenci Yayın Tarihi");
-                            }
-                          }
-
-                          const isPublishDisabled = missingFields.length > 0;
-                          const isPublished = content.isPublished === true;
-
-                          return (
-                            <button
-                              className={`w-[110px] h-[28px] px-2 py-1 text-xs rounded-lg shadow-sm transition-all
-                              ${isPublished
-                                  ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
-                                  : isPublishDisabled
-                                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed border border-red-300"
-                                    : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
-                                }`}
-                              disabled={!isPublished && isPublishDisabled}
-                              title={
-                                isPublished
-                                  ? "İçeriği yayından kaldır"
-                                  : isPublishDisabled
-                                    ? `Eksik Alanlar: ${missingFields.join(", ")}`
-                                    : "Yayınla"
-                              }
-                              onClick={() => {
-                                if (isPublished) {
-                                  handleUnpublish(content.id);
-                                } else if (!isPublishDisabled) {
-                                  handlePublish(content.id);
-                                }
-                              }}
-                            >
-                              {isPublished ? "Yayından Kaldır" : "Yayınla"}
-                            </button>
-                          );
-                        })()}
-                        <button
-                          onClick={() => viewContent(content.id)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Eye className="w-4 h-4 cursor-pointer" />
-                        </button>
-                        <button
-                          onClick={() => openModal(content)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4 cursor-pointer" />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
-                          title="Sil"
-                          onClick={() => {
-                            if (bulkMode && selectedItems.length > 1) {
-                              setBulkAction("delete");
-                              setBulkActionModalOpen(true);
-                            } else {
-                              setSelectedId(content.id);
-                              setConfirmOpen(true);
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ContentTable
+            currentItems={currentItems}
+            bulkMode={bulkMode}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            handlePublish={handlePublish}
+            handleUnpublish={handleUnpublish}
+            viewContent={viewContent}
+            openModal={openModal}
+            handleDeleteContent={handleDeleteContent}
+            getContentIcon={getContentIcon}
+            branchOptions={branchOptions}
+          />
         </div>
 
         {/* Toplu İşlem Butonları */}
         {bulkMode && selectedItems.length > 0 && (
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">
-                {selectedItems.length} içerik seçildi
-              </span>
-              <button
-                onClick={clearBulkSelection}
-                className="text-sm text-indigo-600 hover:text-indigo-900"
-              >
-                Seçimi Temizle
-              </button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  setBulkAction("update");
-                  setBulkActionModalOpen(true);
-                }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                Güncelle
-              </button>
-              <button
-                onClick={() => {
-                  setBulkAction("delete");
-                  setBulkActionModalOpen(true);
-                }}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Sil
-              </button>
-            </div>
-          </div>
+          <BulkActionsBar
+            selectedItems={selectedItems}
+            clearBulkSelection={clearBulkSelection}
+            onBulkUpdate={() => {
+              setBulkAction("update");
+              setBulkActionModalOpen(true);
+            }}
+            onBulkDelete={() => {
+              setBulkAction("delete");
+              setBulkActionModalOpen(true);
+            }}
+          />
         )}
+
 
         {/* Sayfalama */}
         <div className="p-4 sm:p-6">
-          <nav className="flex justify-end">
-            <div className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-              <button
-                onClick={() => paginate(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
-              >
-                <span className="sr-only">Önceki</span>
-                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-              </button>
-
-              {/* Sayfa Numaraları */}
-              {[...Array(totalPages)].map((_, index) => {
-                const pageNumber = index + 1;
-                const isCurrentPage = pageNumber === currentPage;
-                const isNearCurrentPage =
-                  Math.abs(pageNumber - currentPage) <= 1;
-                const isFirstPage = pageNumber === 1;
-                const isLastPage = pageNumber === totalPages;
-
-                if (isFirstPage || isLastPage || isNearCurrentPage) {
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 cursor-pointer  ${isCurrentPage
-                        ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}>
-                      {pageNumber}
-                    </button>
-                  );
-                }
-
-                if (pageNumber === 2 && currentPage > 3) {
-                  return (
-                    <span
-                      key={`ellipsis-${pageNumber}`}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                if (
-                  pageNumber === totalPages - 1 &&
-                  currentPage < totalPages - 2
-                ) {
-                  return (
-                    <span
-                      key={`ellipsis-${pageNumber}`}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                return null;
-              })}
-
-              <button
-                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 cursor-pointer"
-              >
-                <span className="sr-only">Sonraki</span>
-                <ChevronRight className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-          </nav>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            paginate={paginate}
+          />
         </div>
       </div>
 
@@ -1717,21 +1262,11 @@ const ContentManagement = () => {
         </div>
       )}
       {/* içeriği ön izleme */}
-      {previewUrl && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50">
-          <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
-          <iframe
-            src={previewUrl}
-            className="w-full h-96 border border-gray-300 rounded-lg"
-          />
-          <button
-            onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer"
-          >
-            Kapat
-          </button>
-        </div>
-      )}
+      <PreviewModal
+        previewUrl={previewUrl}
+        onClose={() => setPreviewUrl("")}
+      />
+
       <Toast />
       <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
         <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
