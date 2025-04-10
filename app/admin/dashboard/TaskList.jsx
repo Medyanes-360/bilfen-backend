@@ -28,9 +28,10 @@ const TaskList = () => {
   const fetchTasks = async () => {
     try {
       const fetchedTasks = await getAPI("/api/tasks");
-      setTasks(fetchedTasks);
+      setTasks(fetchedTasks || []); // Set to empty array if null or undefined
     } catch (error) {
       console.error("Error fetching tasks:", error);
+      setTasks([]);
     }
   };
 
@@ -192,6 +193,10 @@ const TaskList = () => {
 
   // Filtreleme
   const getFilteredTasks = () => {
+    if (!Array.isArray(tasks)) {
+      return []; // return empty array if tasks is undefined or not an array
+    }
+
     let filtered = tasks;
   
     // ✅ Eğer "tamamlananları göster" işaretliyse → sadece tamamlanmış görevleri göster
@@ -313,7 +318,7 @@ const TaskList = () => {
         className="divide-y divide-gray-200 overflow-y-auto"
         style={{ maxHeight: "400px", minHeight: "400px" }}>
         {filteredTasks?.length > 0 ? (
-          filteredTasks?.map((task) => (
+          filteredTasks.map((task) => (
             <li key={task.id} className="px-6 py-4 hover:bg-gray-50">
               <div className="flex items-start">
                 <div className="flex-shrink-0 pt-1">
