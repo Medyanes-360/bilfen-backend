@@ -74,6 +74,7 @@ export async function GET(request) {
 
   try {
     const where = Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
+    console.log
 
     const contents = await prisma.content.findMany({
       where,
