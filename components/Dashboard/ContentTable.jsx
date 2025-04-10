@@ -128,11 +128,11 @@ const ContentTable = ({
                 </td>
                 <td className="px-3 py-2 text-xs">
                   {missingFields.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 max-w-full sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px]">
                       {missingFields.map((field, i) => (
                         <span
                           key={i}
-                          className="bg-red-400 text-white px-2 py-[2px] rounded-full text-[11px]"
+                          className="bg-red-400 text-white text-xs px-2 py-1 rounded-md shadow-sm inline-flex items-center whitespace-nowrap"
                         >
                           {field}
                         </span>
@@ -145,20 +145,19 @@ const ContentTable = ({
                 <td className="px-3 py-2">
                   <div className="flex items-center space-x-2">
                     <button
-                      className={`px-2 py-1 text-xs rounded ${
-                        isPublished
+                      className={`px-2 py-1 text-xs rounded ${isPublished
                           ? "bg-blue-500 text-white"
                           : isPublishDisabled
-                          ? "bg-neutral-200 text-gray-400 cursor-not-allowed"
-                          : "bg-green-500 text-white"
-                      }`}
+                            ? "bg-neutral-200 text-gray-400 cursor-not-allowed"
+                            : "bg-green-500 text-white"
+                        }`}
                       disabled={!isPublished && isPublishDisabled}
                       title={
                         isPublished
                           ? "Yayından Kaldır"
                           : isPublishDisabled
-                          ? `Eksik Alanlar: ${missingFields.join(", ")}`
-                          : "Yayınla"
+                            ? `Eksik Alanlar: ${missingFields.join(", ")}`
+                            : "Yayınla"
                       }
                       onClick={() => {
                         if (isPublished) {
