@@ -266,7 +266,7 @@ const TaskList = () => {
           <h3 className="text-lg font-medium text-gray-900">Görevler</h3>
           <button
             onClick={openNewTaskModal}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+            className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
           >
             <PlusCircle size={16} className="mr-1" />
             Yeni Görev
@@ -281,7 +281,7 @@ const TaskList = () => {
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md ${activeFilter === button.value
+                className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${activeFilter === button.value
                     ? "bg-indigo-100 text-indigo-700"
                     : "text-gray-700 hover:bg-gray-100"
                   }`}
@@ -319,7 +319,7 @@ const TaskList = () => {
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center ${task?.status === "Tamamlandı"
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${task?.status === "Tamamlandı"
                         ? "bg-green-500 border-green-500 text-white"
                         : "border-gray-400"
                       }`}
@@ -378,14 +378,14 @@ const TaskList = () => {
                       <div className="mt-3 flex space-x-2">
                         <button
                           onClick={() => editTask(task)}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+                          className="inline-flex items-center px-2 py-1 cursor-pointer text-xs font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                         >
                           <Edit size={12} className="mr-1" />
                           Düzenle
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
+                          className="inline-flex items-center cursor-pointer px-2 py-1 text-xs font-medium rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
                         >
                           <Trash2 size={12} className="mr-1" />
                           Sil
@@ -425,7 +425,7 @@ const TaskList = () => {
               </h3>
               <button
                 onClick={() => setShowTaskModal(false)}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 hover:text-gray-500 cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -534,13 +534,13 @@ const TaskList = () => {
                   <button
                     type="button"
                     onClick={() => setShowTaskModal(false)}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="inline-flex items-center cursor-pointer px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="inline-flex items-center px-4 cursor-pointer py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                   >
                     {editingTask ? "Güncelle" : "Ekle"}
                   </button>
