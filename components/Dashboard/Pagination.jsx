@@ -28,7 +28,7 @@ const Pagination = ({ currentPage, totalPages, paginate }) => {
               <button
                 key={pageNumber}
                 onClick={() => paginate(pageNumber)}
-                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${
+                className={`cursor-pointer relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${
                   isCurrentPage
                     ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
                     : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
