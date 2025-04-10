@@ -26,7 +26,7 @@ const HeaderActions = ({
             <button
               key={type.id}
               onClick={() => setActiveType(type.id)}
-              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition ${
+              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition cursor-pointer ${
                 activeType === type.id
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -47,7 +47,7 @@ const HeaderActions = ({
                 openModal();
               }
             }}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {bulkMode ? (
               <>
@@ -67,7 +67,7 @@ const HeaderActions = ({
               setBulkMode(!bulkMode);
               setSelectedItems([]);
             }}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {bulkMode ? (
               <>
