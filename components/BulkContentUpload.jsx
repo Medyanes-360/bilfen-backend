@@ -110,17 +110,17 @@ export default function BulkContentUpload({ setIsModalOpen, setContents }) {
           </div>
         </div>
 
-        <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse">
+        <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse gap-3">
           <button
             type="submit"
-            className="w-full sm:w-auto inline-flex justify-center rounded-md px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700"
+            className="cursor-pointer w-full sm:w-auto inline-flex justify-center rounded-md px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700"
             disabled={isUploading}
           >
             {isUploading ? 'Yükleniyor...' : 'Yükle'}
           </button>
           <button
             type="button"
-            className="mt-3 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 hover:bg-gray-50"
+            className="cursor-pointer mt-3 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-gray-700 hover:bg-gray-50"
             onClick={() => setIsModalOpen(false)}
           >
             Kapat

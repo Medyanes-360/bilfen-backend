@@ -69,7 +69,7 @@ const Header = ({ toggleSidebar }) => {
     <header className="sticky top-0 z-20 flex-shrink-0 flex h-16 bg-white shadow">
       <button
         type="button"
-        className="px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
+        className="cursor-pointer px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
         onClick={toggleSidebar}>
         <span className="sr-only">Menüyü Aç</span>
         <Menu size={24} />
@@ -210,7 +210,7 @@ const Header = ({ toggleSidebar }) => {
           <div className="relative">
             <button
               type="button"
-              className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="cursor-pointer max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               id="user-menu"
               onClick={() => {
                 setShowUserMenu(!showUserMenu);

@@ -168,7 +168,7 @@ function RegisterForm() {
           <button
             type="button"
             onClick={() => setRole("STUDENT")}
-            className={`px-4 py-2 rounded-md transition-colors ${
+            className={`px-4 py-2 rounded-md transition-colors cursor-pointer  ${
               role === "STUDENT"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -178,7 +178,7 @@ function RegisterForm() {
           <button
             type="button"
             onClick={() => setRole("TEACHER")}
-            className={`px-4 py-2 rounded-md transition-colors ${
+            className={`px-4 py-2 rounded-md transition-colors cursor-pointer  ${
               role === "TEACHER"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -441,7 +441,7 @@ function RegisterForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 rounded-md text-white font-medium ${
+            className={`w-full py-2 px-4 rounded-md text-white font-medium cursor-pointer  ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

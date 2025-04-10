@@ -27,7 +27,7 @@ const Sidebar = ({ mobile = false, closeSidebar = null }) => {
     <div className="flex flex-col h-full border-r border-gray-200 bg-white">
       <div className="flex items-center justify-between px-4 py-6 bg-indigo-600">
         {mobile && (
-          <button onClick={closeSidebar} className="text-white">
+          <button onClick={closeSidebar} className="text-white cursor-pointer ">
             <X size={24} />
           </button>
         )}

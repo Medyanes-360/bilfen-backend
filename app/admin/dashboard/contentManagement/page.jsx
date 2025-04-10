@@ -972,7 +972,7 @@ const ContentManagement = () => {
                     );
                     setFilterMenuOpen(!filterMenuOpen);
                   }}
-                  className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="cursor-pointer flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
                 >
                   {hasActiveFilters() ? (
                     <FilterX className="w-5 h-5 mr-2 text-indigo-600 cursor-pointer" />
@@ -1511,7 +1511,7 @@ const ContentManagement = () => {
                     <button
                       key={pageNumber}
                       onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 ${isCurrentPage
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium focus:z-10 cursor-pointer  ${isCurrentPage
                         ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
                         : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                         }`}>
@@ -1726,7 +1726,7 @@ const ContentManagement = () => {
           />
           <button
             onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600"
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer"
           >
             Kapat
           </button>
