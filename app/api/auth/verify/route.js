@@ -19,6 +19,7 @@ export async function POST(request) {
           name: user.name,
           tc: user.tcNo,
           role: "teacher",
+          branch: user.branch,
         });
       }
     }
@@ -36,10 +37,14 @@ export async function POST(request) {
           name: user.name,
           tc: user.tcNo,
           role: "student",
+          grade: user.grade,
         });
       }
     }
-    return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+    return NextResponse.json(
+      { message: "Invalid credentials" },
+      { status: 401 }
+    );
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

@@ -16,7 +16,7 @@ export async function GET(request) {
   }
 
   // Direkt eşleşen string alanlar
-  const stringFields = ['type', 'ageGroup']
+  const stringFields = ['type', 'ageGroup', 'branch', 'grade']
   stringFields.forEach((field) => {
     if (params[field]) {
       where[field] = params[field]
