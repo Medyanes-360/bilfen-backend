@@ -16,7 +16,8 @@ import {
   BookOpen,
   Users,
   MonitorPlay,
-  X
+  X,
+  Volume2
 } from 'lucide-react';
 import { getAPI } from '@/services/fetchAPI';
 const TimelineComponent = () => {
@@ -498,7 +499,7 @@ const TimelineComponent = () => {
                       className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                     >
                       <Play size={14} className="mr-1" />
-                      İzle
+                     Görüntüle
                     </button>
                     <button
                       onClick={() => handleViewDetails(content)}

@@ -1,17 +1,7 @@
 "use client";
 
 // Header.jsx - Güncellenmiş üst başlık bileşeni
-import {
-  Bell,
-  Calendar,
-  HelpCircle,
-  Lightbulb,
-  Menu,
-  MessageCircle,
-  Search,
-  Settings,
-  User,
-} from "lucide-react";
+import { Bell, Calendar, Lightbulb, Menu, MessageCircle, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -27,8 +17,6 @@ const Header = ({ toggleSidebar }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
 
   const { data: session } = useSession();
-
-  console.log(session, "session");
 
   const currentDate = new Date().toLocaleDateString("tr-TR", {
     weekday: "long",
