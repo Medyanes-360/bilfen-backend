@@ -194,18 +194,17 @@ const TaskList = () => {
   const getFilteredTasks = () => {
     let filtered = tasks;
   
-    // ✅ Eğer "tamamlananları göster" işaretliyse → sadece tamamlanmış görevleri göster
-    if (showCompleted) {
-      filtered = filtered.filter((task) => task.isCompleted === true);
-    }
+    // ✅ Toggle mantığına göre sadece tamamlananlar veya tamamlanmayanlar
+    filtered = filtered.filter((task) => task.isCompleted === showCompleted);
   
-    // ✅ Eğer aktif öncelik filtresi seçiliyse uygula
+    // ✅ Öncelik filtresi aktifse onu da uygula
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
   
     return filtered;
   };
+  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -303,7 +302,7 @@ const TaskList = () => {
               htmlFor="showCompleted"
               className="ml-2 text-sm text-gray-700"
             >
-              Tamamlananları göster
+                {showCompleted ? "Tamamlananlar gösteriliyor" : "Tamamlananları göster"}
             </label>
           </div>
         </div>
