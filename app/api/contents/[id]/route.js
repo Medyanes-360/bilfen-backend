@@ -1,4 +1,5 @@
 import prisma from "@/prisma/prismadb";
+import { formatContent } from "@/utils/formatContent";
 import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
@@ -12,7 +13,10 @@ export async function GET(request, { params }) {
     if (!content) {
       return NextResponse.json({ error: "İçerik bulunamadı" }, { status: 404 });
     }
-    return NextResponse.json(content);
+
+    const formattedContents = formatContent(content);
+    
+    return NextResponse.json(formattedContents);
   } catch (error) {
     console.error("İçerik alınırken hata oluştu:", error);
     return NextResponse.json({ error: "İçerik alınırken bir hata oluştu" }, { status: 500 });
