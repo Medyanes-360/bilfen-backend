@@ -68,7 +68,7 @@ export async function PUT(request, { params }) {
       ...(data.type && { type: data.type }),
       ...(data.branch && { branch: data.branch }),
       ...(data.ageGroup && { ageGroup: data.ageGroup }),
-      
+      ...date,
       ...(data.isActive !== undefined && { isActive: data.isActive }),
       ...(data.fileUrl !== undefined && { fileUrl: data.fileUrl }),
       ...(data.description !== undefined && { description: data.description }),
