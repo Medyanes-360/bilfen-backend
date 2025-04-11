@@ -1,18 +1,8 @@
 import prisma from "@/prisma/prismadb";
-import { formatDate } from "@/utils/formatDate";
+import { formatContent } from "@/utils/formatContent";
 import { NextResponse } from "next/server";
 
 // Yardımcı Fonksiyonlar
-
-const formatContent = (content) => ({
-  ...content,
-  publishDateStudent: formatDate(content.publishDateStudent),
-  publishDateTeacher: formatDate(content.publishDateTeacher),
-  endDateStudent: formatDate(content.endDateStudent),
-  endDateTeacher: formatDate(content.endDateTeacher),
-  createdAt: formatDate(content.createdAt),
-  updatedAt: formatDate(content.updatedAt),
-});
 
 const buildWhereClause = (params) => {
   const where = {};

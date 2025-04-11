@@ -1,33 +1,33 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import {
   PutObjectCommand,
   CreateMultipartUploadCommand,
   UploadPartCommand,
   CompleteMultipartUploadCommand,
-  AbortMultipartUploadCommand
-} from '@aws-sdk/client-s3';
-import { v4 as uuidv4 } from 'uuid';
-import { r2 } from '@/lib/r2'; // R2 client burada tanımlı
-import slugify from 'slugify';
+  AbortMultipartUploadCommand,
+} from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "uuid";
+import { r2 } from "@/lib/r2"; // R2 client burada tanımlı
+import slugify from "slugify";
 
 const MULTIPART_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
-export async function POST(req) {
-  const formData = await req.formData();
-  const file = formData.get('file');
+export async function POST(request) {
+  const formData = await request.formData();
+  const file = formData.get("file");
 
-  if (!file || typeof file.name !== 'string') {
-    return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
+  if (!file || typeof file.name !== "string") {
+    return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const originalName = file.name.split('.').slice(0, -1).join('.') || 'dosya';
-  const extension = file.name.split('.').pop() || 'bin';
+  const originalName = file.name.split(".").slice(0, -1).join(".") || "dosya";
+  const extension = file.name.split(".").pop() || "bin";
   const safeName = slugify(originalName, { lower: true, strict: true });
   const fileName = `${safeName}-${uuidv4()}.${extension}`;
-  const key = `uploads/${fileName}`;
+  const key = `/uploads/${fileName}`;
 
   let uploadId;
 
@@ -37,16 +37,18 @@ export async function POST(req) {
         Bucket: process.env.R2_BUCKET_NAME,
         Key: key,
         Body: buffer,
-        ContentType: file.type || 'application/octet-stream',
+        ContentType: file.type || "application/octet-stream",
       });
 
       await r2.send(command);
     } else {
-      const create = await r2.send(new CreateMultipartUploadCommand({
-        Bucket: process.env.R2_BUCKET_NAME,
-        Key: key,
-        ContentType: file.type || 'application/octet-stream',
-      }));
+      const create = await r2.send(
+        new CreateMultipartUploadCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: key,
+          ContentType: file.type || "application/octet-stream",
+        })
+      );
 
       uploadId = create.UploadId;
 
@@ -59,13 +61,15 @@ export async function POST(req) {
         const end = Math.min(start + partSize, buffer.length);
         const partBuffer = buffer.subarray(start, end);
 
-        const uploadPart = await r2.send(new UploadPartCommand({
-          Bucket: process.env.R2_BUCKET_NAME,
-          Key: key,
-          UploadId: uploadId,
-          PartNumber: i + 1,
-          Body: partBuffer,
-        }));
+        const uploadPart = await r2.send(
+          new UploadPartCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: key,
+            UploadId: uploadId,
+            PartNumber: i + 1,
+            Body: partBuffer,
+          })
+        );
 
         parts.push({
           ETag: uploadPart.ETag,
@@ -73,36 +77,42 @@ export async function POST(req) {
         });
       }
 
-      await r2.send(new CompleteMultipartUploadCommand({
-        Bucket: process.env.R2_BUCKET_NAME,
-        Key: key,
-        UploadId: uploadId,
-        MultipartUpload: { Parts: parts },
-      }));
+      await r2.send(
+        new CompleteMultipartUploadCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: key,
+          UploadId: uploadId,
+          MultipartUpload: { Parts: parts },
+        })
+      );
     }
 
     return NextResponse.json({
-      status: 'success',
+      status: "success",
       file: {
         fileName,
         url: key,
         size: buffer.length,
       },
     });
-
   } catch (err) {
     if (uploadId) {
-      await r2.send(new AbortMultipartUploadCommand({
-        Bucket: process.env.R2_BUCKET_NAME,
-        Key: key,
-        UploadId: uploadId,
-      }));
+      await r2.send(
+        new AbortMultipartUploadCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: key,
+          UploadId: uploadId,
+        })
+      );
     }
 
-    return NextResponse.json({
-      status: 'error',
-      message: err.message,
-      file: file.name,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: "error",
+        message: err.message,
+        file: file.name,
+      },
+      { status: 500 }
+    );
   }
 }
