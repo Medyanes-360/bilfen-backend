@@ -17,9 +17,9 @@ import {
   Users,
   MonitorPlay,
   X,
-  Volume2
-} from 'lucide-react';
-import { getAPI } from '@/services/fetchAPI';
+  Volume2,
+} from "lucide-react";
+import { getAPI } from "@/services/fetchAPI";
 const TimelineComponent = () => {
   // 11 günlük bir zaman aralığı oluştur (5 gün önce, bugün, 5 gün sonra)
   const createTimelineData = (centerDate) => {
@@ -477,46 +477,17 @@ const TimelineComponent = () => {
                   )} px-4 py-3 flex items-center justify-between`}
                 >
                   {/* İçerik Başlığı */}
-                  <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
-  <div className="flex items-center">
-    {getContentTypeIcon(content.type)}
-    <span className="ml-2 font-semibold">{getContentTypeName(content.type)}</span>
-  </div>
-</div>
-
-
-                  {/* İçerik Bilgileri */}
-                  <div className="p-4">
-                    <h4 className="text-base font-semibold text-gray-900 mb-2">{content.title}</h4>
-
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(content.ageGroup)}`}>
-                        <Users size={12} className="mr-1" />
-                        {content.ageGroup}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
-                        <BookOpen size={12} className="mr-1" />
-                        {getBranchLabel(content.branch)}
+                  <div
+                    className={`${getTypeClass(
+                      content.type
+                    )} px-4 py-3 flex items-center justify-between`}
+                  >
+                    <div className="flex items-center">
+                      {getContentTypeIcon(content.type)}
+                      <span className="ml-2 font-semibold">
+                        {getContentTypeName(content.type)}
                       </span>
                     </div>
-                  </div>
-
-                  {/* Butonlar */}
-                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <button
-                      onClick={() => viewContent(content.id)}
-                      className="inline-flex cursor-pointer items-center text-xs font-medium text-blue-600 hover:text-blue-800"
-                    >
-                      <Play size={14} className="mr-1" />
-                     Görüntüle
-                    </button>
-                    <button
-                      onClick={() => handleViewDetails(content)}
-                      className="inline-flex cursor-pointer items-center text-xs font-medium text-gray-600 hover:text-gray-800"
-                    >
-                      <FileText size={14} className="mr-1" />
-                      Detaylar
-                    </button>
                   </div>
                 </div>
 
@@ -945,7 +916,8 @@ const TimelineComponent = () => {
           />
           <button
             onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer">
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer"
+          >
             Kapat
           </button>
         </div>
