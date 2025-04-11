@@ -24,7 +24,6 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const data = await request.json();
 
-    console.log(data)
 
     // publishDateStudent varsa Date'e çevir, yoksa dokunma
     const publishDateStudent = data.publishDateStudent
@@ -34,6 +33,22 @@ export async function PUT(request, { params }) {
     const publishDateTeacher = data.publishDateTeacher
       ? new Date(data.publishDateTeacher)
       : undefined;
+
+      const endDateStudent = data.endDateStudent
+      ? new Date(data.publishDateStudent)
+      : undefined;
+
+    const endDateTeacher = data.endDateTeacher
+      ? new Date(data.publishDateTeacher)
+      : undefined;
+
+
+  const date = {
+    ...(publishDateStudent && { publishDateStudent }),
+    ...(publishDateTeacher && { publishDateTeacher }),
+    ...(endDateStudent && { endDateStudent }),
+    ...(endDateTeacher && {endDateTeacher}),
+  }
 
     // Etiketleri diziye dönüştür
     let tags = [];
@@ -49,8 +64,7 @@ export async function PUT(request, { params }) {
       ...(data.type && { type: data.type }),
       ...(data.branch && { branch: data.branch }),
       ...(data.ageGroup && { ageGroup: data.ageGroup }),
-      ...(publishDateStudent && { publishDateStudent }),
-      ...(publishDateTeacher && { publishDateTeacher }),
+      
       ...(data.isActive !== undefined && { isActive: data.isActive }),
       ...(data.fileUrl !== undefined && { fileUrl: data.fileUrl }),
       ...(data.description !== undefined && { description: data.description }),
