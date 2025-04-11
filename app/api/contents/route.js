@@ -1,8 +1,8 @@
 import prisma from "@/prisma/prismadb";
+import { formatDate } from "@/utils/formatDate";
 import { NextResponse } from "next/server";
 
 // Yardımcı Fonksiyonlar
-const formatDate = (date) => date?.toISOString().split("T")[0];
 
 const formatContent = (content) => ({
   ...content,
