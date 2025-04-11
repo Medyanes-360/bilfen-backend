@@ -27,7 +27,7 @@ export async function POST(request) {
   const extension = file.name.split(".").pop() || "bin";
   const safeName = slugify(originalName, { lower: true, strict: true });
   const fileName = `${safeName}-${uuidv4()}.${extension}`;
-  const key = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${fileName}`;
+  const key = `/uploads/${fileName}`;
 
   let uploadId;
 
