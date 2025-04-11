@@ -39,11 +39,11 @@ export async function PUT(request, { params }) {
       : undefined;
 
       const endDateStudent = data.endDateStudent
-      ? new Date(data.publishDateStudent)
+      ? new Date(data.endDateStudent)
       : undefined;
 
     const endDateTeacher = data.endDateTeacher
-      ? new Date(data.publishDateTeacher)
+      ? new Date(data.endDateTeacher)
       : undefined;
 
 
