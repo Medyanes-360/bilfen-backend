@@ -24,6 +24,8 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const data = await request.json();
 
+    console.log(data)
+
     // publishDateStudent varsa Date'e çevir, yoksa dokunma
     const publishDateStudent = data.publishDateStudent
       ? new Date(data.publishDateStudent)
@@ -54,6 +56,7 @@ export async function PUT(request, { params }) {
       ...(data.description !== undefined && { description: data.description }),
       ...(data.tags && { tags }),
       ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+      ...(data.isCompleted !== undefined && { isCompleted: data.isCompleted }),
     };
 
     await prisma.content.update({

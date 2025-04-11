@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 // TimelineComponent.jsx - Tam responsive ve işlevsel zaman çizelgesi bileşeni
-import React, { useState, useEffect, useRef } from 'react';
-import { timelineDays, dailyContents } from './mockData';
+import React, { useState, useEffect, useRef } from "react";
+import { timelineDays, dailyContents } from "./mockData";
 import {
   Calendar,
   ChevronLeft,
@@ -30,7 +30,7 @@ const TimelineComponent = () => {
       const date = new Date(baseDate);
       date.setDate(baseDate.getDate() + i);
 
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = date.toISOString().split("T")[0];
 
       result.push({
         date: dateString,
@@ -40,7 +40,7 @@ const TimelineComponent = () => {
 
     return result;
   };
-  
+
   const [contents, setContents] = useState([]);
   useEffect(() => {
     const fetchContents = async () => {
@@ -58,19 +58,23 @@ const TimelineComponent = () => {
   }, []);
 
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    today.toISOString().split("T")[0]
+  );
   const [days, setDays] = useState(createTimelineData(today));
 
   const [dailyContent, setDailyContent] = useState([]);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
   const [showAddContentModal, setShowAddContentModal] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    type: 'Video',
-    ageGroup: '4-5 yaş',
-    branch: 'Okul Öncesi',
-    duration: '00:15:00',
-    description: ''
+    title: "",
+    type: "Video",
+    ageGroup: "4-5 yaş",
+    branch: "Okul Öncesi",
+    duration: "00:15:00",
+    description: "",
   });
 
   const [previewUrl, setPreviewUrl] = useState("");
@@ -82,8 +86,8 @@ const TimelineComponent = () => {
       setWindowWidth(window.innerWidth);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Seçilen güne göre içerikleri yükle
@@ -112,14 +116,17 @@ const TimelineComponent = () => {
   useEffect(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const selectedElement = container.querySelector('.date-selected');
+      const selectedElement = container.querySelector(".date-selected");
 
       if (selectedElement) {
         // Seçili elementi ortala
-        const centerPosition = selectedElement.offsetLeft - (container.offsetWidth / 2) + (selectedElement.offsetWidth / 2);
+        const centerPosition =
+          selectedElement.offsetLeft -
+          container.offsetWidth / 2 +
+          selectedElement.offsetWidth / 2;
         container.scrollTo({
           left: centerPosition,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     }
@@ -133,7 +140,9 @@ const TimelineComponent = () => {
       console.log("Dosya çağırılıyor:", content.fileUrl);
 
       const fileUrl = content.fileUrl;
-      const response = await fetch(`/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`);
+      const response = await fetch(
+        `/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`
+      );
 
       console.log("API Yanıt:", response);
 
@@ -156,18 +165,22 @@ const TimelineComponent = () => {
   };
   // Tarih formatı
   const formatDate = (dateString) => {
-    if (!dateString) return { day: '', month: '', weekday: '', full: '' };
+    if (!dateString) return { day: "", month: "", weekday: "", full: "" };
 
     const date = new Date(dateString);
     const day = date.getDate();
-    const month = date.toLocaleString('tr-TR', { month: 'short' });
-    const weekday = date.toLocaleString('tr-TR', { weekday: 'short' });
+    const month = date.toLocaleString("tr-TR", { month: "short" });
+    const weekday = date.toLocaleString("tr-TR", { weekday: "short" });
 
     return {
       day,
       month,
       weekday,
-      full: date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      full: date.toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
     };
   };
 
@@ -177,86 +190,82 @@ const TimelineComponent = () => {
     setDays(createTimelineData(newDate)); // yeni timeline'ı oluştur
   };
 
-
   // Gün stili
   const getDayStyle = (day) => {
     if (day.date === selectedDate) {
-      return 'date-selected bg-orange-500 text-white border-orange-500 shadow-lg';
+      return "date-selected bg-orange-500 text-white border-orange-500 shadow-lg";
     } else if (day.isPast) {
-      return 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200';
+      return "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200";
     } else {
-      return 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100';
+      return "bg-green-50 text-green-700 border-green-100 hover:bg-green-100";
     }
   };
 
   // İçerik türü ikonları
   const getContentTypeIcon = (type) => {
-    const label = getContentTypeName(type); 
-  
+    const label = getContentTypeName(type);
+
     switch (label) {
-      case 'Video':
+      case "Video":
         return <MonitorPlay size={20} />;
-      case 'Döküman':
+      case "Döküman":
         return <FileText size={20} />;
-      case 'Oyun':
+      case "Oyun":
         return <Gamepad2 size={20} />;
-      case 'Etkileşimli':
-      case 'Etkileşimli İçerik':
+      case "Etkileşimli":
+      case "Etkileşimli İçerik":
         return <Layers size={20} />;
-      case 'Ses':
-        return <Volume2 size={20} />;
+      // case 'Ses':
+      //   return <Volume2 size={20} />;
       default:
         return <Calendar size={20} />;
     }
   };
-  
 
   // İçerik türü sınıfları
   const getTypeClass = (type) => {
     const label = getContentTypeName(type); // "document" -> "Döküman"
-  
+
     switch (label) {
-      case 'Video':
-        return 'bg-blue-100 text-blue-700';
-      case 'Döküman':
-        return 'bg-orange-100 text-orange-700';
-      case 'Oyun':
-        return 'bg-purple-100 text-purple-700';
-      case 'Etkileşimli':
-      case 'Etkileşimli İçerik': // opsiyonel olarak eklenebilir
-        return 'bg-green-100 text-green-700';
-      case 'Ses':
-        return 'bg-pink-100 text-pink-700';
+      case "Video":
+        return "bg-blue-100 text-blue-700";
+      case "Döküman":
+        return "bg-orange-100 text-orange-700";
+      case "Oyun":
+        return "bg-purple-100 text-purple-700";
+      case "Etkileşimli":
+      case "Etkileşimli İçerik": // opsiyonel olarak eklenebilir
+        return "bg-green-100 text-green-700";
+      case "Ses":
+        return "bg-pink-100 text-pink-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
-  
 
   // Yaş grubu renkleri
   const getAgeGroupColor = (ageGroup) => {
     switch (ageGroup) {
-      case '3-4 yaş':
-        return 'bg-yellow-100 text-yellow-800';
-      case '4-5 yaş':
-        return 'bg-blue-100 text-blue-800';
-      case '5-6 yaş':
-        return 'bg-green-100 text-green-800';
-      case '6-7 yaş':
-        return 'bg-purple-100 text-purple-800';
+      case "3-4 yaş":
+        return "bg-yellow-100 text-yellow-800";
+      case "4-5 yaş":
+        return "bg-blue-100 text-blue-800";
+      case "5-6 yaş":
+        return "bg-green-100 text-green-800";
+      case "6-7 yaş":
+        return "bg-purple-100 text-purple-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
-  
-  const [modalType, setModalType] = useState(null);
 
+  const [modalType, setModalType] = useState(null);
 
   const [currentContent, setCurrentContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const filteredDailyContent = dailyContent?.filter(
-    item => item.isPublished && !item.isWeeklyContent
-  ) || [];
+  const filteredDailyContent =
+    dailyContent?.filter((item) => item.isPublished && !item.isWeeklyContent) ||
+    [];
   const contentTypes = [
     { id: "all", name: "Tümü" },
     { id: "video", name: "Video" },
@@ -280,16 +289,12 @@ const TimelineComponent = () => {
     const matched = branchOptions.find((b) => b.value === value);
     return matched ? matched.label : value;
   };
-    
-  
-
-
 
   // İçerik detaylarını görüntüleme
   const handleViewDetails = (content) => {
     setCurrentContent(content);
     setIsModalOpen(true);
-    setModalType('details');
+    setModalType("details");
 
     // Gerçek uygulamada detay sayfasına yönlendirilecek
   };
@@ -298,7 +303,7 @@ const TimelineComponent = () => {
   const goToPreviousWeek = () => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() - 7); // 7 gün geri al
-    setSelectedDate(newDate.toISOString().split('T')[0]);
+    setSelectedDate(newDate.toISOString().split("T")[0]);
     setDays(createTimelineData(newDate));
   };
 
@@ -306,26 +311,26 @@ const TimelineComponent = () => {
   const goToNextWeek = () => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + 7); // 7 gün ileri al
-    setSelectedDate(newDate.toISOString().split('T')[0]);
+    setSelectedDate(newDate.toISOString().split("T")[0]);
     setDays(createTimelineData(newDate));
   };
 
   // Bugüne git
   const goToToday = () => {
-    setSelectedDate(today.toISOString().split('T')[0]);
+    setSelectedDate(today.toISOString().split("T")[0]);
     setDays(createTimelineData(today));
   };
 
   // İçerik ekleme modalını aç
   const openAddContentModal = () => {
     setFormData({
-      title: '',
-      type: 'Video',
-      ageGroup: '4-5 yaş',
-      branch: 'Okul Öncesi',
+      title: "",
+      type: "Video",
+      ageGroup: "4-5 yaş",
+      branch: "Okul Öncesi",
       publishDate: selectedDate,
-      duration: '00:15:00',
-      description: ''
+      duration: "00:15:00",
+      description: "",
     });
     setShowAddContentModal(true);
   };
@@ -335,7 +340,7 @@ const TimelineComponent = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -348,29 +353,28 @@ const TimelineComponent = () => {
     // Günlük içeriklere yeni içeriği ekle
     const newContent = {
       ...formData,
-      id: `new-${Date.now()}` // Gerçek uygulamada arka uçtan gelecek
+      id: `new-${Date.now()}`, // Gerçek uygulamada arka uçtan gelecek
     };
 
     setDailyContent([...dailyContent, newContent]);
     setShowAddContentModal(false);
   };
 
-  
-
   return (
     <div className="w-full bg-white shadow rounded-xl overflow-hidden">
       {/* Başlık ve Kontroller */}
       <div className="flex flex-col sm:flex-row items-center justify-between p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Zaman Çizelgesi</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-0">
+          Zaman Çizelgesi
+        </h2>
         <div className="flex items-center gap-2">
           <button
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             onClick={goToPreviousWeek}
           >
             <ChevronLeft size={20} className="text-gray-700" />
           </button>
           <div className="relative items-center">
-
             <input
               type="date"
               value={selectedDate}
@@ -381,15 +385,12 @@ const TimelineComponent = () => {
                 setSelectedDate(formatted);
                 setDays(createTimelineData(newDate));
               }}
-              className="pl-3 pr-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-orange-500 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+              className="cursor-pointer pl-3 pr-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-orange-500 hover:bg-gray-50 transition-colors duration-200"
             />
           </div>
 
-
-
-
           <button
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             onClick={goToNextWeek}
           >
             <ChevronRight size={20} className="text-gray-700" />
@@ -408,8 +409,8 @@ const TimelineComponent = () => {
           ref={scrollContainerRef}
           className="flex px-2 py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
           style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
           <div className="flex mx-auto space-x-2 md:space-x-3">
@@ -419,13 +420,21 @@ const TimelineComponent = () => {
                 <div
                   key={day.date}
                   onClick={() => selectDay(day.date)}
-                  className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer snap-center ${getDayStyle(day)
-                    } ${day.date === selectedDate ? 'ring-2 ring-offset-2 ring-orange-300 date-selected' : ''}
+                  className={`flex-shrink-0 rounded-lg border w-16 sm:w-20 md:w-24 py-2 px-1 flex flex-col items-center cursor-pointer snap-center ${getDayStyle(
+                    day
+                  )} ${
+                    day.date === selectedDate
+                      ? "ring-2 ring-offset-2 ring-orange-300 date-selected"
+                      : ""
+                  }
 `} // <-- BURAYA 'date-selected' classı
                 >
-
-                  <div className="text-xs font-medium uppercase">{date.weekday}</div>
-                  <div className="my-1 text-xl sm:text-2xl font-bold">{date.day}</div>
+                  <div className="text-xs font-medium uppercase">
+                    {date.weekday}
+                  </div>
+                  <div className="my-1 text-xl sm:text-2xl font-bold">
+                    {date.day}
+                  </div>
                   <div className="text-xs">{date.month}</div>
                 </div>
               );
@@ -441,9 +450,7 @@ const TimelineComponent = () => {
             <Calendar size={18} className="mr-2 text-orange-500" />
             {formatDate(selectedDate).full}
           </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            Planlanmış İçerikler
-          </p>
+          <p className="text-sm text-gray-500 mt-1">Planlanmış İçerikler</p>
         </div>
         {/* <button
           onClick={openAddContentModal}
@@ -456,16 +463,18 @@ const TimelineComponent = () => {
 
       {/* İçerik Kartları - Responsive Grid */}
       <div className="p-4 md:p-6">
-
-
-        {filteredDailyContent.length > 0
-
-          ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredDailyContent.map((content, index) => (
+        {filteredDailyContent.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredDailyContent.map((content, index) => (
+              <div
+                key={content.id}
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+              >
+                {/* İçerik Başlığı */}
                 <div
-                  key={content.id}
-                  className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+                  className={`${getTypeClass(
+                    content.type
+                  )} px-4 py-3 flex items-center justify-between`}
                 >
                   {/* İçerik Başlığı */}
                   <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
@@ -496,40 +505,83 @@ const TimelineComponent = () => {
                   <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
                     <button
                       onClick={() => viewContent(content.id)}
-                      className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                      className="inline-flex cursor-pointer items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                     >
                       <Play size={14} className="mr-1" />
                      Görüntüle
                     </button>
                     <button
                       onClick={() => handleViewDetails(content)}
-                      className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
+                      className="inline-flex cursor-pointer items-center text-xs font-medium text-gray-600 hover:text-gray-800"
                     >
                       <FileText size={14} className="mr-1" />
                       Detaylar
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="w-full py-8 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Calendar size={24} className="text-gray-400" />
+
+                {/* İçerik Bilgileri */}
+                <div className="p-4">
+                  <h4 className="text-base font-semibold text-gray-900 mb-2">
+                    {content.title}
+                  </h4>
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(
+                        content.ageGroup
+                      )}`}
+                    >
+                      <Users size={12} className="mr-1" />
+                      {content.ageGroup}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                      <BookOpen size={12} className="mr-1" />
+                      {getBranchLabel(content.branch)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Butonlar */}
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
+                  <button
+                    onClick={() => viewContent(content.id)}
+                    className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    <Play size={14} className="mr-1" />
+                    İzle
+                  </button>
+                  <button
+                    onClick={() => handleViewDetails(content)}
+                    className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
+                  >
+                    <FileText size={14} className="mr-1" />
+                    Detaylar
+                  </button>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">İçerik Bulunamadı</h3>
-              <p className="text-sm text-gray-500 max-w-md mb-4">
-                Bu tarihe ait planlanmış içerik bulunmamaktadır.
-              </p>
-              {/* <button
+            ))}
+          </div>
+        ) : (
+          <div className="w-full py-8 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Calendar size={24} className="text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              İçerik Bulunamadı
+            </h3>
+            <p className="text-sm text-gray-500 max-w-md mb-4">
+              Bu tarihe ait planlanmış içerik bulunmamaktadır.
+            </p>
+            {/* <button
               onClick={openAddContentModal}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors duration-200"
             >
               <Plus size={16} className="mr-2" />
               İçerik Planla
             </button> */}
-            </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Alt Bilgi */}
@@ -561,11 +613,19 @@ const TimelineComponent = () => {
       {showAddContentModal && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-transparent backdrop-blur-sm"></div>
             </div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
 
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <form onSubmit={handleSubmit}>
@@ -577,7 +637,10 @@ const TimelineComponent = () => {
                   <div className="grid grid-cols-1 gap-4">
                     {/* İçerik Başlığı */}
                     <div>
-                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="title"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         İçerik Başlığı
                       </label>
                       <input
@@ -593,7 +656,10 @@ const TimelineComponent = () => {
 
                     {/* İçerik Türü */}
                     <div>
-                      <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="type"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         İçerik Türü
                       </label>
                       <select
@@ -606,20 +672,25 @@ const TimelineComponent = () => {
                         <option value="Video">Video</option>
                         <option value="Doküman">Doküman</option>
                         <option value="Oyun">Oyun</option>
-                        <option value="Etkileşimli İçerik">Etkileşimli İçerik</option>
+                        <option value="Etkileşimli İçerik">
+                          Etkileşimli İçerik
+                        </option>
                       </select>
                     </div>
 
                     {/* Kategori */}
                     <div>
-                      <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="category"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Kategori
                       </label>
                       <input
                         type="text"
                         name="category"
                         id="category"
-                        value={formData.category || ''}
+                        value={formData.category || ""}
                         onChange={handleInputChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       />
@@ -627,7 +698,10 @@ const TimelineComponent = () => {
 
                     {/* Branş */}
                     <div>
-                      <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="branch"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Branş
                       </label>
                       <select
@@ -648,7 +722,10 @@ const TimelineComponent = () => {
 
                     {/* Yaş Grubu */}
                     <div>
-                      <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="ageGroup"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Yaş Grubu
                       </label>
                       <select
@@ -668,28 +745,34 @@ const TimelineComponent = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Öğrenci Yayın Tarihi */}
                       <div>
-                        <label htmlFor="studentPublishDate" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="studentPublishDate"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Öğrenci Yayın Tarihi
                         </label>
                         <input
                           type="date"
                           name="studentPublishDate"
                           id="studentPublishDate"
-                          value={formData.studentPublishDate || ''}
+                          value={formData.studentPublishDate || ""}
                           onChange={handleInputChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
                       {/* Öğretmen Yayın Tarihi */}
                       <div>
-                        <label htmlFor="teacherPublishDate" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="teacherPublishDate"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Öğretmen Yayın Tarihi
                         </label>
                         <input
                           type="date"
                           name="teacherPublishDate"
                           id="teacherPublishDate"
-                          value={formData.teacherPublishDate || ''}
+                          value={formData.teacherPublishDate || ""}
                           onChange={handleInputChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
@@ -707,46 +790,62 @@ const TimelineComponent = () => {
                           onChange={(e) => {
                             handleInputChange({
                               target: {
-                                name: 'isWeeklyContent',
-                                value: e.target.checked
-                              }
+                                name: "isWeeklyContent",
+                                value: e.target.checked,
+                              },
                             });
-                            const dateContainer = document.getElementById('weeklyContentDateContainer');
+                            const dateContainer = document.getElementById(
+                              "weeklyContentDateContainer"
+                            );
                             if (dateContainer) {
-                              dateContainer.classList.toggle('hidden', !e.target.checked);
+                              dateContainer.classList.toggle(
+                                "hidden",
+                                !e.target.checked
+                              );
                             }
                           }}
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                         />
-                        <span className="text-sm font-medium text-gray-700">Ek Materyal</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Ek Materyal
+                        </span>
                       </label>
                     </div>
 
                     {/* Ek Materyal Tarih Aralığı */}
-                    <div id="weeklyContentDateContainer" className={formData.isWeeklyContent ? '' : 'hidden'}>
+                    <div
+                      id="weeklyContentDateContainer"
+                      className={formData.isWeeklyContent ? "" : "hidden"}
+                    >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="weeklyContentStartDate" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="weeklyContentStartDate"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Başlangıç Tarihi
                           </label>
                           <input
                             type="date"
                             name="weeklyContentStartDate"
                             id="weeklyContentStartDate"
-                            value={formData.weeklyContentStartDate || ''}
+                            value={formData.weeklyContentStartDate || ""}
                             onChange={handleInputChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
                         </div>
                         <div>
-                          <label htmlFor="weeklyContentEndDate" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="weeklyContentEndDate"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Bitiş Tarihi
                           </label>
                           <input
                             type="date"
                             name="weeklyContentEndDate"
                             id="weeklyContentEndDate"
-                            value={formData.weeklyContentEndDate || ''}
+                            value={formData.weeklyContentEndDate || ""}
                             onChange={handleInputChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
@@ -756,7 +855,10 @@ const TimelineComponent = () => {
 
                     {/* Açıklama */}
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Açıklama
                       </label>
                       <textarea
@@ -775,14 +877,14 @@ const TimelineComponent = () => {
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="w-full cursor-pointer inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     İçerik Ekle
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddContentModal(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="mt-3 w-full cursor-pointer inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     İptal
                   </button>
@@ -799,28 +901,34 @@ const TimelineComponent = () => {
             {/* X Butonu */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition"
+              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition cursor-pointer"
             >
               <X size={24} />
             </button>
 
             {/* Başlık */}
-            <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">{currentContent.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
+              {currentContent.title}
+            </h2>
             <div className="w-16 h-1 bg-orange-400 mx-auto rounded-full mb-6" />
             <div className="divide-y divide-gray-200 space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
               {/* İçerik Bilgileri */}
               {[
-                ['Tür', getContentTypeName(currentContent.type)],
-                ['Yaş Grubu', currentContent.ageGroup],
-                ['Branş', getBranchLabel(currentContent.branch)],
-                ['Açıklama', currentContent.description || 'Açıklama bulunmuyor.'],
+                ["Tür", getContentTypeName(currentContent.type)],
+                ["Yaş Grubu", currentContent.ageGroup],
+                ["Branş", getBranchLabel(currentContent.branch)],
+                [
+                  "Açıklama",
+                  currentContent.description || "Açıklama bulunmuyor.",
+                ],
               ].map(([label, value], i) => (
                 <div key={i} className="pt-4 first:pt-0 flex items-start">
-                  <span className="w-32 font-semibold text-gray-900 shrink-0">{label}:</span>
+                  <span className="w-32 font-semibold text-gray-900 shrink-0">
+                    {label}:
+                  </span>
                   <span className="text-gray-700">{value}</span>
                 </div>
               ))}
-
             </div>
           </div>
         </div>
@@ -831,16 +939,17 @@ const TimelineComponent = () => {
       {previewUrl && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white p-4 shadow-lg rounded-lg z-50">
           <h3 className="text-xl font-semibold mb-2">Önizleme</h3>
-          <iframe src={previewUrl} className="w-full h-96 border border-gray-300 rounded-lg" />
+          <iframe
+            src={previewUrl}
+            className="w-full h-96 border border-gray-300 rounded-lg"
+          />
           <button
             onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600">
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer">
             Kapat
           </button>
         </div>
       )}
-
-
 
       {/* Scrollbar Gizleme için CSS */}
       <style jsx global>{`

@@ -145,7 +145,7 @@ const ContentTable = ({
                 <td className="px-3 py-2">
                   <div className="flex items-center space-x-2">
                     <button
-                      className={`px-2 py-1 text-xs rounded ${isPublished
+                      className={`px-2 py-1 text-xs rounded cursor-pointer ${isPublished
                           ? "bg-blue-500 text-white"
                           : isPublishDisabled
                             ? "bg-neutral-200 text-gray-400 cursor-not-allowed"
@@ -170,13 +170,13 @@ const ContentTable = ({
                       {isPublished ? "Kaldır" : "Yayınla"}
                     </button>
                     <button onClick={() => viewContent(content.id)}>
-                      <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" />
+                      <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer " />
                     </button>
                     <button onClick={() => openModal(content)}>
-                      <Edit className="w-4 h-4 text-indigo-500 hover:text-indigo-700" />
+                      <Edit className="w-4 h-4 text-indigo-500 hover:text-indigo-700 cursor-pointer" />
                     </button>
                     <button onClick={() => handleDeleteContent(content.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500 hover:text-red-700" />
+                      <Trash2 className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer" />
                     </button>
                   </div>
                 </td>

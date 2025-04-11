@@ -1,24 +1,32 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  const response = NextResponse.next();
+  const origin = request.headers.get("origin") || "";
 
-  // CORS headers
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With"
-  );
-  response.headers.set("Access-Control-Allow-Credentials", "true");
+  // You can add domain checks here if needed
+  const allowedOrigin = origin.includes("localhost")
+    ? "http://localhost:3000"
+    : "https://bilfen-frontend.vercel.app";
 
-  // OPTIONS request için özel yanıt
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true",
+  });
+
+  // Handle preflight requests (OPTIONS)
   if (request.method === "OPTIONS") {
     return new NextResponse(null, {
       status: 204,
-      headers: response.headers,
+      headers,
     });
   }
+
+  const response = NextResponse.next();
+  headers.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
 
   return response;
 }
