@@ -114,7 +114,7 @@ export default function Settings() {
             </select>
             <button
               onClick={handleTeacherConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition cursor-pointer "
             >
               Onayla
             </button>

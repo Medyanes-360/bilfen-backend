@@ -17,8 +17,9 @@ import {
   Users,
   MonitorPlay,
   X,
-} from "lucide-react";
-import { getAPI } from "@/services/fetchAPI";
+  Volume2
+} from 'lucide-react';
+import { getAPI } from '@/services/fetchAPI';
 const TimelineComponent = () => {
   // 11 günlük bir zaman aralığı oluştur (5 gün önce, bugün, 5 gün sonra)
   const createTimelineData = (centerDate) => {
@@ -368,7 +369,7 @@ const TimelineComponent = () => {
         </h2>
         <div className="flex items-center gap-2">
           <button
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             onClick={goToPreviousWeek}
           >
             <ChevronLeft size={20} className="text-gray-700" />
@@ -384,12 +385,12 @@ const TimelineComponent = () => {
                 setSelectedDate(formatted);
                 setDays(createTimelineData(newDate));
               }}
-              className="pl-3 pr-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-orange-500 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+              className="cursor-pointer pl-3 pr-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-orange-500 hover:bg-gray-50 transition-colors duration-200"
             />
           </div>
 
           <button
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             onClick={goToNextWeek}
           >
             <ChevronRight size={20} className="text-gray-700" />
@@ -475,11 +476,47 @@ const TimelineComponent = () => {
                     content.type
                   )} px-4 py-3 flex items-center justify-between`}
                 >
-                  <div className="flex items-center">
-                    {getContentTypeIcon(content.type)}
-                    <span className="ml-2 font-semibold">
-                      {getContentTypeName(content.type)}
-                    </span>
+                  {/* İçerik Başlığı */}
+                  <div className={`${getTypeClass(content.type)} px-4 py-3 flex items-center justify-between`}>
+  <div className="flex items-center">
+    {getContentTypeIcon(content.type)}
+    <span className="ml-2 font-semibold">{getContentTypeName(content.type)}</span>
+  </div>
+</div>
+
+
+                  {/* İçerik Bilgileri */}
+                  <div className="p-4">
+                    <h4 className="text-base font-semibold text-gray-900 mb-2">{content.title}</h4>
+
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getAgeGroupColor(content.ageGroup)}`}>
+                        <Users size={12} className="mr-1" />
+                        {content.ageGroup}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                        <BookOpen size={12} className="mr-1" />
+                        {getBranchLabel(content.branch)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Butonlar */}
+                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
+                    <button
+                      onClick={() => viewContent(content.id)}
+                      className="inline-flex cursor-pointer items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                    >
+                      <Play size={14} className="mr-1" />
+                     Görüntüle
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(content)}
+                      className="inline-flex cursor-pointer items-center text-xs font-medium text-gray-600 hover:text-gray-800"
+                    >
+                      <FileText size={14} className="mr-1" />
+                      Detaylar
+                    </button>
                   </div>
                 </div>
 
@@ -840,14 +877,14 @@ const TimelineComponent = () => {
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="w-full cursor-pointer inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     İçerik Ekle
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddContentModal(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="mt-3 w-full cursor-pointer inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     İptal
                   </button>
@@ -864,7 +901,7 @@ const TimelineComponent = () => {
             {/* X Butonu */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition"
+              className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition cursor-pointer"
             >
               <X size={24} />
             </button>
@@ -908,8 +945,7 @@ const TimelineComponent = () => {
           />
           <button
             onClick={() => setPreviewUrl("")}
-            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600"
-          >
+            className="absolute top-2 right-2 bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 cursor-pointer">
             Kapat
           </button>
         </div>

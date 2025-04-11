@@ -1,101 +1,106 @@
 import prisma from "@/prisma/prismadb";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
-  const url = new URL(request.url)
-  const params = Object.fromEntries(url.searchParams.entries())
+// Yardımcı Fonksiyonlar
+const formatDate = (date) => date?.toISOString().split("T")[0];
 
-  const where = {}
+const formatContent = (content) => ({
+  ...content,
+  publishDateStudent: formatDate(content.publishDateStudent),
+  publishDateTeacher: formatDate(content.publishDateTeacher),
+  endDateStudent: formatDate(content.endDateStudent),
+  endDateTeacher: formatDate(content.endDateTeacher),
+  createdAt: formatDate(content.createdAt),
+  updatedAt: formatDate(content.updatedAt),
+});
 
-  // String içinde arama
+const buildWhereClause = (params) => {
+  const where = {};
+
   if (params.title) {
     where.title = {
       contains: params.title,
-      mode: 'insensitive',
-    }
+      mode: "insensitive",
+    };
   }
 
-  // Direkt eşleşen string alanlar
-  const stringFields = ['type', 'ageGroup', 'branch', 'grade']
-  stringFields.forEach((field) => {
+  ["type", "ageGroup", "branch", "grade"].forEach((field) => {
     if (params[field]) {
-      where[field] = params[field]
+      where[field] = params[field];
     }
-  })
+  });
 
-  // Boolean alanlar (ekstra olarak isExtra ve isCompleted eklendi)
-  const booleanFields = ['isActive', 'isPublished', 'isWeeklyContent', 'isExtra', 'isCompleted']
-  booleanFields.forEach((field) => {
+  ["isActive", "isPublished", "isWeeklyContent", "isExtra", "isCompleted"].forEach((field) => {
     if (params[field] !== undefined) {
-      where[field] = params[field] === 'true'
+      where[field] = params[field] === "true";
     }
-  })
+  });
 
-  // Tarih aralığı filtreleme
   if (params.startDate && params.endDate) {
     where.createdAt = {
       gte: new Date(params.startDate),
       lte: new Date(params.endDate),
-    }
+    };
   }
 
-  // Tek tag filtreleme
   if (params.tag) {
     where.tags = {
       has: params.tag,
-    }
+    };
   }
 
-  // Branch filtresi
-  if (params.branch) {
-    where.branch = params.branch
+  return where;
+};
+
+const parseDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+};
+
+const calculateIsActive = (publishStudent, publishTeacher, providedValue) => {
+  if (providedValue !== undefined) return providedValue;
+  if (publishStudent && publishTeacher) {
+    const now = new Date();
+    return now >= publishStudent && now >= publishTeacher;
   }
+  return false;
+};
+
+// GET Method
+export async function GET(request) {
+  const url = new URL(request.url);
+  const params = Object.fromEntries(url.searchParams.entries());
 
   try {
+    const where = Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
+    console.log
+
     const contents = await prisma.content.findMany({
       where,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
-    })
+    });
 
-    const formattedContents = contents.map((content) => ({
-      ...content,
-      publishDateStudent: content.publishDateStudent?.toISOString().split('T')[0],
-      publishDateTeacher: content.publishDateTeacher?.toISOString().split('T')[0],
-      endDateStudent: content.endDateStudent?.toISOString().split('T')[0],
-      endDateTeacher: content.endDateTeacher?.toISOString().split('T')[0],
-      createdAt: content.createdAt?.toISOString().split('T')[0],
-      updatedAt: content.updatedAt?.toISOString().split('T')[0],
-    }))
+    const formattedContents = contents.map(formatContent);
 
-    return NextResponse.json(formattedContents)
+    return NextResponse.json(formattedContents, { status: 200 });
   } catch (error) {
-    console.error('İçerikler alınırken hata oluştu:', error)
+    console.error("İçerikler alınırken hata oluştu:", error);
     return NextResponse.json(
-      { error: 'İçerikler alınırken bir hata oluştu' },
+      { error: "İçerikler alınırken bir hata oluştu" },
       { status: 500 }
-    )
+    );
   }
 }
 
-
+// POST Method
 export async function POST(request) {
   try {
     const data = await request.json();
-
     const now = new Date();
-    const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 gün milisaniye
-
-    // isWeeklyContent kontrolü
-    const isWeeklyContent = data.isWeeklyContent || false;
-
-    // tarih dönüşümü
-    const parseDate = (value) => {
-      if (!value) return null;
-      const date = new Date(value);
-      return isNaN(date.getTime()) ? null : date;
-    };
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
     const publishDateStudent = parseDate(data.publishDateStudent);
     const publishDateTeacher = parseDate(data.publishDateTeacher);
@@ -112,14 +117,11 @@ export async function POST(request) {
       ? new Date(publishDateTeacher.getTime() + oneWeek)
       : null;
 
-    let tags = [];
-    if (data.tags) {
-      if (Array.isArray(data.tags)) {
-        tags = data.tags;
-      } else if (typeof data.tags === "string") {
-        tags = data.tags.split(",").map((tag) => tag.trim());
-      }
-    }
+    const tags = Array.isArray(data.tags)
+      ? data.tags
+      : typeof data.tags === "string"
+      ? data.tags.split(",").map((tag) => tag.trim())
+      : [];
 
     const content = await prisma.content.create({
       data: {
@@ -131,18 +133,13 @@ export async function POST(request) {
         publishDateTeacher,
         endDateStudent,
         endDateTeacher,
-        isActive:
-          data.isActive !== undefined
-            ? data.isActive
-            : publishDateStudent && publishDateTeacher
-            ? now >= publishDateStudent && now >= publishDateTeacher
-            : false,
+        isActive: calculateIsActive(publishDateStudent, publishDateTeacher, data.isActive),
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
-        isWeeklyContent: data.isWeeklyContent,
-        weeklyContentStartDate: data.weeklyContentStartDate,
-        weeklyContentEndDate: data.weeklyContentEndDate,
+        isWeeklyContent: data.isWeeklyContent || false,
+        weeklyContentStartDate: parseDate(data.weeklyContentStartDate),
+        weeklyContentEndDate: parseDate(data.weeklyContentEndDate),
       },
     });
 
