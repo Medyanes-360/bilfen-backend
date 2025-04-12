@@ -95,11 +95,7 @@ const TimelineComponent = () => {
     if (selectedDate) {
       const filtered = contents.filter((item) => {
         const studentDate = item.publishDateStudent;
-        const teacherDate = item.publishDateTeacher;
-        return (
-          (studentDate && studentDate === selectedDate) ||
-          (teacherDate && teacherDate === selectedDate)
-        );
+        return studentDate && studentDate === selectedDate;
       });
 
       if (filtered.length > 0) {
@@ -517,14 +513,14 @@ const TimelineComponent = () => {
                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
                   <button
                     onClick={() => viewContent(content.id)}
-                    className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                    className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
                   >
                     <Play size={14} className="mr-1" />
-                    İzle
+                    Görüntüle
                   </button>
                   <button
                     onClick={() => handleViewDetails(content)}
-                    className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800"
+                    className="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
                     <FileText size={14} className="mr-1" />
                     Detaylar
