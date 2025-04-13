@@ -23,6 +23,7 @@ const TaskList = () => {
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showCompletedOnly, setShowCompletedOnly] = useState(false);
 
   // Fetch tasks from the API
   const fetchTasks = async () => {
@@ -193,18 +194,17 @@ const TaskList = () => {
   // Filtreleme
   const getFilteredTasks = () => {
     let filtered = tasks;
-  
-    // ✅ Toggle mantığına göre sadece tamamlananlar veya tamamlanmayanlar
-    filtered = filtered.filter((task) => task.isCompleted === showCompleted);
-  
-    // ✅ Öncelik filtresi aktifse onu da uygula
+
+    if (showCompletedOnly) {
+      filtered = filtered.filter((task) => task.isCompleted);
+    }
+
     if (activeFilter !== "Tümü") {
       filtered = filtered.filter((task) => task.priority === activeFilter);
     }
-  
+
     return filtered;
   };
-  
 
   // Öncelik renkleri
   const getPriorityClass = (priority) => {
@@ -280,10 +280,11 @@ const TaskList = () => {
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${activeFilter === button.value
+                className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
+                  activeFilter === button.value
                     ? "bg-indigo-100 text-indigo-700"
                     : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                }`}
               >
                 {button.label}
               </button>
@@ -291,18 +292,19 @@ const TaskList = () => {
           </div>
           <div className="flex items-center">
             <input
-              id="showCompleted"
-              name="showCompleted"
+              id="showCompletedOnly"
               type="checkbox"
-              checked={showCompleted}
-              onChange={(e) => setShowCompleted(e.target.checked)}
+              checked={showCompletedOnly}
+              onChange={(e) => setShowCompletedOnly(e.target.checked)}
               className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
             />
             <label
-              htmlFor="showCompleted"
+              htmlFor="showCompletedOnly"
               className="ml-2 text-sm text-gray-700"
             >
-                {showCompleted ? "Tamamlananlar gösteriliyor" : "Tamamlananları göster"}
+              {showCompletedOnly
+                ? "Sadece tamamlananlar gösteriliyor"
+                : "Tamamlananları göster"}
             </label>
           </div>
         </div>
@@ -310,7 +312,8 @@ const TaskList = () => {
 
       <ul
         className="divide-y divide-gray-200 overflow-y-auto"
-        style={{ maxHeight: "400px", minHeight: "400px" }}>
+        style={{ maxHeight: "400px", minHeight: "400px" }}
+      >
         {filteredTasks?.length > 0 ? (
           filteredTasks?.map((task) => (
             <li key={task.id} className="px-6 py-4 hover:bg-gray-50">
@@ -318,10 +321,11 @@ const TaskList = () => {
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${task?.status === "Tamamlandı"
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${
+                      task?.status === "Tamamlandı"
                         ? "bg-green-500 border-green-500 text-white"
                         : "border-gray-400"
-                      }`}
+                    }`}
                   >
                     {task?.status === "Tamamlandı" && <Check size={12} />}
                   </button>
@@ -333,10 +337,11 @@ const TaskList = () => {
                       className="flex items-center cursor-pointer"
                     >
                       <h4
-                        className={`text-sm font-medium ${task.status === "Tamamlandı"
+                        className={`text-sm font-medium ${
+                          task.status === "Tamamlandı"
                             ? "text-gray-500 line-through"
                             : "text-gray-900"
-                          }`}
+                        }`}
                       >
                         {task?.title}
                       </h4>
