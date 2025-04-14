@@ -5,17 +5,22 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const accessSettings = await prisma.accessSettings.findFirst();
-    const now = new Date();
 
-    const days = accessSettings?.studentDays ?? 0;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Bugünün sonu
+
     const startDate = new Date();
-    startDate.setDate(now.getDate() - days);
+    startDate.setDate(today.getDate() - (accessSettings?.studentDays ?? 0));
+    startDate.setHours(0, 0, 0, 0); // Başlangıç günü: 00:00
+
+    console.log("startDate:", startDate.toISOString());
+    console.log("today:", today.toISOString());
 
     const contents = await prisma.content.findMany({
       where: {
         publishDateStudent: {
           gte: startDate,
-          lte: now,
+          lte: today,
         },
         isActive: true,
         isPublished: true,
