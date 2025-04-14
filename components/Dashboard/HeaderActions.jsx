@@ -17,26 +17,28 @@ const HeaderActions = ({
       <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
         Son Eklenen İçerikler
       </h1>
-  
+
       {/* Filtreler + Butonlar */}
       <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3 sm:items-center sm:justify-between flex-wrap">
         {/* İçerik Türü Filtreleri */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-          {contentTypes.map((type) => (
-            <button
-              key={type.id}
-              onClick={() => setActiveType(type.id)}
-              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition cursor-pointer ${
-                activeType === type.id
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {type.name}
-            </button>
-          ))}
+        <div className="w-full overflow-x-auto whitespace-nowrap hide-scrollbar pb-2 sm:pb-0">
+          <div className="flex items-center gap-2">
+            {contentTypes.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => setActiveType(type.id)}
+                className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition cursor-pointer ${activeType === type.id
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+              >
+                {type.name}
+              </button>
+            ))}
+          </div>
         </div>
-  
+
+
         {/* Yeni İçerik ve Toplu Butonları */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
@@ -61,7 +63,7 @@ const HeaderActions = ({
               </>
             )}
           </button>
-  
+
           <button
             onClick={() => {
               setBulkMode(!bulkMode);
@@ -85,8 +87,8 @@ const HeaderActions = ({
       </div>
     </div>
   );
-  
-  
+
+
 };
 
 export default HeaderActions;
