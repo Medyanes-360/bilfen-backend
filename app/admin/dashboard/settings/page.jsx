@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import useAccessSettings from "@/lib/store/useAccessSettings";
+import { ArrowLeft } from "lucide-react";
 
 const dayOptions = [1, 3, 5, 7, 9, 12];
 
@@ -57,12 +58,12 @@ export default function Settings() {
   if (!isLoaded) return <p>Yükleniyor...</p>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative px-4">
+    <div className="min-h-screen flex items-center justify-center relative px-4 py-4">
       <Link
         href="/"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition"
+        className="absolute top-3 left-6   text-gray-700  rounded-lg hover:text-gray-600 transition"
       >
-        Geri
+       <ArrowLeft/>
       </Link>
 
       <div className="bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full">
