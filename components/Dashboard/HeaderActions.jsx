@@ -17,9 +17,9 @@ const HeaderActions = ({
       <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
         Son Eklenen İçerikler
       </h1>
-
+  
       {/* Filtreler + Butonlar */}
-      <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+      <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3 sm:items-center sm:justify-between flex-wrap">
         {/* İçerik Türü Filtreleri */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
           {contentTypes.map((type) => (
@@ -36,9 +36,9 @@ const HeaderActions = ({
             </button>
           ))}
         </div>
-
+  
         {/* Yeni İçerik ve Toplu Butonları */}
-        <div className="ml-auto sm:ml-0 flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => {
               if (bulkMode) {
@@ -47,7 +47,7 @@ const HeaderActions = ({
                 openModal();
               }
             }}
-            className="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {bulkMode ? (
               <>
@@ -61,13 +61,13 @@ const HeaderActions = ({
               </>
             )}
           </button>
-
+  
           <button
             onClick={() => {
               setBulkMode(!bulkMode);
               setSelectedItems([]);
             }}
-            className="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {bulkMode ? (
               <>
@@ -85,6 +85,8 @@ const HeaderActions = ({
       </div>
     </div>
   );
+  
+  
 };
 
 export default HeaderActions;
