@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function EditStudent({ params }) {
   const router = useRouter();
@@ -113,19 +114,18 @@ export default function EditStudent({ params }) {
     <div className="relative">
       <Link
         href="/students"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition">
-        Geri
+        className="inline-flex items-center text-gray-700 hover:text-gray-600 transition mb-2">
+        <ArrowLeft  className="ml-3 mt-3" />
       </Link>
-      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-16">
+      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-2 md:mt-16 ">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Öğrenci Bilgilerini Düzenle
         </h1>
 
         {message.text && (
           <div
-            className={`p-4 mb-6 rounded-md ${
-              message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-            }`}>
+            className={`p-4 mb-6 rounded-md ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              }`}>
             {message.text}
           </div>
         )}
@@ -274,9 +274,8 @@ export default function EditStudent({ params }) {
             <button
               type="submit"
               disabled={submitting}
-              className={`px-4 py-2 rounded-md text-white font-medium ${
-                submitting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-              }`}>
+              className={`px-4 py-2 rounded-md text-white font-medium ${submitting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}>
               {submitting ? "Güncelleniyor..." : "Güncelle"}
             </button>
           </div>
