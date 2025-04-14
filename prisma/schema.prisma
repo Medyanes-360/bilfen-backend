@@ -109,5 +109,6 @@ model AccessSettings {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   studentDays Int
   teacherDays Int
+  teacherDaysFuture Int  @default(0)
   updatedAt   DateTime @updatedAt
 }

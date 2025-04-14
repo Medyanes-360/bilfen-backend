@@ -10,18 +10,21 @@ export default function Settings() {
   const {
     studentDays,
     teacherDays,
+    teacherDaysFuture,
     isLoaded,
     fetchAccessSettings,
     setStudentDays,
     setTeacherDays,
+    setTeacherDaysFuture,
   } = useAccessSettings();
 
   const [tempStudentDays, setTempStudentDays] = useState(5);
   const [tempTeacherDays, setTempTeacherDays] = useState(7);
+  const [tempTeacherDaysFuture, setTempTeacherDaysFuture] = useState(0);
 
-  // ✅ Yeşil bilgi mesajlarını kontrol eden state'ler
   const [showStudentMessage, setShowStudentMessage] = useState(false);
   const [showTeacherMessage, setShowTeacherMessage] = useState(false);
+  const [showFutureMessage, setShowFutureMessage] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -29,24 +32,29 @@ export default function Settings() {
     } else {
       setTempStudentDays(studentDays);
       setTempTeacherDays(teacherDays);
+      setTempTeacherDaysFuture(teacherDaysFuture);
     }
-  }, [isLoaded, studentDays, teacherDays, fetchAccessSettings]);
+  }, [isLoaded, studentDays, teacherDays, teacherDaysFuture, fetchAccessSettings]);
 
   const handleStudentConfirm = () => {
     setStudentDays(tempStudentDays);
     setShowStudentMessage(true);
-    setTimeout(() => setShowStudentMessage(false), 4000); // 4 saniye sonra gizle
+    setTimeout(() => setShowStudentMessage(false), 4000);
   };
 
   const handleTeacherConfirm = () => {
     setTeacherDays(tempTeacherDays);
     setShowTeacherMessage(true);
-    setTimeout(() => setShowTeacherMessage(false), 4000); // 4 saniye sonra gizle
+    setTimeout(() => setShowTeacherMessage(false), 4000);
   };
 
-  if (!isLoaded) {
-    return <p>Yükleniyor...</p>;
-  }
+  const handleFutureConfirm = () => {
+    setTeacherDaysFuture(tempTeacherDaysFuture);
+    setShowFutureMessage(true);
+    setTimeout(() => setShowFutureMessage(false), 4000);
+  };
+
+  if (!isLoaded) return <p>Yükleniyor...</p>;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative px-4">
@@ -71,7 +79,7 @@ export default function Settings() {
             <select
               value={tempStudentDays}
               onChange={(e) => setTempStudentDays(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
             >
               {dayOptions.map((day) => (
                 <option key={day} value={day}>
@@ -81,13 +89,13 @@ export default function Settings() {
             </select>
             <button
               onClick={handleStudentConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition cursor-pointer"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
             >
               Onayla
             </button>
           </div>
           {showStudentMessage && (
-            <p className="mt-4 text-sm text-green-600 transition-opacity duration-500">
+            <p className="mt-4 text-sm text-green-600">
               Öğrenciler {studentDays} gün öncesine kadar geçmişi görüntüleyebilir.
             </p>
           )}
@@ -96,7 +104,7 @@ export default function Settings() {
         <hr className="my-6 border-gray-300" />
 
         {/* Öğretmen Ayarı */}
-        <div>
+        <div className="mb-6">
           <label className="block text-lg font-semibold text-gray-700 mb-2">
             Öğretmenler geçmişi kaç gün görmeli?
           </label>
@@ -104,7 +112,7 @@ export default function Settings() {
             <select
               value={tempTeacherDays}
               onChange={(e) => setTempTeacherDays(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
             >
               {dayOptions.map((day) => (
                 <option key={day} value={day}>
@@ -114,14 +122,47 @@ export default function Settings() {
             </select>
             <button
               onClick={handleTeacherConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition cursor-pointer "
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
             >
               Onayla
             </button>
           </div>
           {showTeacherMessage && (
-            <p className="mt-4 text-sm text-green-600 transition-opacity duration-500">
+            <p className="mt-4 text-sm text-green-600">
               Öğretmenler {teacherDays} gün öncesine kadar geçmişi görüntüleyebilir.
+            </p>
+          )}
+        </div>
+
+        <hr className="my-6 border-gray-300" />
+
+        {/* Geleceğe Dönük Öğretmen Ayarı */}
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-2">
+            Öğretmenler geleceği kaç gün öncesinden görebilmeli?
+          </label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <select
+              value={tempTeacherDaysFuture}
+              onChange={(e) => setTempTeacherDaysFuture(Number(e.target.value))}
+              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
+            >
+              {dayOptions.map((day) => (
+                <option key={day} value={day}>
+                  {day} gün
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleFutureConfirm}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
+            >
+              Onayla
+            </button>
+          </div>
+          {showFutureMessage && (
+            <p className="mt-4 text-sm text-green-600">
+              Öğretmenler {teacherDaysFuture} gün sonrasına kadar içerikleri görebilir.
             </p>
           )}
         </div>
