@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function EditTeacher({ params }) {
   const router = useRouter();
@@ -109,12 +110,12 @@ export default function EditTeacher({ params }) {
 
   return (
     <div className="relative">
-      <Link
+       <Link
         href="/teachers"
-        className="absolute top-6 left-6 border border-indigo-500 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition">
-        Geri
+       className="inline-flex items-center text-gray-700 hover:text-gray-600 transition mb-2">
+            <ArrowLeft  className="ml-3 mt-3" />
       </Link>
-      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-16">
+      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-2 md:mt-16">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Öğretmen Bilgilerini Düzenle
         </h1>

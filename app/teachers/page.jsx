@@ -91,12 +91,12 @@ export default function TeachersPage() {
         className="absolute top-2 left-2  text-gray-700  ">
         <ArrowLeft/>
       </Link>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Öğretmen Listesi</h1>
+          <h1 className="lg:text-2xl text-lg  font-bold text-gray-800">Öğretmen Listesi</h1>
           <Link
             href="/register?role=TEACHER"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium lg:py-1.5 lg:px-4 px-2 py-2 rounded-md transition-colors text-sm  lg:text-md">
             Yeni Öğretmen Ekle
           </Link>
         </div>
