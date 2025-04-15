@@ -885,78 +885,67 @@ const ContentManagement = () => {
           </div>
 
           {/* Sıralama ve Filtreler Butonları */}
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center justify-end gap-2 w-full">
             {/* Sıralama Butonu */}
             <div className="relative">
               <select
-                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
+                className="cursor-pointer appearance-none flex items-center w-full px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 value={sortOption}
                 onChange={(e) => handleSort(e.target.value)}
               >
                 <option value="title-asc">Başlık (A-Z)</option>
                 <option value="title-desc">Başlık (Z-A)</option>
               </select>
+
+              {/* Sağ oka benzeyen bir ikon simgesi */}
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
-            {/* Filtreleme Butonu ve Popup Menüsü */}
-            <div className="relative">
-              <div className="flex items-center gap-2 ">
+
+            {/* Filtreleme Butonu ve Modal Menüsü */}
+            <div className="relative max-w-full">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    console.log(
-                      "Filtre butonuna tıklandı, mevcut durum:",
-                      filterMenuOpen
-                    );
+                    console.log("Filtre butonuna tıklandı, mevcut durum:", filterMenuOpen);
                     setFilterMenuOpen(!filterMenuOpen);
                   }}
-                  className="cursor-pointer flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
+                  className="cursor-pointer flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap max-w-full overflow-hidden"
                 >
                   {hasActiveFilters() ? (
-                    <FilterX className="w-5 h-5 mr-2 text-indigo-600 cursor-pointer" />
+                    <FilterX className="w-5 h-5 mr-2 text-indigo-600" />
                   ) : (
-                    <Filter className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
+                    <Filter className="w-5 h-5 mr-2 text-gray-400" />
                   )}
                   Filtreler
                 </button>
-
-                {hasActiveFilters() && (
-                  <button
-                    onClick={() => {
-                      setAdvancedFilterOptions({
-                        ageGroup: "",
-                        status: "",
-                        publishDateStudent: "",
-                        publishDateTeacher: "",
-                      });
-                      setActiveType("all");
-                      setSearchTerm("");
-                    }}
-                    className="flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-                  >
-                    <FilterX className="w-5 h-5 mr-2 text-gray-400 cursor-pointer" />
-                    Temizle
-                  </button>
-                )}
               </div>
 
+              {/* Modal (Popup Menü) */}
               {filterMenuOpen && (
                 <div
                   ref={filterMenuRef}
-                  className="absolute right-0 top-12 mt-1 w-80 bg-white rounded-md shadow-lg z-50 border border-gray-200"
+                  className="absolute top-full mt-2 right-0 w-[85vw] sm:w-80 max-w-[90vw] sm:max-w-[20rem] bg-white rounded-md shadow-lg z-50 border border-gray-200"
                 >
                   <div className="p-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">
-                      Filtreleme Seçenekleri
-                    </h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">Filtreleme Seçenekleri</h3>
 
                     <div className="space-y-4">
                       {/* Yaş Grubu Filtresi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Yaş Grubu
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Yaş Grubu</label>
                         <select
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 cursor-pointer focus:ring-indigo-500 b"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 cursor-pointer focus:ring-indigo-500"
                           value={advancedFilterOptions.ageGroup}
                           onChange={(e) =>
                             setAdvancedFilterOptions({
@@ -973,46 +962,39 @@ const ContentManagement = () => {
                         </select>
                       </div>
 
-                      {/* Öğrenci Yayın Tarihi Filtresi */}
+                      {/* Öğrenci Yayın Tarihi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Öğrenci Yayın Tarihi
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                            value={advancedFilterOptions.publishDateStudent}
-                            onChange={(e) =>
-                              setAdvancedFilterOptions({
-                                ...advancedFilterOptions,
-                                publishDateStudent: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Öğrenci Yayın Tarihi</label>
+                        <input
+                          type="date"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                          value={advancedFilterOptions.publishDateStudent}
+                          onChange={(e) =>
+                            setAdvancedFilterOptions({
+                              ...advancedFilterOptions,
+                              publishDateStudent: e.target.value,
+                            })
+                          }
+                        />
                       </div>
 
-                      {/* Öğretmen Yayın Tarihi Filtresi */}
+                      {/* Öğretmen Yayın Tarihi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Öğretmen Yayın Tarihi
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="date"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                            value={advancedFilterOptions.publishDateTeacher}
-                            onChange={(e) =>
-                              setAdvancedFilterOptions({
-                                ...advancedFilterOptions,
-                                publishDateTeacher: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Öğretmen Yayın Tarihi</label>
+                        <input
+                          type="date"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                          value={advancedFilterOptions.publishDateTeacher}
+                          onChange={(e) =>
+                            setAdvancedFilterOptions({
+                              ...advancedFilterOptions,
+                              publishDateTeacher: e.target.value,
+                            })
+                          }
+                        />
                       </div>
-                      {/* Weekly Content (Ek Materyal) Checkbox */}
+
+                      {/* Ek Materyal Checkbox */}
                       <div className="flex items-center space-x-2">
                         <input
                           type="checkbox"
@@ -1031,19 +1013,19 @@ const ContentManagement = () => {
                         </label>
                       </div>
 
-
+                      {/* Butonlar */}
                       <div className="flex justify-end space-x-2 pt-2">
                         <button
                           className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
-                          onClick={() => {
+                          onClick={() =>
                             setAdvancedFilterOptions({
                               ageGroup: "",
                               status: "",
                               publishDateStudent: "",
                               publishDateTeacher: "",
                               weeklyContent: false,
-                            });
-                          }}
+                            })
+                          }
                         >
                           Temizle
                         </button>
@@ -1060,6 +1042,8 @@ const ContentManagement = () => {
               )}
             </div>
           </div>
+
+
         </div>
 
         {/* İçerik Tablosu */}
