@@ -106,9 +106,13 @@ model Task {
 }
 
 model AccessSettings {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentDays Int
-  teacherDays Int
-  teacherDaysFuture Int  @default(0)
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentDays        Int
+  teacherDays        Int
+  teacherDaysFuture  Int
+  studentDaysFuture  Int  @default(0)    
+  startedDate        DateTime? @default(now())
+  endDate            DateTime? @default(now())
+  updatedAt          DateTime  @updatedAt
 }
+

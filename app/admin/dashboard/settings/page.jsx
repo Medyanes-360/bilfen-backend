@@ -4,169 +4,132 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import useAccessSettings from "@/lib/store/useAccessSettings";
 import { ArrowLeft } from "lucide-react";
+import SettingSelect from "@/components/Settings/SettingSelect";
 
-const dayOptions = [1, 3, 5, 7, 9, 12];
-
-export default function Settings() {
+export default function SettingsPage() {
   const {
     studentDays,
+    studentDaysFuture,
     teacherDays,
     teacherDaysFuture,
+    startedDate,
+    endDate,
     isLoaded,
     fetchAccessSettings,
-    setStudentDays,
-    setTeacherDays,
-    setTeacherDaysFuture,
+    updateAllSettings,
   } = useAccessSettings();
 
   const [tempStudentDays, setTempStudentDays] = useState(5);
+  const [tempStudentDaysFuture, setTempStudentDaysFuture] = useState(0);
   const [tempTeacherDays, setTempTeacherDays] = useState(7);
   const [tempTeacherDaysFuture, setTempTeacherDaysFuture] = useState(0);
+  const [tempStartedDate, setTempStartedDate] = useState("");
+  const [tempEndDate, setTempEndDate] = useState("");
 
-  const [showStudentMessage, setShowStudentMessage] = useState(false);
-  const [showTeacherMessage, setShowTeacherMessage] = useState(false);
-  const [showFutureMessage, setShowFutureMessage] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) {
       fetchAccessSettings();
     } else {
       setTempStudentDays(studentDays);
+      setTempStudentDaysFuture(studentDaysFuture);
       setTempTeacherDays(teacherDays);
       setTempTeacherDaysFuture(teacherDaysFuture);
+      setTempStartedDate(startedDate?.split("T")[0] || "");
+      setTempEndDate(endDate?.split("T")[0] || "");
     }
-  }, [isLoaded, studentDays, teacherDays, teacherDaysFuture, fetchAccessSettings]);
+  }, [isLoaded]);
 
-  const handleStudentConfirm = () => {
-    setStudentDays(tempStudentDays);
-    setShowStudentMessage(true);
-    setTimeout(() => setShowStudentMessage(false), 4000);
+  const handleSubmit = async () => {
+    await updateAllSettings({
+      studentDays: tempStudentDays,
+      studentDaysFuture: tempStudentDaysFuture,
+      teacherDays: tempTeacherDays,
+      teacherDaysFuture: tempTeacherDaysFuture,
+      startedDate: tempStartedDate,
+      endDate: tempEndDate,
+    });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
   };
 
-  const handleTeacherConfirm = () => {
-    setTeacherDays(tempTeacherDays);
-    setShowTeacherMessage(true);
-    setTimeout(() => setShowTeacherMessage(false), 4000);
-  };
-
-  const handleFutureConfirm = () => {
-    setTeacherDaysFuture(tempTeacherDaysFuture);
-    setShowFutureMessage(true);
-    setTimeout(() => setShowFutureMessage(false), 4000);
-  };
-
-  if (!isLoaded) return <p>Yükleniyor...</p>;
+  if (!isLoaded) return <p className="text-center mt-10">Yükleniyor...</p>;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative px-4 py-4">
       <Link
         href="/"
-        className="absolute top-3 left-6   text-gray-700  rounded-lg hover:text-gray-600 transition"
+        className="absolute top-3 left-6 text-gray-700 hover:text-gray-600 transition"
       >
-       <ArrowLeft/>
+        <ArrowLeft />
       </Link>
 
-      <div className="bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full">
-        <h1 className="text-2xl font-bold text-center mb-8 text-gray-800">
+      <div className="bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full space-y-6">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
           Erişim Ayarları
         </h1>
 
-        {/* Öğrenci Ayarı */}
-        <div className="mb-6">
-          <label className="block text-lg font-semibold text-gray-700 mb-2">
-            Öğrenciler geçmişi kaç gün görmeli?
-          </label>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <select
-              value={tempStudentDays}
-              onChange={(e) => setTempStudentDays(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
-            >
-              {dayOptions.map((day) => (
-                <option key={day} value={day}>
-                  {day} gün
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleStudentConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
-            >
-              Onayla
-            </button>
-          </div>
-          {showStudentMessage && (
-            <p className="mt-4 text-sm text-green-600">
-              Öğrenciler {studentDays} gün öncesine kadar geçmişi görüntüleyebilir.
-            </p>
-          )}
-        </div>
+        <SettingSelect
+          label="Öğrenciler geçmişi kaç gün görmeli?"
+          value={tempStudentDays}
+          onChange={setTempStudentDays}
+        />
 
-        <hr className="my-6 border-gray-300" />
+        <SettingSelect
+          label="Öğrenciler geleceği kaç gün öncesinden görebilmeli?"
+          value={tempStudentDaysFuture}
+          onChange={setTempStudentDaysFuture}
+        />
 
-        {/* Öğretmen Ayarı */}
-        <div className="mb-6">
-          <label className="block text-lg font-semibold text-gray-700 mb-2">
-            Öğretmenler geçmişi kaç gün görmeli?
-          </label>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <select
-              value={tempTeacherDays}
-              onChange={(e) => setTempTeacherDays(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
-            >
-              {dayOptions.map((day) => (
-                <option key={day} value={day}>
-                  {day} gün
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleTeacherConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
-            >
-              Onayla
-            </button>
-          </div>
-          {showTeacherMessage && (
-            <p className="mt-4 text-sm text-green-600">
-              Öğretmenler {teacherDays} gün öncesine kadar geçmişi görüntüleyebilir.
-            </p>
-          )}
-        </div>
+        <SettingSelect
+          label="Öğretmenler geçmişi kaç gün görmeli?"
+          value={tempTeacherDays}
+          onChange={setTempTeacherDays}
+        />
 
-        <hr className="my-6 border-gray-300" />
+        <SettingSelect
+          label="Öğretmenler geleceği kaç gün öncesinden görebilmeli?"
+          value={tempTeacherDaysFuture}
+          onChange={setTempTeacherDaysFuture}
+        />
 
-        {/* Geleceğe Dönük Öğretmen Ayarı */}
         <div>
-          <label className="block text-lg font-semibold text-gray-700 mb-2">
-            Öğretmenler geleceği kaç gün öncesinden görebilmeli?
+          <label className="block text-sm font-semibold mb-1">
+            Erişim Başlangıç Tarihi:
           </label>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <select
-              value={tempTeacherDaysFuture}
-              onChange={(e) => setTempTeacherDaysFuture(Number(e.target.value))}
-              className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2"
-            >
-              {dayOptions.map((day) => (
-                <option key={day} value={day}>
-                  {day} gün
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleFutureConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
-            >
-              Onayla
-            </button>
-          </div>
-          {showFutureMessage && (
-            <p className="mt-4 text-sm text-green-600">
-              Öğretmenler {teacherDaysFuture} gün sonrasına kadar içerikleri görebilir.
-            </p>
-          )}
+          <input
+            type="date"
+            value={tempStartedDate}
+            onChange={(e) => setTempStartedDate(e.target.value)}
+            className="border rounded px-3 py-2 w-full"
+          />
         </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-1">
+            Erişim Bitiş Tarihi:
+          </label>
+          <input
+            type="date"
+            value={tempEndDate}
+            onChange={(e) => setTempEndDate(e.target.value)}
+            className="border rounded px-3 py-2 w-full"
+          />
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+        >
+          Tüm Ayarları Kaydet
+        </button>
+
+        {success && (
+          <p className="text-green-600 text-sm mt-2 text-center">
+            ✅ Ayarlar başarıyla güncellendi.
+          </p>
+        )}
       </div>
     </div>
   );
