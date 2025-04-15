@@ -281,29 +281,32 @@ const TaskList = () => {
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${activeFilter === button.value
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "text-gray-700 hover:bg-gray-100"
                   }`}
               >
                 {button.label}
               </button>
             ))}
           </div>
-          <div className="flex justify-end items-center space-x-2">
-            <label
-              htmlFor="showCompletedOnly"
-              className="text-sm text-gray-700 leading-5"
-            >
-              {showCompletedOnly ? "Tamamlananlar" : "Tamamlananları göster"}
-            </label>
-            <input
-              id="showCompletedOnly"
-              type="checkbox"
-              checked={showCompletedOnly}
-              onChange={(e) => setShowCompletedOnly(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-            />
+          <div className="flex justify-start sm:justify-end">
+            <div className="flex items-center space-x-2">
+              <input
+                id="showCompletedOnly"
+                type="checkbox"
+                checked={showCompletedOnly}
+                onChange={(e) => setShowCompletedOnly(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="showCompletedOnly"
+                className="text-sm text-gray-700 leading-5"
+              >
+                {showCompletedOnly ? "Tamamlananlar" : "Tamamlananları göster"}
+              </label>
+            </div>
           </div>
+
 
         </div>
       </div>
@@ -321,8 +324,8 @@ const TaskList = () => {
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
                     className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${task?.status === "Tamamlandı"
-                        ? "bg-green-500 border-green-500 text-white"
-                        : "border-gray-400"
+                      ? "bg-green-500 border-green-500 text-white"
+                      : "border-gray-400"
                       }`}
                   >
                     {task?.status === "Tamamlandı" && <Check size={12} />}
@@ -341,8 +344,8 @@ const TaskList = () => {
                       <div className="flex items-start md:items-center w-full min-w-0">
                         <h4
                           className={`text-sm font-medium break-words w-full min-w-0 ${task.status === "Tamamlandı"
-                              ? "text-gray-500 line-through"
-                              : "text-gray-900"
+                            ? "text-gray-500 line-through"
+                            : "text-gray-900"
                             }`}
                         >
                           {task?.title}
