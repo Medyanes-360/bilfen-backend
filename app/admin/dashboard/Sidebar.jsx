@@ -26,17 +26,16 @@ const Sidebar = ({ mobile = false, closeSidebar = null }) => {
   return (
     <div className="flex flex-col h-full border-r border-gray-200 bg-white">
       <div className="flex items-center justify-between px-4 py-6 bg-indigo-600">
+        <div className="flex items-center">
+          <span className="text-xl font-semibold text-white">Anaokulu Panel</span>
+        </div>
         {mobile && (
-          <button onClick={closeSidebar} className="text-white cursor-pointer ">
+          <button onClick={closeSidebar} className="text-white cursor-pointer">
             <X size={24} />
           </button>
         )}
-        <div className="flex items-center">
-          <span className={`text-xl font-semibold text-white ${mobile ? "ml-2" : ""}`}>
-            Anaokulu Panel
-          </span>
-        </div>
       </div>
+
       <div className="flex flex-col flex-1 overflow-y-auto">
         <nav className="flex-1 px-2 py-4 space-y-1">
           {menuItems.map((item, index) => (
