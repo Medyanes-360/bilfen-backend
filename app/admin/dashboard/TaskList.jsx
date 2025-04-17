@@ -142,8 +142,8 @@ const TaskList = () => {
         updated.status = checked
           ? "Tamamlandı"
           : prev.status === "Tamamlandı"
-          ? "Beklemede"
-          : prev.status;
+            ? "Beklemede"
+            : prev.status;
       }
 
       return updated;
@@ -280,33 +280,34 @@ const TaskList = () => {
               <button
                 key={button.value}
                 onClick={() => setActiveFilter(button.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
-                  activeFilter === button.value
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${activeFilter === button.value
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "text-gray-700 hover:bg-gray-100"
+                  }`}
               >
                 {button.label}
               </button>
             ))}
           </div>
-          <div className="flex items-center">
-            <input
-              id="showCompletedOnly"
-              type="checkbox"
-              checked={showCompletedOnly}
-              onChange={(e) => setShowCompletedOnly(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="showCompletedOnly"
-              className="ml-2 text-sm text-gray-700"
-            >
-              {showCompletedOnly
-                ? "Sadece tamamlananlar gösteriliyor"
-                : "Tamamlananları göster"}
-            </label>
+          <div className="flex justify-start sm:justify-end">
+            <div className="flex items-center space-x-2">
+              <input
+                id="showCompletedOnly"
+                type="checkbox"
+                checked={showCompletedOnly}
+                onChange={(e) => setShowCompletedOnly(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="showCompletedOnly"
+                className="text-sm text-gray-700 leading-5"
+              >
+                {showCompletedOnly ? "Tamamlananlar" : "Tamamlananları göster"}
+              </label>
+            </div>
           </div>
+
+
         </div>
       </div>
 
@@ -318,40 +319,53 @@ const TaskList = () => {
           filteredTasks?.map((task) => (
             <li key={task.id} className="px-6 py-4 hover:bg-gray-50">
               <div className="flex items-start">
+                {/* Sol buton */}
                 <div className="flex-shrink-0 pt-1">
                   <button
                     onClick={() => toggleTaskStatus(task.id)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${
-                      task?.status === "Tamamlandı"
-                        ? "bg-green-500 border-green-500 text-white"
-                        : "border-gray-400"
-                    }`}
+                    className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${task?.status === "Tamamlandı"
+                      ? "bg-green-500 border-green-500 text-white"
+                      : "border-gray-400"
+                      }`}
                   >
                     {task?.status === "Tamamlandı" && <Check size={12} />}
                   </button>
                 </div>
-                <div className="ml-3 flex-1">
-                  <div className="flex items-center justify-between">
+
+                {/* İçerik */}
+                {/* İçerik */}
+                <div className="ml-3 flex-1 min-w-0">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    {/* Başlık + Aç/Kapat */}
                     <div
                       onClick={() => toggleExpand(task.id)}
-                      className="flex items-center cursor-pointer"
+                      className="cursor-pointer flex-1 min-w-0"
                     >
-                      <h4
-                        className={`text-sm font-medium ${
-                          task.status === "Tamamlandı"
+                      <div className="flex items-start md:items-center w-full min-w-0">
+                        <h4
+                          className={`text-sm font-medium break-words w-full min-w-0 ${task.status === "Tamamlandı"
                             ? "text-gray-500 line-through"
                             : "text-gray-900"
-                        }`}
-                      >
-                        {task?.title}
-                      </h4>
-                      {task?.expanded ? (
-                        <ChevronUp size={16} className="ml-2 text-gray-500" />
-                      ) : (
-                        <ChevronDown size={16} className="ml-2 text-gray-500" />
-                      )}
+                            }`}
+                        >
+                          {task?.title}
+                        </h4>
+                        {task?.expanded ? (
+                          <ChevronUp
+                            size={16}
+                            className="ml-2 text-gray-500 flex-shrink-0"
+                          />
+                        ) : (
+                          <ChevronDown
+                            size={16}
+                            className="ml-2 text-gray-500 flex-shrink-0"
+                          />
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+
+                    {/* Etiketler */}
+                    <div className="flex flex-wrap gap-2 flex-shrink-0">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full flex items-center ${getPriorityClass(
                           task.priority
@@ -370,11 +384,10 @@ const TaskList = () => {
                     </div>
                   </div>
 
+                  {/* Detaylar */}
                   {task.expanded && (
                     <div className="mt-2">
-                      <p className="text-sm text-gray-600">
-                        {task.description}
-                      </p>
+                      <p className="text-sm text-gray-600">{task.description}</p>
                       <div className="mt-2 flex items-center text-xs text-gray-500">
                         <Calendar size={14} className="mr-1" />
                         <span>Son Tarih: {task.dueDate}</span>
@@ -398,6 +411,8 @@ const TaskList = () => {
                     </div>
                   )}
                 </div>
+
+
               </div>
             </li>
           ))
@@ -408,13 +423,14 @@ const TaskList = () => {
         )}
       </ul>
 
+
       <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
-          <Check size={16} />
+        <div className="flex items-center space-x-2 bg-green-100 text-green-800 text-xs font-medium px-4 py-2 rounded-full">
+          <Check size={12} />
           <span>{tasks.filter((t) => t.isCompleted).length} tamamlandı</span>
         </div>
-        <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-2 rounded-full">
-          <Clock size={16} />
+        <div className="flex items-center space-x-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-4 py-2 rounded-full">
+          <Clock size={12} />
           <span>{tasks.filter((t) => !t.isCompleted).length} devam ediyor</span>
         </div>
       </div>
