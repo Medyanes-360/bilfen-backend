@@ -820,7 +820,7 @@ const ContentManagement = () => {
 
       const fileUrl = content.fileUrl;
       const response = await fetch(
-        `/api/file/view?fileUrl=${encodeURIComponent(fileUrl)}`
+        `/api/file/view?fileUrl=${fileUrl}`
       );
 
       console.log("API Yanıt:", response);
