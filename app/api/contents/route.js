@@ -1,6 +1,7 @@
 import prisma from "@/prisma/prismadb";
 import { formatContent } from "@/utils/formatContent";
 import { NextResponse } from "next/server";
+import { withPagination } from "@/lib/withPagination";
 
 // Yardımcı Fonksiyonlar
 
@@ -91,9 +92,11 @@ export async function GET(request) {
 
     const formattedContents = contents.map(formatContent);
 
-    return NextResponse.json(formattedContents, { status: 200 });
+    let pagiData = withPagination(request,formattedContents)
+
+    return NextResponse.json(pagiData, { status: 200 });
   } catch (error) {
-    console.error("İçerikler alınırken hata oluştu:", error);
+    console.error("İçerikler alınırken hata oluştu:", error.e);
     return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
   }
 }
