@@ -20,13 +20,7 @@ const buildWhereClause = (params) => {
     }
   });
 
-  [
-    "isActive",
-    "isPublished",
-    "isWeeklyContent",
-    "isExtra",
-    "isCompleted",
-  ].forEach((field) => {
+  ["isActive", "isPublished", "isWeeklyContent", "isExtra", "isCompleted"].forEach((field) => {
     if (params[field] !== undefined) {
       where[field] = params[field] === "true";
     }
@@ -41,10 +35,12 @@ const buildWhereClause = (params) => {
 
   // for daily materials
   if (params.startDate && params.endDate) {
-    where.publishDateTeacher = new Date(params.startDate);
-    where.endDateTeacher = new Date(params.endDate);
+    where.publishDateTeacher = {
+      gte: new Date(params.startDate),
+      lt: new Date(params.endDate),
+    };
   }
-  
+
   // for archive materials
   if (params.rangeStartDate && params.rangeEndDate) {
     where.publishDateTeacher = {
@@ -83,8 +79,7 @@ export async function GET(request) {
   const params = Object.fromEntries(url.searchParams.entries());
 
   try {
-    const where =
-      Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
+    const where = Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
     console.log;
 
     const contents = await prisma.content.findMany({
@@ -99,10 +94,7 @@ export async function GET(request) {
     return NextResponse.json(formattedContents, { status: 200 });
   } catch (error) {
     console.error("İçerikler alınırken hata oluştu:", error);
-    return NextResponse.json(
-      { error: "İçerikler alınırken bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
   }
 }
 
@@ -144,11 +136,7 @@ export async function POST(request) {
         publishDateTeacher,
         endDateStudent,
         endDateTeacher,
-        isActive: calculateIsActive(
-          publishDateStudent,
-          publishDateTeacher,
-          data.isActive
-        ),
+        isActive: calculateIsActive(publishDateStudent, publishDateTeacher, data.isActive),
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
@@ -161,9 +149,6 @@ export async function POST(request) {
     return NextResponse.json(content, { status: 201 });
   } catch (error) {
     console.error("İçerik eklenirken hata oluştu:", error.message, error.stack);
-    return NextResponse.json(
-      { error: "İçerik eklenirken bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "İçerik eklenirken bir hata oluştu" }, { status: 500 });
   }
 }
