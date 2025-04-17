@@ -39,9 +39,18 @@ const buildWhereClause = (params) => {
   //   };
   // }
 
+  // for daily materials
   if (params.startDate && params.endDate) {
     where.publishDateTeacher = new Date(params.startDate);
     where.endDateTeacher = new Date(params.endDate);
+  }
+  
+  // for archive materials
+  if (params.rangeStartDate && params.rangeEndDate) {
+    where.publishDateTeacher = {
+      gte: new Date(params.rangeStartDate),
+      lt: new Date(params.rangeEndDate),
+    };
   }
 
   if (params.tag) {
