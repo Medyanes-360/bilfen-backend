@@ -20,17 +20,28 @@ const buildWhereClause = (params) => {
     }
   });
 
-  ["isActive", "isPublished", "isWeeklyContent", "isExtra", "isCompleted"].forEach((field) => {
+  [
+    "isActive",
+    "isPublished",
+    "isWeeklyContent",
+    "isExtra",
+    "isCompleted",
+  ].forEach((field) => {
     if (params[field] !== undefined) {
       where[field] = params[field] === "true";
     }
   });
 
+  // if (params.startDate && params.endDate) {
+  //   where.createdAt = {
+  //     gte: new Date(params.startDate),
+  //     lte: new Date(params.endDate),
+  //   };
+  // }
+
   if (params.startDate && params.endDate) {
-    where.createdAt = {
-      gte: new Date(params.startDate),
-      lte: new Date(params.endDate),
-    };
+    where.publishDateTeacher = new Date(params.startDate);
+    where.endDateTeacher = new Date(params.endDate);
   }
 
   if (params.tag) {
@@ -63,8 +74,9 @@ export async function GET(request) {
   const params = Object.fromEntries(url.searchParams.entries());
 
   try {
-    const where = Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
-    console.log
+    const where =
+      Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
+    console.log;
 
     const contents = await prisma.content.findMany({
       where,
@@ -123,7 +135,11 @@ export async function POST(request) {
         publishDateTeacher,
         endDateStudent,
         endDateTeacher,
-        isActive: calculateIsActive(publishDateStudent, publishDateTeacher, data.isActive),
+        isActive: calculateIsActive(
+          publishDateStudent,
+          publishDateTeacher,
+          data.isActive
+        ),
         fileUrl: data.fileUrl || null,
         description: data.description || "",
         tags,
