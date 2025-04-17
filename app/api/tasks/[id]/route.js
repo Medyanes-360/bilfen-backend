@@ -30,9 +30,20 @@ export async function GET(request, context) {
 export async function PATCH(request) {
   try {
     const url = new URL(request.url);
-    const id = url.pathname.split("/").pop(); // .../tasks/123 → "123"
+    const id = url.pathname.split("/").pop()?.trim(); // .../tasks/123 → "123"
 
     const data = await request.json();
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      return NextResponse.json(
+        { error: "Mevcut bir task yok." },
+        { status: 404 }
+      );
+    }
 
     if (data.priority && !VALID_PRIORITIES.includes(data.priority)) {
       return NextResponse.json(
@@ -62,7 +73,6 @@ export async function PATCH(request) {
     );
   }
 }
-
 
 export async function DELETE(request, context) {
   try {
