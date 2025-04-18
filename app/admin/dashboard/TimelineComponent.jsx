@@ -89,16 +89,16 @@ const TimelineComponent = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
+console.log(contents,'contents')
   // Seçilen güne göre içerikleri yükle
   useEffect(() => {
     if (selectedDate) {
-      const filtered = contents.filter((item) => {
+      const filtered = contents?.data?.filter((item) => {
         const studentDate = item.publishDateStudent;
         return studentDate && studentDate === selectedDate;
       });
 
-      if (filtered.length > 0) {
+      if (filtered?.length > 0) {
         setDailyContent(filtered);
       } else {
         setDailyContent(null); // içerik yok

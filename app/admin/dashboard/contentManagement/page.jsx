@@ -122,7 +122,7 @@ const ContentManagement = () => {
       const data = await getAPI("/api/contents"); // endpoint'i güncelle
       if (data) {
         setContents(data);
-        setFilteredContents(data);
+        setFilteredContents(data.data);
       }
     };
 
@@ -327,7 +327,7 @@ const ContentManagement = () => {
 
   // İçerik filtreleme
   useEffect(() => {
-    const filtered = contents.filter((content) => {
+    const filtered = contents.data?.filter((content) => {
       const title = (content.title || "").toLowerCase();
 
       const matchesSearch =
