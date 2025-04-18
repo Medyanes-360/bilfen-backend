@@ -16,7 +16,7 @@ const Pagination = ({ currentPage, totalPages, paginate }) => {
         </button>
 
         {/* Sayfa Numaraları */}
-        {[...Array(totalPages)].map((_, index) => {
+        {[totalPages]?.map((_, index) => {
           const pageNumber = index + 1;
           const isCurrentPage = pageNumber === currentPage;
           const isNearCurrentPage = Math.abs(pageNumber - currentPage) <= 1;
