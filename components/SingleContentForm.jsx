@@ -144,7 +144,7 @@ export default function SingleContentForm({
             console.error("Expected 'prev' to be an array, but got:", prev);
             return []; // fall back to an empty array IF 'prev' is not iterable
           }
-          return prev.map((c) => (content.id === currentContent.id ? { ...content, ...contentData } : content));
+          return prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c));
         });
       } else {
         res = await fetch("/api/contents", {
