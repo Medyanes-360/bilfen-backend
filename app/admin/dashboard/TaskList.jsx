@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const TaskList = () => {
+const TaskListMinify = () => {
   const [tasks, setTasks] = useState([]);
   const { showCompleted, setShowCompleted } = useTaskFilterStore();
   const [activeFilter, setActiveFilter] = useState("Tümü");
@@ -310,7 +310,6 @@ const TaskList = () => {
 
         </div>
       </div>
-
       <ul
         className="divide-y divide-gray-200 overflow-y-auto"
         style={{ maxHeight: "400px", minHeight: "400px" }}
@@ -416,6 +415,7 @@ const TaskList = () => {
               </div>
             </li>
           ))
+
         ) : (
           <li className="px-6 py-8 text-center text-gray-500">
             <p>Gösterilecek görev bulunamadı.</p>
@@ -574,4 +574,4 @@ const TaskList = () => {
   );
 };
 
-export default TaskList;
+export default TaskListMinify;
