@@ -7,6 +7,8 @@ import useToastStore from '@/lib/store/toast';
 import {
   getStatusColor
 } from "@/utils/contentHelpers";
+import FileUploadArea from"../components/Dashboard/FileUploadArea"
+
 export default function SingleContentForm({
   setIsModalOpen,
   currentContent,
@@ -14,10 +16,6 @@ export default function SingleContentForm({
   setContents,
   handleTypeChange,
   branchOptions = [],
-  handleDragLeave,
-  handleDragOver,
-  handleDrop,
-  handleFileChange,
   selectedFile,
   setSelectedFile,
 }) {
@@ -141,9 +139,12 @@ export default function SingleContentForm({
         });
         if (!res.ok) throw new Error("Güncelleme başarısız");
 
-        setContents((prev) =>
-          prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c))
-        );
+        setContents((prev) =>({
+          ...prev,
+          data: prev.data.map((c) =>
+          c.id === currentContent.id ? { ...c, ...payload } : c
+        ),
+        }));
       } else {
         res = await fetch("/api/contents", {
           method: "POST",
@@ -154,7 +155,10 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [newContent, ...prev]);
+        setContents((prev) => ({
+          ...prev,
+          data: [newContent, ...prev.data],
+        }))
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
@@ -454,44 +458,10 @@ export default function SingleContentForm({
                       </button>
                     </div>
                   ) : (
-                    <div
-                      className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <div className="space-y-1 text-center">
-                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
-                          <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500"
-                          >
-                            <span>Dosya seçin</span>
-                            <input
-                              id="file-upload"
-                              name="file-upload"
-                              type="file"
-                              className="sr-only"
-                              accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
-                              onChange={handleFileChange}
-                            />
-                          </label>
-                          <p className="pl-1">veya sürükleyip bırakın</p>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar
-                          (maks. 50MB)
-                        </p>
-
-                        {/* ✅ Seçilen dosya adı (sürüklenmiş ya da seçilmiş) */}
-                        {selectedFile && (
-                          <p className="mt-2 text-sm text-green-600 font-medium">
-                            Seçilen dosya: {selectedFile.name}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <FileUploadArea
+                    selectedFile={selectedFile}
+                    setSelectedFile={setSelectedFile}
+                  />
                   )}
                 </div>
 

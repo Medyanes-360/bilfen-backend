@@ -18,6 +18,7 @@ import BulkActionModals from "@/components/Dashboard/BulkActionModals";
 import useContentFilters from "@/components/Dashboard/hooks/useContentFilters";
 import useBulkActions from "@/components/Dashboard/hooks/useBulkActions";
 import { sortContents} from "@/utils/contentHelpers";
+
 const ContentManagement = () => {
   // State tanımlamaları
   const [previewUrl, setPreviewUrl] = useState("");
@@ -145,65 +146,6 @@ const ContentManagement = () => {
     };
   }, [filterMenuRef]);
 
-
-  // Dosya yükleme işlemi
-  const handleFileChange = useCallback((e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-
-      // Dosya bilgisi gösterimi
-      const fileInfoElement = document.getElementById("selected-file-info");
-      if (fileInfoElement) {
-        fileInfoElement.classList.remove("hidden");
-        const fileNameSpan = fileInfoElement.querySelector("span");
-        if (fileNameSpan) {
-          const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-          fileNameSpan.textContent = `${file.name} (${fileSizeMB} MB)`;
-        }
-      }
-    }
-  }, []);
-
-  // Dosya sürükle-bırak işlemi
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.add("border-indigo-500", "bg-indigo-50");
-  }, []);
-
-  const handleDragLeave = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
-  }, []);
-
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
-
-      // Dosya input değerini güncelleme (manuel olarak)
-      const fileInput = document.getElementById("file-upload");
-      if (fileInput) {
-        // Dosya bilgisi gösterimi
-        const fileInfoElement = document.getElementById("selected-file-info");
-        if (fileInfoElement) {
-          fileInfoElement.classList.remove("hidden");
-          const fileNameSpan = fileInfoElement.querySelector("span");
-          if (fileNameSpan) {
-            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            fileNameSpan.textContent = `${file.name} (${fileSizeMB} MB)`;
-          }
-        }
-      }
-    }
-  }, []);
-
   // Sıralama işlemi
   const handleSort = useCallback(
   (option) => {
@@ -233,7 +175,7 @@ const ContentManagement = () => {
 
     try {
       // 1. Silinecek içeriği bul (state'ten)
-      const contentToDelete = contents.find((item) => item.id === selectedId);
+      const contentToDelete = contents.data.find((item) => item.id === selectedId);
 
       // 2. Eğer fileUrl varsa önce R2'den sil
       if (contentToDelete?.fileUrl) {
@@ -255,9 +197,11 @@ const ContentManagement = () => {
       await deleteAPI(`/api/contents/${selectedId}`);
 
       // 4. State'ten kaldır
-      setContents((prevContents) =>
-        prevContents.filter((item) => item.id !== selectedId)
-      );
+    
+      setContents((prevContents) => ({
+        ...prevContents,
+        data: prevContents.data.filter((item) => item.id !== selectedId)
+      }));
 
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
@@ -578,10 +522,6 @@ const ContentManagement = () => {
         currentContent={currentContent}
         setCurrentContent={setCurrentContent}
         setContents={setContents}
-        handleFileChange={handleFileChange}
-        handleDragOver={handleDragOver}
-        handleDragLeave={handleDragLeave}
-        handleDrop={handleDrop}
         selectedFile={selectedFile}
         setSelectedFile={setSelectedFile}
         setIsModalOpen={setIsModalOpen}

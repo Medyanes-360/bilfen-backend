@@ -20,7 +20,7 @@ const useBulkActions = ({ contents, setContents, showToast }) => {
           .map((item) => (typeof item === "string" ? item : item?.id))
           .filter((id) => typeof id === "string" && id.trim() !== "");
 
-        const fileKeysToDelete = contents
+        const fileKeysToDelete = contents.data
           .filter((item) => idsToDelete.includes(item.id))
           .map((item) => {
             const url = item?.fileUrl;
@@ -51,7 +51,10 @@ const useBulkActions = ({ contents, setContents, showToast }) => {
           throw new Error(errorData?.error || "Toplu silme işlemi başarısız.");
         }
         // İçerikleri state'den kaldır
-        setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
+        setContents((prev) => ({
+          ...prev,
+          data: prev.data.filter((c) => !idsToDelete.includes(c.id)),
+        }));
         setSelectedItems([]);
         setBulkMode(false);
         setBulkActionModalOpen(false);
@@ -100,11 +103,13 @@ const useBulkActions = ({ contents, setContents, showToast }) => {
         }
 
         setContents((prev) =>
-          prev.map((content) => {
+        ({
+          ...prev,
+          data: prev.data.map((content) => {
             const updated = contentsToUpdate.find((c) => c.id === content.id);
             return updated ? { ...content, ...updatedFields } : content;
           })
-        );
+        }));
 
         showToast("İçerikler başarıyla güncellendi.", "success");
         setSelectedItems([]);

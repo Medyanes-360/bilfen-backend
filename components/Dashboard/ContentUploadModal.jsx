@@ -8,10 +8,6 @@ const ContentUploadModal = ({
     currentContent,
     setCurrentContent,
     setContents,
-    handleFileChange,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
     selectedFile,
     setSelectedFile,
     setIsModalOpen,
@@ -49,10 +45,6 @@ const ContentUploadModal = ({
                                 setCurrentContent={setCurrentContent}
                                 setContents={setContents}
                                 branchOptions={branchOptions}
-                                handleFileChange={handleFileChange}
-                                handleDragOver={handleDragOver}
-                                handleDragLeave={handleDragLeave}
-                                handleDrop={handleDrop}
                                 selectedFile={selectedFile}
                                 setSelectedFile={setSelectedFile}
                             />
