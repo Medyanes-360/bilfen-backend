@@ -1,7 +1,8 @@
 "use client";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState([]);
@@ -29,14 +30,43 @@ export default function TeachersPage() {
   }, []);
 
   const handleDelete = async (id, name) => {
-    if (
-      !confirm(`${name} isimli öğretmeni silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)
-    ) {
-      return;
-    }
-
     try {
       setDeleteLoading(true);
+
+      const confirmed = await new Promise((resolve) => {
+        toast.custom(
+          (t) => (
+            <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col gap-4">
+              <p className="text-gray-800 font-medium">
+                {name} isimli öğretmeni silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    resolve(false);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
+                  İptal
+                </button>
+                <button
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    resolve(true);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md cursor-pointer">
+                  Sil
+                </button>
+              </div>
+            </div>
+          ),
+          { duration: Infinity }
+        );
+      });
+
+      if (!confirmed) {
+        return;
+      }
 
       const response = await fetch(`/api/teachers/${id}`, {
         method: "DELETE",
@@ -48,10 +78,9 @@ export default function TeachersPage() {
       }
 
       setTeachers(teachers.filter((teacher) => teacher.id !== id));
-
-      alert(`${name} isimli öğretmen başarıyla silindi.`);
+      toast.success(`${name} isimli öğretmen başarıyla silindi.`);
     } catch (err) {
-      alert("Silme işlemi sırasında bir hata oluştu: " + err.message);
+      toast.error("Silme işlemi sırasında bir hata oluştu: " + err.message);
     } finally {
       setDeleteLoading(false);
     }
@@ -86,17 +115,15 @@ export default function TeachersPage() {
 
   return (
     <div className="relative">
-      <Link
-        href="/"
-        className="absolute top-2 left-2  text-gray-700  ">
-        <ArrowLeft/>
+      <Link href="/" className="absolute top-2 left-2  text-gray-700  ">
+        <ArrowLeft />
       </Link>
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-6">
           <h1 className="lg:text-2xl text-lg  font-bold text-gray-800">Öğretmen Listesi</h1>
           <Link
             href="/register?role=TEACHER"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium lg:py-1.5 lg:px-4 px-2 py-2 rounded-md transition-colors text-sm  lg:text-md">
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium lg:py-1.5 lg:px-4 px-2 py-2 rounded-md transition-colors text-sm  lg:text-md">
             Yeni Öğretmen Ekle
           </Link>
         </div>
