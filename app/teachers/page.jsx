@@ -225,7 +225,7 @@ export default function TeachersPage() {
                             }
                             className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md cursor-pointer"
                             disabled={deleteLoading}>
-                            {deleteLoading ? "Siliniyor..." : "Sil"}
+                            {deleteLoading ? "Sil" : "Sil"}
                           </button>
                         </div>
                       </td>
