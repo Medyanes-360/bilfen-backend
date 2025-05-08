@@ -585,9 +585,11 @@ const ContentManagement = () => {
   const handleConfirmDelete = async () => {
     if (!selectedId) return;
 
+    const allContents = contents.data || contents;
+
     try {
       // 1. Silinecek içeriği bul (state'ten)
-      const contentToDelete = contents.find((item) => item.id === selectedId);
+      const contentToDelete = allContents.find((item) => item.id === selectedId);
 
       // 2. Eğer fileUrl varsa önce R2'den sil
       if (contentToDelete?.fileUrl) {
@@ -609,9 +611,10 @@ const ContentManagement = () => {
       await deleteAPI(`/api/contents/${selectedId}`);
 
       // 4. State'ten kaldır
-      setContents((prevContents) =>
-        prevContents.filter((item) => item.id !== selectedId)
-      );
+      setContents((prevContents) => {
+        const updatedData = (prevContents.data || []).filter((item) => item.id !== selectedId);
+        return { ...prevContents, data: updatedData };
+      });
 
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
@@ -812,7 +815,14 @@ const ContentManagement = () => {
 
   // İçeriği görüntüleme
   const viewContent = async (id) => {
-    const content = contents.find((item) => item.id === id);
+    const allContents = contents.data || contents;
+
+    if (!Array.isArray(allContents)) {
+      console.error("İçerik listesi uygun formatta değil:", contents);
+      return;
+    }
+
+    const content = allContents.find((item) => item.id === id);
     if (!content) return;
 
     try {
