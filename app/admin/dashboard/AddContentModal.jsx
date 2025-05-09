@@ -1,28 +1,33 @@
 // AddContentModal.jsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X, Calendar, Clock, Save } from 'lucide-react';
-import { contentTypes, branches, ageGroups } from './mockData';
+import { useState } from "react";
+import { X, Save } from "lucide-react";
+import { contentTypes, branches, ageGroups } from "./mockData";
 
-const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave }) => {
+const AddContentModal = ({
+  selectedDate,
+  existingContent = null,
+  onClose,
+  onSave,
+}) => {
   const isEditMode = !!existingContent;
-  
+
   const [formData, setFormData] = useState({
-    title: existingContent?.title || '',
-    type: existingContent?.type || 'Video',
-    ageGroup: existingContent?.ageGroup || '4-5 yaş',
-    branch: existingContent?.branch || 'Okul Öncesi',
+    title: existingContent?.title || "",
+    type: existingContent?.type || "Video",
+    ageGroup: existingContent?.ageGroup || "4-5 yaş",
+    branch: existingContent?.branch || "Okul Öncesi",
     publishDate: existingContent?.publishDate || selectedDate,
-    duration: existingContent?.duration || '00:15:00',
-    description: existingContent?.description || ''
+    duration: existingContent?.duration || "00:15:00",
+    description: existingContent?.description || "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -36,13 +41,16 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">
-            {isEditMode ? 'İçerik Düzenle' : 'Yeni İçerik Ekle'}
+            {isEditMode ? "İçerik Düzenle" : "Yeni İçerik Ekle"}
           </h3>
-          <button className="p-1 rounded-full hover:bg-gray-100" onClick={onClose}>
+          <button
+            className="p-1 rounded-full hover:bg-gray-100"
+            onClick={onClose}
+          >
             <X size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4">
             <div>
@@ -59,10 +67,13 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="type">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="type"
+                >
                   İçerik Türü*
                 </label>
                 <select
@@ -73,14 +84,19 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                   className="w-full p-2 border rounded-md"
                   required
                 >
-                  {contentTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {contentTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="ageGroup">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="ageGroup"
+                >
                   Yaş Grubu*
                 </label>
                 <select
@@ -91,16 +107,21 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                   className="w-full p-2 border rounded-md"
                   required
                 >
-                  {ageGroups.map(age => (
-                    <option key={age} value={age}>{age}</option>
+                  {ageGroups.map((age) => (
+                    <option key={age} value={age}>
+                      {age}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="branch">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="branch"
+                >
                   Branş*
                 </label>
                 <select
@@ -111,14 +132,19 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                   className="w-full p-2 border rounded-md"
                   required
                 >
-                  {branches.map(branch => (
-                    <option key={branch} value={branch}>{branch}</option>
+                  {branches.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
                   ))}
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="duration">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="duration"
+                >
                   Süre* (HH:MM:SS)
                 </label>
                 <input
@@ -133,9 +159,12 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                 />
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="publishDate">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="publishDate"
+              >
                 Yayın Tarihi*
               </label>
               <input
@@ -148,9 +177,12 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
                 required
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="description">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="description"
+              >
                 Açıklama
               </label>
               <textarea
@@ -163,7 +195,7 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
               />
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end space-x-2">
             <button
               type="button"
@@ -177,7 +209,7 @@ const AddContentModal = ({ selectedDate, existingContent = null, onClose, onSave
               className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 flex items-center"
             >
               <Save size={16} className="mr-1" />
-              {isEditMode ? 'Güncelle' : 'Kaydet'}
+              {isEditMode ? "Güncelle" : "Kaydet"}
             </button>
           </div>
         </form>
