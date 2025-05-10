@@ -119,13 +119,32 @@ const ContentManagement = () => {
   const filterMenuRef = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getAPI("/api/contents"); // endpoint'i güncelle
-      if (data) {
-        setContents(data);
-        setFilteredContents(data.data);
+      try {
+        const response = await getAPI("/api/contents"); // Fetch data from the API
+  
+        // Check if the response is paginated
+        const contentsArray = Array.isArray(response) ? response : response?.data;
+  
+        if (contentsArray && Array.isArray(contentsArray)) {
+          console.log("Fetched contents:", contentsArray); // debugging 
+  
+          // state with the fetched contents
+          setContents(contentsArray);
+  
+          // upting filteredContents to match the fetched contents
+          setFilteredContents(contentsArray);
+        } else {
+          console.error("Invalid API response. Expected an array, but got:", response);
+          setContents([]); // fall back to an empty array
+          setFilteredContents([]); // reset filteredContents as well
+        }
+      } catch (error) {
+        console.error("Error fetching contents:", error);
+        setContents([]); // fall back to an empty array
+        setFilteredContents([]); // reset filteredContents as well
       }
     };
-
+  
     fetchData();
   }, []);
 
@@ -225,7 +244,13 @@ const ContentManagement = () => {
         }
 
         // İçerikleri state'den kaldır
-        setContents((prev) => prev.filter((c) => !idsToDelete.includes(c.id)));
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array
+          }
+          return prev.filter((c) => !idsToDelete.includes(c.id))
+        });
 
         // State'leri temizle
         setSelectedItems([]); // Seçimleri temizle
@@ -280,12 +305,17 @@ const ContentManagement = () => {
         }
 
         // UI'daki içerikleri güncelle
-        setContents((prev) =>
-          prev.map((content) => {
-            const updated = contentsToUpdate.find((c) => c.id === content.id);
-            return updated ? { ...content, ...updatedFields } : content;
-          })
-        );
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array
+          }
+          return prev.map((content) =>
+            content.id === currentContent.id
+              ? { ...content, ...contentData }
+              : content
+          );
+        });
 
         showToast("İçerikler başarıyla güncellendi.", "success");
         setSelectedItems([]);
@@ -410,7 +440,7 @@ const ContentManagement = () => {
       );
     });
 
-    setFilteredContents(filtered);
+    setFilteredContents(contents);
     setCurrentPage(1); // sayfayı başa al
   }, [contents, searchTerm, activeType, advancedFilterOptions]);
 
@@ -470,6 +500,25 @@ const ContentManagement = () => {
   const handleFileChange = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
+      const allowedTypes = [
+        "image/png",
+        "image/jpeg",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "audio/mpeg",
+        "video/mp4",
+        "video/quicktime",
+        "video/x-msvideo",
+        "application/zip", // added .zip mime type
+        "application/x-zip-compressed",
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        showToast("Geçersiz dosya türü. Lütfen desteklenen bir dosya yükleyin.", "error");
+        return;
+      }
+
       setSelectedFile(file);
 
       // Dosya bilgisi gösterimi
@@ -609,9 +658,13 @@ const ContentManagement = () => {
       await deleteAPI(`/api/contents/${selectedId}`);
 
       // 4. State'ten kaldır
-      setContents((prevContents) =>
-        prevContents.filter((item) => item.id !== selectedId)
-      );
+      setContents((prevContents) => {
+        if (!Array.isArray(prevContents)) {
+          console.error("Expected 'prevContents' to be an array, but got:", prevContents);
+          return []; // fall back to an empty array
+        }
+        return prevContents.filter((item) => item.id !== selectedId);
+      });
 
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
@@ -782,19 +835,32 @@ const ContentManagement = () => {
         }
 
         // State güncelle
-        setContents((prev) =>
-          prev.map((content) =>
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array
+          }
+          return prev.map((content) =>
             content.id === currentContent.id
               ? { ...content, ...contentData }
               : content
-          )
-        );
+          );
+        });
         console.log("İçerik güncellendi:", contentData);
       } else {
         //  Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
-          setContents((prev) => [...prev, response]);
+          setContents((prev) => {
+            console.log("Previous contents:", prev);
+            console.log("New content to add:", response);
+          
+            if (!Array.isArray(prev)) {
+              console.error("Expected 'prev' to be an array, but got:", prev);
+              return [response]; // new content
+            }
+            return [...prev, response]; // append new content to the existing state
+          });
           console.log("Yeni içerik eklendi:", response);
         }
       }

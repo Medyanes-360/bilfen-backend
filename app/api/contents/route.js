@@ -81,7 +81,6 @@ export async function GET(request) {
 
   try {
     const where = Object.keys(params).length === 0 ? undefined : buildWhereClause(params);
-    console.log;
 
     const contents = await prisma.content.findMany({
       where,
@@ -92,12 +91,14 @@ export async function GET(request) {
 
     const formattedContents = contents.map(formatContent);
 
-    let pagiData = withPagination(request,formattedContents)
+    // if pagination is required, gotta ensure the response includes metadata
+    const pagiData = withPagination(request, formattedContents);
 
+    // return paginated data
     return NextResponse.json(pagiData, { status: 200 });
   } catch (error) {
-    console.error("İçerikler alınırken hata oluştu:", error.e);
-    return NextResponse.json({ error: "İçerikler alınırken bir hata oluştu" }, { status: 500 });
+    console.error("Error fetching contents:", error);
+    return NextResponse.json({ error: "Error fetching contents" }, { status: 500 });
   }
 }
 
@@ -114,20 +115,20 @@ export async function POST(request) {
     const endDateStudent = data.endDateStudent
       ? parseDate(data.endDateStudent)
       : publishDateStudent
-      ? new Date(publishDateStudent.getTime() + oneWeek)
-      : null;
+        ? new Date(publishDateStudent.getTime() + oneWeek)
+        : null;
 
     const endDateTeacher = data.endDateTeacher
       ? parseDate(data.endDateTeacher)
       : publishDateTeacher
-      ? new Date(publishDateTeacher.getTime() + oneWeek)
-      : null;
+        ? new Date(publishDateTeacher.getTime() + oneWeek)
+        : null;
 
     const tags = Array.isArray(data.tags)
       ? data.tags
       : typeof data.tags === "string"
-      ? data.tags.split(",").map((tag) => tag.trim())
-      : [];
+        ? data.tags.split(",").map((tag) => tag.trim())
+        : [];
 
     const content = await prisma.content.create({
       data: {
@@ -149,7 +150,9 @@ export async function POST(request) {
       },
     });
 
-    return NextResponse.json(content, { status: 201 });
+    const formattedContent = formatContent(content);
+
+    return NextResponse.json(formattedContent, { status: 201 });
   } catch (error) {
     console.error("İçerik eklenirken hata oluştu:", error.message, error.stack);
     return NextResponse.json({ error: "İçerik eklenirken bir hata oluştu" }, { status: 500 });

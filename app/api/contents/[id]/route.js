@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
 
     const formattedContents = formatContent(content);
     
-    return NextResponse.json(formattedContents);
+    return NextResponse.json(formattedContents, { status: 200 });
   } catch (error) {
     console.error("İçerik alınırken hata oluştu:", error);
     return NextResponse.json({ error: "İçerik alınırken bir hata oluştu" }, { status: 500 });

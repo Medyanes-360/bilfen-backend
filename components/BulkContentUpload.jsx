@@ -91,7 +91,7 @@ export default function BulkContentUpload({ setIsModalOpen, setContents }) {
                   name="file-upload"
                   type="file"
                   multiple
-                  accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
+                  accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi,.zip" // zip added
                   className="hidden"
                   onChange={handleFileChange}
                 />
