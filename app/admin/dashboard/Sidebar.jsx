@@ -51,9 +51,9 @@ const Sidebar = ({ mobile = false, closeSidebar = null }) => {
       </div>
       <div className="flex items-center justify-between border-t border-gray-200 p-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600 font-bold">
+          {/* <div className="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600 font-bold">
             A
-          </div>
+          </div> */}
           {/* <div className="ml-3">
             <p className="text-sm font-medium text-gray-700">Admin</p>
             <p className="text-xs font-medium text-gray-500">admin@anaokulu.com</p>
