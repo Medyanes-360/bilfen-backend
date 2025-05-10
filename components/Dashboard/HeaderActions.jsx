@@ -1,9 +1,9 @@
 import React from "react";
 import { Plus, List, X } from "lucide-react";
-
+import {contentTypesForHeader}from "../../app/constants/mockData"
 const HeaderActions = ({
-  contentTypes,
   activeType,
+
   setActiveType,
   bulkMode,
   setBulkMode,
@@ -22,7 +22,7 @@ const HeaderActions = ({
       <div className="w-full xl:w-auto flex-1">
         <div className="w-full overflow-x-auto whitespace-nowrap hide-scrollbar">
           <div className="flex items-center gap-2">
-            {contentTypes.map((type) => (
+            {contentTypesForHeader.map((type) => (
               <button
                 key={type.id}
                 onClick={() => setActiveType(type.id)}

@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Upload, Tag } from "lucide-react";
 import isValidDate from "@/components/dateValidation"
 import useToastStore from '@/lib/store/toast';
+import {
+  getStatusColor
+} from "@/utils/contentHelpers";
+import FileUploadArea from"../components/Dashboard/FileUploadArea"
+
 export default function SingleContentForm({
   setIsModalOpen,
   currentContent,
@@ -11,10 +16,6 @@ export default function SingleContentForm({
   setContents,
   handleTypeChange,
   branchOptions = [],
-  handleDragLeave,
-  handleDragOver,
-  handleDrop,
-  handleFileChange,
   selectedFile,
   setSelectedFile,
 }) {
@@ -22,14 +23,14 @@ export default function SingleContentForm({
   const [isWeeklyContentChecked, setIsWeeklyContentChecked] = useState(
     !!currentContent?.isWeeklyContent
   );
-    const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
-      ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
-      : "");
-    
-    const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
-      ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
-      : "");
-      const { showToast } = useToastStore();
+  const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
+    ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+    : "");
+
+  const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
+    ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+    : "");
+  const { showToast } = useToastStore();
 
 
   const uploadFileToR2 = async (file) => {
@@ -96,7 +97,7 @@ export default function SingleContentForm({
       }
     }
 
-    if ( !fileUrl) {
+    if (!fileUrl) {
       showToast("Lütfen içerik dosyası ekleyin.", "error");
       setIsUploading(false);
       return;
@@ -138,9 +139,12 @@ export default function SingleContentForm({
         });
         if (!res.ok) throw new Error("Güncelleme başarısız");
 
-        setContents((prev) =>
-          prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c))
-        );
+        setContents((prev) =>({
+          ...prev,
+          data: prev.data.map((c) =>
+          c.id === currentContent.id ? { ...c, ...payload } : c
+        ),
+        }));
       } else {
         res = await fetch("/api/contents", {
           method: "POST",
@@ -151,7 +155,10 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [newContent, ...prev]);
+        setContents((prev) => ({
+          ...prev,
+          data: [newContent, ...prev.data],
+        }))
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
@@ -291,22 +298,22 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateStudent"
                         id="publishDateStudent"
-                        min={new Date().toISOString().split("T")[0]} 
+                        min={new Date().toISOString().split("T")[0]}
                         value={studentDate}
                         onChange={(e) => {
                           const selectedDate = e.target.value;
-                      
+
                           if (teacherDate) {
                             const student = new Date(selectedDate);
                             const teacher = new Date(teacherDate);
-                      
+
                             if (student < teacher) {
                               showToast("Öğrenci yayın tarihi, öğretmen tarihinden önce olamaz!", "error");
                               setStudentDate("");
                               return;
                             }
                           }
-                      
+
                           setStudentDate(selectedDate);
                         }}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
@@ -322,9 +329,9 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateTeacher"
                         id="publishDateTeacher"
-                        min={new Date().toISOString().split("T")[0]} 
+                        min={new Date().toISOString().split("T")[0]}
                         value={teacherDate}
-                     
+
                         onChange={(e) => {
                           const selectedDate = e.target.value;
                           if (studentDate) {
@@ -336,10 +343,10 @@ export default function SingleContentForm({
                               return;
                             }
                           }
-                        
+
                           setTeacherDate(selectedDate);
                         }}
-                        
+
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
@@ -384,7 +391,7 @@ export default function SingleContentForm({
                           type="date"
                           name="weeklyContentStartDate"
                           id="weeklyContentStartDate"
-                          min={new Date().toISOString().split("T")[0]} 
+                          min={new Date().toISOString().split("T")[0]}
                           defaultValue={
                             isValidDate(currentContent?.weeklyContentStartDate)
                               ? new Date(currentContent.weeklyContentStartDate)
@@ -451,44 +458,10 @@ export default function SingleContentForm({
                       </button>
                     </div>
                   ) : (
-                    <div
-                      className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 hover:border-indigo-300 transition-colors duration-200"
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <div className="space-y-1 text-center">
-                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-gray-600">
-                          <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500"
-                          >
-                            <span>Dosya seçin</span>
-                            <input
-                              id="file-upload"
-                              name="file-upload"
-                              type="file"
-                              className="sr-only"
-                              accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
-                              onChange={handleFileChange}
-                            />
-                          </label>
-                          <p className="pl-1">veya sürükleyip bırakın</p>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar
-                          (maks. 50MB)
-                        </p>
-
-                        {/* ✅ Seçilen dosya adı (sürüklenmiş ya da seçilmiş) */}
-                        {selectedFile && (
-                          <p className="mt-2 text-sm text-green-600 font-medium">
-                            Seçilen dosya: {selectedFile.name}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <FileUploadArea
+                    selectedFile={selectedFile}
+                    setSelectedFile={setSelectedFile}
+                  />
                   )}
                 </div>
 

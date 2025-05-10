@@ -1,6 +1,9 @@
 import { CheckSquare, Edit, Eye, Trash2 } from "lucide-react";
 import React from "react";
-
+import {
+  getContentIcon,
+} from "@/utils/contentHelpers";
+import { branchOptions } from "../../app/constants/mockData"
 const ContentTable = ({
   currentItems,
   bulkMode,
@@ -10,9 +13,7 @@ const ContentTable = ({
   handleUnpublish,
   viewContent,
   openModal,
-  handleDeleteContent,
-  getContentIcon,
-  branchOptions,
+  handleDeleteContent
 }) => {
   const handleCheckboxChange = (checked, contentId) => {
     if (checked) {
@@ -146,10 +147,10 @@ const ContentTable = ({
                   <div className="flex items-center space-x-2">
                     <button
                       className={`w-24 px-2 py-1 text-xs rounded cursor-pointer ${isPublished
-                          ? "bg-blue-500 text-white"
-                          : isPublishDisabled
-                            ? "bg-neutral-200 text-gray-400 cursor-not-allowed"
-                            : "bg-green-500 text-white"
+                        ? "bg-blue-500 text-white"
+                        : isPublishDisabled
+                          ? "bg-neutral-200 text-gray-400 cursor-not-allowed"
+                          : "bg-green-500 text-white"
                         }`}
                       disabled={!isPublished && isPublishDisabled}
                       title={

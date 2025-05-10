@@ -13,3 +13,19 @@ export const ageGroups = [
     { value: "6-7 yaş", label: "6-7 yaş" },
     { value: "7-8 yaş", label: "7-8 yaş" }
 ];
+
+export const branchOptions = [
+    { label: "Matematik", value: "MATEMATIK" },
+    { label: "Türkçe", value: "TURKCE" },
+    { label: "Fen Bilgisi", value: "FEN_BILGISI" },
+    { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
+    { label: "İngilizce", value: "INGILIZCE" },
+];
+export const contentTypesForHeader = [
+    { id: "all", name: "Tümü" },
+    { id: "video", name: "Video" },
+    { id: "audio", name: "Ses" },
+    { id: "document", name: "Döküman" },
+    { id: "interactive", name: "Etkileşimli" },
+    { id: "game", name: "Oyun" }
+];
