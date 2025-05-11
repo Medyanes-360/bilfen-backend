@@ -10,7 +10,7 @@
 // 3. State Tanımlamaları
 // - İçerik listesi, filtreleme, sayfalama, modal durumu vb.
 
-// 4. Yardımcı Fonksiyonlar 
+// 4. Yardımcı Fonksiyonlar
 // - İçerik ikonu belirleme
 // - Durum rengi belirleme
 // - Dosya işlemleri
@@ -49,7 +49,7 @@ import {
   Trash2,
   Video,
   ArrowLeft,
-  HelpCircle
+  HelpCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -134,11 +134,14 @@ const ContentManagement = () => {
   };
   const handlePublish = async (id) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: true }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPublished: true }),
+        }
+      );
 
       if (!res.ok) throw new Error("Yayınlama başarısız");
 
@@ -154,11 +157,14 @@ const ContentManagement = () => {
 
   const handleUnpublish = async (id) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: false }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPublished: false }),
+        }
+      );
 
       if (!res.ok) throw new Error("Yayından kaldırma başarısız");
 
@@ -216,8 +222,6 @@ const ContentManagement = () => {
             fileKeys: fileKeysToDelete,
           }),
         });
-
-
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -297,7 +301,6 @@ const ContentManagement = () => {
 
         // Bulk action'ı sıfırla
         setBulkAction(null);
-
       }
     } catch (error) {
       console.error("Toplu işlem hatası:", error);
@@ -306,7 +309,6 @@ const ContentManagement = () => {
       setIsBulkUpdating(false);
     }
   };
-
 
   // Toplu seçimi temizleme
   const clearBulkSelection = () => {
@@ -333,7 +335,6 @@ const ContentManagement = () => {
       const matchesSearch =
         searchTerm === "" || title.includes(searchTerm.toLowerCase());
 
-
       const matchesType =
         activeType === "all" ||
         !activeType ||
@@ -345,10 +346,8 @@ const ContentManagement = () => {
 
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
-
         (content.ageGroup &&
           content.ageGroup === advancedFilterOptions.ageGroup);
-
 
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
@@ -364,16 +363,17 @@ const ContentManagement = () => {
 
         if (!contentStudentDate) return false;
 
-        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+        return (
+          contentStudentDate.toDateString() === studentDateFilter.toDateString()
+        );
       })();
-
 
       const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
       const matchesWeeklyContent =
-        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
-
+        !advancedFilterOptions.weeklyContent ||
+        content.isWeeklyContent === true;
 
       const matchesTeacherDate = (() => {
         if (!teacherDateFilter) return true;
@@ -589,7 +589,9 @@ const ContentManagement = () => {
 
     try {
       // 1. Silinecek içeriği bul (state'ten)
-      const contentToDelete = allContents.find((item) => item.id === selectedId);
+      const contentToDelete = allContents.find(
+        (item) => item.id === selectedId
+      );
 
       // 2. Eğer fileUrl varsa önce R2'den sil
       if (contentToDelete?.fileUrl) {
@@ -612,7 +614,10 @@ const ContentManagement = () => {
 
       // 4. State'ten kaldır
       setContents((prevContents) => {
-        const updatedData = (prevContents.data || []).filter((item) => item.id !== selectedId);
+        const data = Array.isArray(prevContents?.data) ? prevContents.data : [];
+
+        const updatedData = data.filter((item) => item.id !== selectedId);
+
         return { ...prevContents, data: updatedData };
       });
 
@@ -829,9 +834,7 @@ const ContentManagement = () => {
       console.log("Dosya çağırılıyor:", content.fileUrl);
 
       const fileUrl = content.fileUrl;
-      const response = await fetch(
-        `/api/file/view?fileUrl=${fileUrl}`
-      );
+      const response = await fetch(`/api/file/view?fileUrl=${fileUrl}`);
 
       console.log("API Yanıt:", response);
 
@@ -916,18 +919,24 @@ const ContentManagement = () => {
                   strokeWidth="2"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
-
 
             {/* Filtreleme Butonu ve Modal Menüsü */}
             <div className="relative max-w-full">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    console.log("Filtre butonuna tıklandı, mevcut durum:", filterMenuOpen);
+                    console.log(
+                      "Filtre butonuna tıklandı, mevcut durum:",
+                      filterMenuOpen
+                    );
                     setFilterMenuOpen(!filterMenuOpen);
                   }}
                   className="cursor-pointer flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap max-w-full overflow-hidden"
@@ -948,12 +957,16 @@ const ContentManagement = () => {
                   className="absolute top-full mt-2 right-0 w-[85vw] sm:w-80 max-w-[90vw] sm:max-w-[20rem] bg-white rounded-md shadow-lg z-50 border border-gray-200"
                 >
                   <div className="p-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">Filtreleme Seçenekleri</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      Filtreleme Seçenekleri
+                    </h3>
 
                     <div className="space-y-4">
                       {/* Yaş Grubu Filtresi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Yaş Grubu</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Yaş Grubu
+                        </label>
                         <select
                           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 cursor-pointer focus:ring-indigo-500"
                           value={advancedFilterOptions.ageGroup}
@@ -974,7 +987,9 @@ const ContentManagement = () => {
 
                       {/* Öğrenci Yayın Tarihi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Öğrenci Yayın Tarihi</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Öğrenci Yayın Tarihi
+                        </label>
                         <input
                           type="date"
                           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
@@ -990,7 +1005,9 @@ const ContentManagement = () => {
 
                       {/* Öğretmen Yayın Tarihi */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Öğretmen Yayın Tarihi</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Öğretmen Yayın Tarihi
+                        </label>
                         <input
                           type="date"
                           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
@@ -1018,7 +1035,10 @@ const ContentManagement = () => {
                           }
                           className="cursor-pointer"
                         />
-                        <label htmlFor="weeklyContent" className="text-sm text-gray-700">
+                        <label
+                          htmlFor="weeklyContent"
+                          className="text-sm text-gray-700"
+                        >
                           Ek Materyal
                         </label>
                       </div>
@@ -1052,8 +1072,6 @@ const ContentManagement = () => {
               )}
             </div>
           </div>
-
-
         </div>
 
         {/* İçerik Tablosu */}
@@ -1088,7 +1106,6 @@ const ContentManagement = () => {
             }}
           />
         )}
-
 
         {/* Sayfalama */}
         <div className="p-4 sm:p-6">
@@ -1129,14 +1146,12 @@ const ContentManagement = () => {
                 }}
                 onCancel={() => setIsModalOpen(false)}
               />
-
             ) : (
               <SingleContentForm
                 setIsModalOpen={setIsModalOpen}
                 currentContent={currentContent}
                 setCurrentContent={setCurrentContent}
                 setContents={setContents}
-
                 branchOptions={branchOptions}
                 handleFileChange={handleFileChange}
                 handleDragOver={handleDragOver}
@@ -1147,7 +1162,6 @@ const ContentManagement = () => {
                 setSelectedFile={setSelectedFile}
               />
             )}
-
           </div>
         </div>
       )}
@@ -1157,11 +1171,17 @@ const ContentManagement = () => {
       {bulkActionModalOpen && bulkAction === "update" && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
 
@@ -1180,27 +1200,33 @@ const ContentManagement = () => {
       {(confirmOpen || (bulkActionModalOpen && bulkAction === "delete")) && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
 
             <DeleteConfirmationModal
               selectedCount={
                 bulkMode
-                  ? selectedItems
-                    .filter(item => typeof item === "string" && item.trim() !== "")
-                    .length
+                  ? selectedItems.filter(
+                      (item) => typeof item === "string" && item.trim() !== ""
+                    ).length
                   : 1
               }
               isBulkDeleting={isBulkUpdating}
               onConfirm={() => {
                 if (bulkMode) {
                   setBulkAction("delete");
-                  handleBulkAction({ preventDefault: () => { } });
+                  handleBulkAction({ preventDefault: () => {} });
                 } else {
                   handleConfirmDelete();
                 }
@@ -1221,11 +1247,17 @@ const ContentManagement = () => {
       {isBulkUploadModalOpen && (
         <div className="fixed inset-0 overflow-y-auto z-50">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
 
@@ -1256,16 +1288,12 @@ const ContentManagement = () => {
         </div>
       )}
       {/* içeriği ön izleme */}
-      <PreviewModal
-        previewUrl={previewUrl}
-        onClose={() => setPreviewUrl("")}
-      />
+      <PreviewModal previewUrl={previewUrl} onClose={() => setPreviewUrl("")} />
 
       <Toast />
       <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
         <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
       </Link>
-
     </div>
   );
 };
