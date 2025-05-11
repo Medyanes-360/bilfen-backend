@@ -22,14 +22,14 @@ export default function SingleContentForm({
   const [isWeeklyContentChecked, setIsWeeklyContentChecked] = useState(
     !!currentContent?.isWeeklyContent
   );
-    const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
-      ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
-      : "");
-    
-    const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
-      ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
-      : "");
-      const { showToast } = useToastStore();
+  const [studentDate, setStudentDate] = useState(currentContent?.publishDateStudent
+    ? new Date(currentContent.publishDateStudent).toISOString().split("T")[0]
+    : "");
+
+  const [teacherDate, setTeacherDate] = useState(currentContent?.publishDateTeacher
+    ? new Date(currentContent.publishDateTeacher).toISOString().split("T")[0]
+    : "");
+  const { showToast } = useToastStore();
 
 
   const uploadFileToR2 = async (file) => {
@@ -96,7 +96,7 @@ export default function SingleContentForm({
       }
     }
 
-    if ( !fileUrl) {
+    if (!fileUrl) {
       showToast("Lütfen içerik dosyası ekleyin.", "error");
       setIsUploading(false);
       return;
@@ -138,9 +138,14 @@ export default function SingleContentForm({
         });
         if (!res.ok) throw new Error("Güncelleme başarısız");
 
-        setContents((prev) =>
-          prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c))
-        );
+        setContents((prev) => {
+          console.log("Current 'prev' value in setContents:", prev);
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array IF 'prev' is not iterable
+          }
+          return prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c));
+        });
       } else {
         res = await fetch("/api/contents", {
           method: "POST",
@@ -151,7 +156,14 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => [newContent, ...prev]);
+
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return [newContent];
+          }
+          return [newContent, ...prev];
+        });
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
@@ -291,22 +303,22 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateStudent"
                         id="publishDateStudent"
-                        min={new Date().toISOString().split("T")[0]} 
+                        min={new Date().toISOString().split("T")[0]}
                         value={studentDate}
                         onChange={(e) => {
                           const selectedDate = e.target.value;
-                      
+
                           if (teacherDate) {
                             const student = new Date(selectedDate);
                             const teacher = new Date(teacherDate);
-                      
+
                             if (student < teacher) {
                               showToast("Öğrenci yayın tarihi, öğretmen tarihinden önce olamaz!", "error");
                               setStudentDate("");
                               return;
                             }
                           }
-                      
+
                           setStudentDate(selectedDate);
                         }}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
@@ -322,9 +334,9 @@ export default function SingleContentForm({
                         type="date"
                         name="publishDateTeacher"
                         id="publishDateTeacher"
-                        min={new Date().toISOString().split("T")[0]} 
+                        min={new Date().toISOString().split("T")[0]}
                         value={teacherDate}
-                     
+
                         onChange={(e) => {
                           const selectedDate = e.target.value;
                           if (studentDate) {
@@ -336,10 +348,10 @@ export default function SingleContentForm({
                               return;
                             }
                           }
-                        
+
                           setTeacherDate(selectedDate);
                         }}
-                        
+
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                       />
                     </div>
@@ -384,7 +396,7 @@ export default function SingleContentForm({
                           type="date"
                           name="weeklyContentStartDate"
                           id="weeklyContentStartDate"
-                          min={new Date().toISOString().split("T")[0]} 
+                          min={new Date().toISOString().split("T")[0]}
                           defaultValue={
                             isValidDate(currentContent?.weeklyContentStartDate)
                               ? new Date(currentContent.weeklyContentStartDate)
@@ -470,14 +482,14 @@ export default function SingleContentForm({
                               name="file-upload"
                               type="file"
                               className="sr-only"
-                              accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi"
+                              accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.mp3,.mp4,.mov,.avi,.zip" // zip added
                               onChange={handleFileChange}
                             />
                           </label>
                           <p className="pl-1">veya sürükleyip bırakın</p>
                         </div>
                         <p className="text-xs text-gray-500">
-                          PNG, JPG, PDF, DOC, MP4, MP3 ve benzeri dosyalar
+                          PNG, JPG, PDF, DOC, MP4, MP3, ZIP ve benzeri dosyalar
                           (maks. 50MB)
                         </p>
 
