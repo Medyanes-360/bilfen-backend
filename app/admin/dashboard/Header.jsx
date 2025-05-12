@@ -232,10 +232,7 @@ const Header = ({ toggleSidebar }) => {
                     {session?.user?.email || "admin@bilfen.com"}
                   </p>
                 </div>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                  Profilim
-                </a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <a href="/admin/dashboard/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   Ayarlar
                 </a>
                 <button

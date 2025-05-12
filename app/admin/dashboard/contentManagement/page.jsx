@@ -17,7 +17,7 @@ import ContentUploadModal from "@/components/Dashboard/ContentUploadModal";
 import BulkActionModals from "@/components/Dashboard/BulkActionModals";
 import useContentFilters from "@/components/Dashboard/hooks/useContentFilters";
 import useBulkActions from "@/components/Dashboard/hooks/useBulkActions";
-import { sortContents} from "@/utils/contentHelpers";
+import { sortContents } from "@/utils/contentHelpers";
 
 const ContentManagement = () => {
   // State tanımlamaları
@@ -71,10 +71,29 @@ const ContentManagement = () => {
   const filterMenuRef = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getAPI("/api/contents"); // endpoint'i güncelle
-      if (data) {
-        setContents(data);
-        setFilteredContents(data.data);
+      try {
+        const response = await getAPI("/api/contents"); // Fetch data from the API
+
+        // Check if the response is paginated
+        const contentsArray = Array.isArray(response) ? response : response?.data;
+
+        if (contentsArray && Array.isArray(contentsArray)) {
+          console.log("Fetched contents:", contentsArray); // debugging 
+
+          // state with the fetched contents
+          setContents(contentsArray);
+
+          // upting filteredContents to match the fetched contents
+          setFilteredContents(contentsArray);
+        } else {
+          console.error("Invalid API response. Expected an array, but got:", response);
+          setContents([]); // fall back to an empty array
+          setFilteredContents([]); // reset filteredContents as well
+        }
+      } catch (error) {
+        console.error("Error fetching contents:", error);
+        setContents([]); // fall back to an empty array
+        setFilteredContents([]); // reset filteredContents as well
       }
     };
 
@@ -124,7 +143,115 @@ const ContentManagement = () => {
     }
   };
 
-  
+  const branchOptions = [
+    { label: "Matematik", value: "MATEMATIK" },
+    { label: "Türkçe", value: "TURKCE" },
+    { label: "Fen Bilgisi", value: "FEN_BILGISI" },
+    { label: "Sosyal Bilgiler", value: "SOSYAL_BILGILER" },
+    { label: "İngilizce", value: "INGILIZCE" },
+  ];
+
+
+  const hasActiveFilters = () => {
+    return (
+      advancedFilterOptions.ageGroup !== "" ||
+      advancedFilterOptions.status !== "" ||
+      advancedFilterOptions.publishDateStudent !== "" ||
+      advancedFilterOptions.publishDateTeacher !== "" ||
+      advancedFilterOptions.weeklyContent ||
+      activeType !== "all" ||
+      searchTerm !== ""
+    );
+  };
+
+  // İçerik filtreleme
+  useEffect(() => {
+    const filtered = contents.data?.filter((content) => {
+      const title = (content.title || "").toLowerCase();
+
+      const matchesSearch =
+        searchTerm === "" || title.includes(searchTerm.toLowerCase());
+
+
+      const matchesType =
+        activeType === "all" ||
+        !activeType ||
+        (content.type && content.type === activeType);
+
+      const matchesStatus =
+        !advancedFilterOptions.status ||
+        (content.status && content.status === advancedFilterOptions.status);
+
+      const matchesAgeGroup =
+        !advancedFilterOptions.ageGroup ||
+
+        (content.ageGroup &&
+          content.ageGroup === advancedFilterOptions.ageGroup);
+
+
+      const studentDateFilter = advancedFilterOptions.publishDateStudent
+        ? new Date(advancedFilterOptions.publishDateStudent)
+        : null;
+      const contentStudentDate = content.publishDateStudent
+        ? new Date(content.publishDateStudent)
+        : null;
+      const matchesStudentDate = (() => {
+        if (!studentDateFilter) return true;
+
+        // weekly content'ler student tarihine göre filtrelenemez
+        if (content.isWeeklyContent) return false;
+
+        if (!contentStudentDate) return false;
+
+        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+      })();
+
+
+      const teacherDateFilter = advancedFilterOptions.publishDateTeacher
+        ? new Date(advancedFilterOptions.publishDateTeacher)
+        : null;
+      const matchesWeeklyContent =
+        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
+
+
+      const matchesTeacherDate = (() => {
+        if (!teacherDateFilter) return true;
+
+        if (advancedFilterOptions.weeklyContent) {
+          const weeklyDate = content.weeklyContentStartDate
+            ? new Date(content.weeklyContentStartDate)
+            : null;
+
+          return (
+            weeklyDate &&
+            weeklyDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        } else {
+          const teacherDate = content.publishDateTeacher
+            ? new Date(content.publishDateTeacher)
+            : null;
+
+          return (
+            teacherDate &&
+            teacherDate.toDateString() === teacherDateFilter.toDateString()
+          );
+        }
+      })();
+
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesStatus &&
+        matchesAgeGroup &&
+        matchesStudentDate &&
+        matchesTeacherDate &&
+        matchesWeeklyContent
+      );
+    });
+
+    setFilteredContents(contents);
+    setCurrentPage(1); // sayfayı başa al
+  }, [contents, searchTerm, activeType, advancedFilterOptions]);
 
   // Filtreleme menüsü dışına tıklandığında kapatma
   useEffect(() => {
@@ -145,17 +272,16 @@ const ContentManagement = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [filterMenuRef]);
-
   // Sıralama işlemi
   const handleSort = useCallback(
-  (option) => {
-    setSortOption(option);
-    let content = [...filteredContents]
-    const sortedContents = sortContents(content, option);
-    setFilteredContents(sortedContents);
-  },
-  [filteredContents]
-);
+    (option) => {
+      setSortOption(option);
+      let content = [...filteredContents]
+      const sortedContents = sortContents(content, option);
+      setFilteredContents(sortedContents);
+    },
+    [filteredContents]
+  );
 
   // İçerik ekleme/güncelleme modalını açma
   const openModal = (content = null) => {
@@ -197,11 +323,11 @@ const ContentManagement = () => {
       await deleteAPI(`/api/contents/${selectedId}`);
 
       // 4. State'ten kaldır
-    
       setContents((prevContents) => ({
         ...prevContents,
         data: prevContents.data.filter((item) => item.id !== selectedId)
       }));
+
 
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
@@ -372,19 +498,32 @@ const ContentManagement = () => {
         }
 
         // State güncelle
-        setContents((prev) =>
-          prev.map((content) =>
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array
+          }
+          return prev.map((content) =>
             content.id === currentContent.id
               ? { ...content, ...contentData }
               : content
-          )
-        );
+          );
+        });
         console.log("İçerik güncellendi:", contentData);
       } else {
         //  Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
-          setContents((prev) => [...prev, response]);
+          setContents((prev) => {
+            console.log("Previous contents:", prev);
+            console.log("New content to add:", response);
+
+            if (!Array.isArray(prev)) {
+              console.error("Expected 'prev' to be an array, but got:", prev);
+              return [response]; // new content
+            }
+            return [...prev, response]; // append new content to the existing state
+          });
           console.log("Yeni içerik eklendi:", response);
         }
       }

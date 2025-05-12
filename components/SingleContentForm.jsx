@@ -7,7 +7,7 @@ import useToastStore from '@/lib/store/toast';
 import {
   getStatusColor
 } from "@/utils/contentHelpers";
-import FileUploadArea from"../components/Dashboard/FileUploadArea"
+import FileUploadArea from "../components/Dashboard/FileUploadArea"
 
 export default function SingleContentForm({
   setIsModalOpen,
@@ -139,12 +139,15 @@ export default function SingleContentForm({
         });
         if (!res.ok) throw new Error("Güncelleme başarısız");
 
-        setContents((prev) =>({
-          ...prev,
-          data: prev.data.map((c) =>
-          c.id === currentContent.id ? { ...c, ...payload } : c
-        ),
-        }));
+
+        setContents((prev) => {
+          console.log("Current 'prev' value in setContents:", prev);
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return []; // fall back to an empty array IF 'prev' is not iterable
+          }
+          return prev.map((c) => (c.id === currentContent.id ? { ...c, ...payload } : c));
+        });
       } else {
         res = await fetch("/api/contents", {
           method: "POST",
@@ -155,10 +158,14 @@ export default function SingleContentForm({
         console.log("POST isteği sonucu:", res.status);
         const newContent = await res.json();
         console.log("Yeni içerik:", newContent);
-        setContents((prev) => ({
-          ...prev,
-          data: [newContent, ...prev.data],
-        }))
+        setContents((prev) => {
+          if (!Array.isArray(prev)) {
+            console.error("Expected 'prev' to be an array, but got:", prev);
+            return [newContent];
+          }
+          return [newContent, ...prev];
+        });
+
       }
     } catch (error) {
       console.error("İçerik kaydedilemedi:", error);
@@ -459,9 +466,10 @@ export default function SingleContentForm({
                     </div>
                   ) : (
                     <FileUploadArea
-                    selectedFile={selectedFile}
-                    setSelectedFile={setSelectedFile}
-                  />
+                      selectedFile={selectedFile}
+                      setSelectedFile={setSelectedFile}
+                    />
+
                   )}
                 </div>
 

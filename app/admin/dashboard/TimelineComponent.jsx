@@ -129,7 +129,7 @@ console.log(contents,'contents')
   }, [selectedDate]);
   // icerik izleme
   const viewContent = async (id) => {
-    const content = contents.find((item) => item.id === id);
+    const content = contents.data.find((item) => item.id === id);
     if (!content) return;
 
     try {

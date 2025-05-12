@@ -4,10 +4,27 @@ const FileUploadArea = ({
   selectedFile,
   setSelectedFile,
 }) => {
- // Dosya yükleme işlemi
- const handleFileChange = useCallback((e) => {
+  // Dosya yükleme işlemi
+  const handleFileChange = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
+      const allowedTypes = [
+        "image/png",
+        "image/jpeg",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "audio/mpeg",
+        "video/mp4",
+        "video/quicktime",
+        "video/x-msvideo",
+        "application/zip", // added .zip mime type
+        "application/x-zip-compressed",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        showToast("Geçersiz dosya türü. Lütfen desteklenen bir dosya yükleyin.", "error");
+        return;
+      }
       setSelectedFile(file);
 
       // Dosya bilgisi gösterimi
@@ -23,8 +40,8 @@ const FileUploadArea = ({
     }
   }, []);
 
- // Dosya sürükle-bırak işlemi
- const handleDragOver = useCallback((e) => {
+  // Dosya sürükle-bırak işlemi
+  const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     e.currentTarget.classList.add("border-indigo-500", "bg-indigo-50");

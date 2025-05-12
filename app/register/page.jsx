@@ -1,8 +1,8 @@
 "use client";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 
 // SearchParams için ayrı bir bileşen oluşturalım
 function RegisterForm() {
@@ -144,13 +144,10 @@ function RegisterForm() {
 
   return (
     <div className="relative">
-     <Link
-        href="/"
-        className="absolute top-2 left-2  text-gray-700  ">
-        <ArrowLeft/>
+      <Link href="/" className="absolute top-2 left-2  text-gray-700  ">
+        <ArrowLeft />
       </Link>
       <div className="max-w-4xl mx-auto px-6 py-10 rounded-lg shadow-md min-h-screen bg-white flex flex-col justify-start overflow-y-auto">
-
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Yeni Kullanıcı Kaydı</h1>
 
         {message.text && (
@@ -321,6 +318,8 @@ function RegisterForm() {
                     type="tel"
                     value={teacherData.phone}
                     onChange={handleTeacherChange}
+                    maxLength={11}
+                    minLength={11}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -364,6 +363,8 @@ function RegisterForm() {
                     type="text"
                     value={studentData.studentNumber}
                     onChange={handleStudentChange}
+                    maxLength={5}
+                    minLength={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -430,6 +431,8 @@ function RegisterForm() {
                     type="tel"
                     value={studentData.parentPhone}
                     onChange={handleStudentChange}
+                    maxLength={11}
+                    minLength={11}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
