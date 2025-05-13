@@ -102,15 +102,13 @@ const TimelineComponent = () => {
 
   // icerik izleme
   const viewContent = async (id) => {
-    const content = contents.data?.find((item) => item.id === id);
-    if (!content || !content.fileUrl) {
-      console.error("Content or file URL not found for ID:", id);
-      alert("İçerik veya dosya yolu bulunamadı.");
-      return;
-    }
+    const content = contents.data.find((item) => item.id === id);
+    if (!content) return;
 
     try {
-      // Assuming the API endpoint correctly serves the file based on the URL parameter
+      console.log("Dosya çağırılıyor:", content.fileUrl);
+
+      const fileUrl = content.fileUrl;
       const response = await fetch(
         `/api/file/view?fileUrl=${encodeURIComponent(content.fileUrl)}`
       );
