@@ -1,6 +1,21 @@
-"use client";
 
-import { ArrowLeft } from "lucide-react";
+"use client";
+// components/ContentManagement.jsx
+import {
+  Book,
+  Edit,
+  FileText,
+  Filter,
+  FilterX,
+  Image,
+  Music,
+  Search,
+  Trash2,
+  Video,
+  ArrowLeft,
+  HelpCircle,
+} from "lucide-react";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteAPI, getAPI, postAPI, updateAPI } from "@/services/fetchAPI";
 import BulkContentUpload from "@/components/BulkContentUpload";
@@ -71,24 +86,11 @@ const ContentManagement = () => {
   const filterMenuRef = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
+      const data = await getAPI("/api/contents");
       try {
-        const response = await getAPI("/api/contents"); // Fetch data from the API
-
-        // Check if the response is paginated
-        const contentsArray = Array.isArray(response) ? response : response?.data;
-
-        if (contentsArray && Array.isArray(contentsArray)) {
-          console.log("Fetched contents:", contentsArray); // debugging 
-
-          // state with the fetched contents
-          setContents(contentsArray);
-
-          // upting filteredContents to match the fetched contents
-          setFilteredContents(contentsArray);
-        } else {
-          console.error("Invalid API response. Expected an array, but got:", response);
-          setContents([]); // fall back to an empty array
-          setFilteredContents([]); // reset filteredContents as well
+        if (data) {
+          setContents(data);
+          setFilteredContents(data.data);
         }
       } catch (error) {
         console.error("Error fetching contents:", error);
@@ -105,11 +107,14 @@ const ContentManagement = () => {
   };
   const handlePublish = async (id) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: true }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPublished: true }),
+        }
+      );
 
       if (!res.ok) throw new Error("Yayınlama başarısız");
 
@@ -125,11 +130,14 @@ const ContentManagement = () => {
 
   const handleUnpublish = async (id) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: false }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contents/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPublished: false }),
+        }
+      );
 
       if (!res.ok) throw new Error("Yayından kaldırma başarısız");
 
@@ -151,7 +159,6 @@ const ContentManagement = () => {
     { label: "İngilizce", value: "INGILIZCE" },
   ];
 
-
   const hasActiveFilters = () => {
     return (
       advancedFilterOptions.ageGroup !== "" ||
@@ -172,7 +179,6 @@ const ContentManagement = () => {
       const matchesSearch =
         searchTerm === "" || title.includes(searchTerm.toLowerCase());
 
-
       const matchesType =
         activeType === "all" ||
         !activeType ||
@@ -184,10 +190,8 @@ const ContentManagement = () => {
 
       const matchesAgeGroup =
         !advancedFilterOptions.ageGroup ||
-
         (content.ageGroup &&
           content.ageGroup === advancedFilterOptions.ageGroup);
-
 
       const studentDateFilter = advancedFilterOptions.publishDateStudent
         ? new Date(advancedFilterOptions.publishDateStudent)
@@ -203,16 +207,17 @@ const ContentManagement = () => {
 
         if (!contentStudentDate) return false;
 
-        return contentStudentDate.toDateString() === studentDateFilter.toDateString();
+        return (
+          contentStudentDate.toDateString() === studentDateFilter.toDateString()
+        );
       })();
-
 
       const teacherDateFilter = advancedFilterOptions.publishDateTeacher
         ? new Date(advancedFilterOptions.publishDateTeacher)
         : null;
       const matchesWeeklyContent =
-        !advancedFilterOptions.weeklyContent || content.isWeeklyContent === true;
-
+        !advancedFilterOptions.weeklyContent ||
+        content.isWeeklyContent === true;
 
       const matchesTeacherDate = (() => {
         if (!teacherDateFilter) return true;
@@ -249,7 +254,7 @@ const ContentManagement = () => {
       );
     });
 
-    setFilteredContents(contents);
+    setFilteredContents(filtered);
     setCurrentPage(1); // sayfayı başa al
   }, [contents, searchTerm, activeType, advancedFilterOptions]);
 
@@ -272,6 +277,7 @@ const ContentManagement = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [filterMenuRef]);
+
   // Sıralama işlemi
   const handleSort = useCallback(
     (option) => {
@@ -299,9 +305,13 @@ const ContentManagement = () => {
   const handleConfirmDelete = async () => {
     if (!selectedId) return;
 
+    const allContents = contents.data || contents;
+
     try {
       // 1. Silinecek içeriği bul (state'ten)
-      const contentToDelete = contents.data.find((item) => item.id === selectedId);
+      const contentToDelete = allContents.find(
+        (item) => item.id === selectedId
+      );
 
       // 2. Eğer fileUrl varsa önce R2'den sil
       if (contentToDelete?.fileUrl) {
@@ -323,11 +333,14 @@ const ContentManagement = () => {
       await deleteAPI(`/api/contents/${selectedId}`);
 
       // 4. State'ten kaldır
-      setContents((prevContents) => ({
-        ...prevContents,
-        data: prevContents.data.filter((item) => item.id !== selectedId)
-      }));
 
+      setContents((prevContents) => {
+        const data = Array.isArray(prevContents?.data) ? prevContents.data : [];
+
+        const updatedData = data.filter((item) => item.id !== selectedId);
+
+        return { ...prevContents, data: updatedData };
+      });
 
       // 5. Modal'ı kapat ve seçimi sıfırla
       setConfirmOpen(false);
@@ -498,32 +511,19 @@ const ContentManagement = () => {
         }
 
         // State güncelle
-        setContents((prev) => {
-          if (!Array.isArray(prev)) {
-            console.error("Expected 'prev' to be an array, but got:", prev);
-            return []; // fall back to an empty array
-          }
-          return prev.map((content) =>
+        setContents((prev) =>
+          prev.map((content) =>
             content.id === currentContent.id
               ? { ...content, ...contentData }
               : content
-          );
-        });
+          )
+        );
         console.log("İçerik güncellendi:", contentData);
       } else {
         //  Yeni içerik oluştur
         response = await postAPI("/api/contents", contentData);
         if (response) {
-          setContents((prev) => {
-            console.log("Previous contents:", prev);
-            console.log("New content to add:", response);
-
-            if (!Array.isArray(prev)) {
-              console.error("Expected 'prev' to be an array, but got:", prev);
-              return [response]; // new content
-            }
-            return [...prev, response]; // append new content to the existing state
-          });
+          setContents((prev) => [...prev, response]);
           console.log("Yeni içerik eklendi:", response);
         }
       }
@@ -541,16 +541,21 @@ const ContentManagement = () => {
 
   // İçeriği görüntüleme
   const viewContent = async (id) => {
-    const content = contents.find((item) => item.id === id);
+    const allContents = contents.data || contents;
+
+    if (!Array.isArray(allContents)) {
+      console.error("İçerik listesi uygun formatta değil:", contents);
+      return;
+    }
+
+    const content = allContents.find((item) => item.id === id);
     if (!content) return;
 
     try {
       console.log("Dosya çağırılıyor:", content.fileUrl);
 
       const fileUrl = content.fileUrl;
-      const response = await fetch(
-        `/api/file/view?fileUrl=${fileUrl}`
-      );
+      const response = await fetch(`/api/file/view?fileUrl=${fileUrl}`);
 
       console.log("API Yanıt:", response);
 
@@ -627,21 +632,22 @@ const ContentManagement = () => {
         </div>
 
         {/* Toplu İşlem Butonları */}
-        {bulkMode && selectedItems.length > 0 && (
-          <BulkActionsBar
-            selectedItems={selectedItems}
-            clearBulkSelection={clearBulkSelection}
-            onBulkUpdate={() => {
-              setBulkAction("update");
-              setBulkActionModalOpen(true);
-            }}
-            onBulkDelete={() => {
-              setBulkAction("delete");
-              setBulkActionModalOpen(true);
-            }}
-          />
-        )}
-
+        {
+          bulkMode && selectedItems.length > 0 && (
+            <BulkActionsBar
+              selectedItems={selectedItems}
+              clearBulkSelection={clearBulkSelection}
+              onBulkUpdate={() => {
+                setBulkAction("update");
+                setBulkActionModalOpen(true);
+              }}
+              onBulkDelete={() => {
+                setBulkAction("delete");
+                setBulkActionModalOpen(true);
+              }}
+            />
+          )
+        }
 
         {/* Sayfalama */}
         <div className="p-4 sm:p-6">
@@ -651,10 +657,10 @@ const ContentManagement = () => {
             paginate={paginate}
           />
         </div>
-      </div>
+      </div >
 
       {/* İçerik Ekleme/Düzenleme Modal */}
-      <ContentUploadModal
+      < ContentUploadModal
         isModalOpen={isModalOpen}
         bulkMode={bulkMode}
         selectedItems={selectedItems}
@@ -685,54 +691,61 @@ const ContentManagement = () => {
       />
 
       {/* Toplu İçerik Yükleme Modal */}
-      {isBulkUploadModalOpen && (
-        <div className="fixed inset-0 overflow-y-auto z-50">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+      {
+        isBulkUploadModalOpen && (
+          <div className="fixed inset-0 overflow-y-auto z-50">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div
+                className="fixed inset-0 transition-opacity"
+                aria-hidden="true"
+              >
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              </div>
+
+              <span
+                className="hidden sm:inline-block sm:align-middle sm:h-screen"
+                aria-hidden="true"
+              >
+                &#8203;
+              </span>
+
+              <BulkContentUpload
+                setIsModalOpen={setIsBulkUploadModalOpen}
+                setContents={setContents}
+              />
             </div>
-
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-              &#8203;
-            </span>
-
-            <BulkContentUpload
-              setIsModalOpen={setIsBulkUploadModalOpen}
-              setContents={setContents}
-            />
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {showLimitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">
-              Seçim Limiti
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              En fazla <strong>10</strong> içerik seçebilirsiniz.
-            </p>
-            <button
-              onClick={() => setShowLimitModal(false)}
-              className="px-4 py-2 bg-indigo-600 cursor-pointer text-white rounded hover:bg-indigo-700"
-            >
-              Tamam
-            </button>
+      {
+        showLimitModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                Seçim Limiti
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                En fazla <strong>10</strong> içerik seçebilirsiniz.
+              </p>
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="px-4 py-2 bg-indigo-600 cursor-pointer text-white rounded hover:bg-indigo-700"
+              >
+                Tamam
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
       {/* içeriği ön izleme */}
-      <PreviewModal
-        previewUrl={previewUrl}
-        onClose={() => setPreviewUrl("")}
-      />
+      <PreviewModal previewUrl={previewUrl} onClose={() => setPreviewUrl("")} />
 
       <Toast />
       <Link href="/" className="absolute top-2 xl:top-4 left-4 z-50">
         <ArrowLeft className="w-5 h-5  text-gray-700 hover:text-black cursor-pointer" />
       </Link>
-    </div>
+    </div >
   );
 };
 
