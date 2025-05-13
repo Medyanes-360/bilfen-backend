@@ -1,8 +1,7 @@
-import { contentTypes, ageGroups } from '../app/constants/mockData';
+import { contentTypes, ageGroups, branchOptions} from '../app/constants/mockData';
 import LoadingSpinner from './icons/LoadingSpinner';
 export default function BulkUpdateForm({
     currentContent,
-    branchOptions,
     isBulkUpdating,
     onSubmit,
     onCancel,
